@@ -1,2 +1,2 @@
-# kai-site
-Blog of Kai project
+# Kaik Chess Engine.
+
