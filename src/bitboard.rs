@@ -17,15 +17,16 @@ impl BitBoard {
     }
 
     pub fn print(self) {
-        for rank in (0..8).rev() {
-            print!("  {rank} ");
+        for rank in 0..8 {
+            print!("  {} ", 8 - rank); // display starts at 1
             for file in 0..8 {
-                let index = rank * 8 + file;
+                let index = (7 - rank) * 8 + file;
                 print!(" {}", u8::from(self.is_set(index)));
             }
             println!();
         }
         println!("     a b c d e f g h");
+        println!("{:064b}", self.0);
     }
 }
 
@@ -99,13 +100,17 @@ mod tests {
     #[test]
     fn test_create_set() {
         use Square::*;
-        let white_pawns: BitBoard = 71776119061217280.into();
+        let black_pawns: BitBoard = 71776119061217280.into();
 
         let mut b = BitBoard::EMPTY;
-        for square in [A2, B2, C2, D2, E2, F2, G2, H2] {
+        for square in [A7, B7, C7, D7, E7, F7, G7, H7] {
             b.set(square.into());
         }
-        assert_eq!(b, white_pawns);
+        // black_pawns.print();
+        b.print();
+
+        // assert!(false);
+        assert_eq!(b, black_pawns);
     }
 
     #[test]
