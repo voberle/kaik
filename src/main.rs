@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use bitboard::BitBoard;
 use board::Board;
 use squares::Square;
@@ -5,6 +7,7 @@ use squares::Square;
 mod bitboard;
 mod board;
 mod constants;
+mod movements;
 mod squares;
 
 #[allow(clippy::unreadable_literal)]

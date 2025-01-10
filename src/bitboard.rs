@@ -1,6 +1,8 @@
-use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign};
+use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, Not, Shl, ShlAssign, Shr, ShrAssign};
 
 use itertools::Itertools;
+
+use crate::squares::Square;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct BitBoard(pub u64);
@@ -63,6 +65,20 @@ impl From<&str> for BitBoard {
     }
 }
 
+impl From<Square> for BitBoard {
+    fn from(value: Square) -> Self {
+        Self(1 << Into::<u8>::into(value))
+    }
+}
+
+impl Not for BitBoard {
+    type Output = Self;
+
+    fn not(self) -> Self::Output {
+        Self(!self.0)
+    }
+}
+
 impl BitAnd for BitBoard {
     type Output = Self;
 
@@ -88,6 +104,36 @@ impl BitOr for BitBoard {
 impl BitOrAssign for BitBoard {
     fn bitor_assign(&mut self, rhs: Self) {
         *self = Self(self.0 | rhs.0);
+    }
+}
+
+impl Shl<usize> for BitBoard {
+    type Output = Self;
+
+    fn shl(self, rhs: usize) -> Self::Output {
+        let Self(lhs) = self;
+        Self(lhs << rhs)
+    }
+}
+
+impl ShlAssign<usize> for BitBoard {
+    fn shl_assign(&mut self, rhs: usize) {
+        self.0 <<= rhs;
+    }
+}
+
+impl Shr<usize> for BitBoard {
+    type Output = Self;
+
+    fn shr(self, rhs: usize) -> Self::Output {
+        let Self(lhs) = self;
+        Self(lhs >> rhs)
+    }
+}
+
+impl ShrAssign<usize> for BitBoard {
+    fn shr_assign(&mut self, rhs: usize) {
+        self.0 >>= rhs;
     }
 }
 
@@ -125,5 +171,14 @@ mod tests {
             0 1 1 1 1 1 1 1";
         let bb: BitBoard = not_a_file.into();
         assert_eq!(bb.0, 18374403900871474942);
+    }
+
+    #[test]
+    fn test_from_square() {
+        let bb: BitBoard = Square::C3.into();
+        assert_eq!(
+            bb.0,
+            0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0100_0000_0000_0000_0000
+        );
     }
 }

@@ -37,9 +37,9 @@ pub const BLACK_KING: BitBoard =
 //   2  0 1 1 1 1 1 1 1
 //   1  0 1 1 1 1 1 1 1
 //      a b c d e f g h
-const NOT_A_FILE: BitBoard = BitBoard(18374403900871474942);
+pub const NOT_A_FILE: BitBoard = BitBoard(18374403900871474942);
 
-const NOT_H_FILE: BitBoard = BitBoard(9187201950435737471);
+pub const NOT_H_FILE: BitBoard = BitBoard(9187201950435737471);
 
 #[cfg(test)]
 mod tests {
