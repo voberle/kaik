@@ -1,5 +1,5 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct BitBoard(u64);
+pub struct BitBoard(pub u64);
 
 impl BitBoard {
     pub const EMPTY: BitBoard = BitBoard(0);
@@ -13,11 +13,11 @@ impl BitBoard {
     }
 
     pub fn print(self) {
-        for r in (0..8).rev() {
-            for f in 0..8 {
-                let index = r * 8 + f;
-                if f == 0 {
-                    print!("  {r} ");
+        for rank in (0..8).rev() {
+            for file in 0..8 {
+                let index = rank * 8 + file;
+                if file == 0 {
+                    print!("  {rank} ");
                 }
                 print!(" {}", u8::from(self.is_set(index)));
             }
