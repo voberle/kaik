@@ -1,6 +1,14 @@
 [package]
-name = "kai"
+authors = ["Vincent Oberle"]
+name = "kaik"
+description = "Kaik Chess Engine"
 version = "0.1.0"
 edition = "2021"
+
+[lints.clippy]
+pedantic = "deny"
+
+[lints.rust]
+unsafe_code = "forbid"
 
 [dependencies]

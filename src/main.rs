@@ -1,9 +1,11 @@
-use bitboard::print_bitboard;
+use bitboard::BitBoard;
 
 mod bitboard;
 
+#[allow(clippy::unreadable_literal)]
 fn main() {
-    let white_pawns = 0b0000000000000000000000000000000000000000000000001111111100000000;
+    let white_pawns: BitBoard =
+        0b0000000000000000000000000000000000000000000000001111111100000000.into();
 
-    print_bitboard(white_pawns);
+    white_pawns.print();
 }
