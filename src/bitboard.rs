@@ -16,10 +16,14 @@ impl BitBoard {
         for r in (0..8).rev() {
             for f in 0..8 {
                 let index = r * 8 + f;
-                print!("{}", u8::from(self.is_set(index)));
+                if f == 0 {
+                    print!("  {r} ");
+                }
+                print!(" {}", u8::from(self.is_set(index)));
             }
             println!();
         }
+        println!("     a b c d e f g h");
     }
 }
 
