@@ -31,19 +31,45 @@ impl Board {
         }
     }
 
+    #[allow(clippy::wildcard_imports)]
+    pub fn initial_board() -> Self {
+        use crate::constants::*;
+        let white = [
+            WHITE_PAWNS,
+            WHITE_ROOKS,
+            WHITE_KNIGHTS,
+            WHITE_BISHOPS,
+            WHITE_QUEENS,
+            WHITE_KING,
+        ];
+        let black = [
+            BLACK_PAWNS,
+            BLACK_ROOKS,
+            BLACK_KNIGHTS,
+            BLACK_BISHOPS,
+            BLACK_QUEENS,
+            BLACK_KING,
+        ];
+        let all_white = white.iter().fold(BitBoard::EMPTY, |acc, bb| acc | *bb);
+        let all_black = black.iter().fold(BitBoard::EMPTY, |acc, bb| acc | *bb);
+        let all = all_white | all_black;
+        Self {
+            white,
+            black,
+            all_white,
+            all_black,
+            all,
+        }
+    }
+
     pub fn print(&self) {
         for rank in (0..8).rev() {
+            print!("  {rank} ");
             for file in 0..8 {
                 let index = rank * 8 + file;
-                if file == 0 {
-                    print!("  {rank} ");
-                }
 
                 let mut piece_char = '.';
-                for (piece, bitboard) in [self.white, self.black]
-                    .as_flattened()
-                    .iter()
-                    .enumerate()
+                for (piece, bitboard) in [self.white, self.black].as_flattened().iter().enumerate()
                 {
                     if bitboard.is_set(index) {
                         piece_char = Self::UNICODE_PIECES[piece];

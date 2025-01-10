@@ -1,11 +1,10 @@
 use bitboard::BitBoard;
 use board::Board;
-use initial_board::INITIAL_BOARD;
 use squares::Square;
 
 mod bitboard;
 mod board;
-mod initial_board;
+mod constants;
 mod squares;
 
 #[allow(clippy::unreadable_literal)]
@@ -23,5 +22,8 @@ fn main() {
     // board.white[Board::PAWNS].set(Square::E2.into());
     // board.print();
 
-    INITIAL_BOARD.print();
+    let b = Board::initial_board();
+    b.print();
+
+    b.all.print();
 }
