@@ -79,10 +79,12 @@ impl fmt::Display for Piece {
     }
 }
 
+pub type PieceListBoard = Vec<Option<Piece>>;
+
 // Converts a string with pieces into vector of Piece. Starts with pieces on A8, A7, etc.
 // Empty squares are represented with dots.
 // The string may have line breaks, spaces etc, they are just ignored.
-pub fn parse(value: &str) -> Vec<Option<Piece>> {
+pub fn parse(value: &str) -> PieceListBoard {
     value
         .chars()
         .filter_map(|c| match c.try_into() {
