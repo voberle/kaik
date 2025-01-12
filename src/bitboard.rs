@@ -70,8 +70,8 @@ impl From<&str> for BitBoard {
 }
 
 impl From<Square> for BitBoard {
-    fn from(value: Square) -> Self {
-        Self(1 << Into::<u8>::into(value))
+    fn from(square: Square) -> Self {
+        Self(1 << square as u8)
     }
 }
 
@@ -154,7 +154,7 @@ mod tests {
 
         let mut b = BitBoard::EMPTY;
         for square in [A7, B7, C7, D7, E7, F7, G7, H7] {
-            b.set(square.into());
+            b.set(square as u8);
         }
         // black_pawns.print();
         b.print();

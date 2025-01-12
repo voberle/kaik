@@ -17,19 +17,6 @@ pub struct Board {
 }
 
 impl Board {
-    const WHITE_PAWNS: usize = 0;
-    const BLACK_PAWNS: usize = 1;
-    const WHITE_KNIGHTS: usize = 2;
-    const BLACK_KNIGHTS: usize = 3;
-    const WHITE_BISHOPS: usize = 4;
-    const BLACK_BISHOPS: usize = 5;
-    const WHITE_ROOKS: usize = 6;
-    const BLACK_ROOKS: usize = 7;
-    const WHITE_QUEENS: usize = 8;
-    const BLACK_QUEENS: usize = 9;
-    const WHITE_KING: usize = 10;
-    const BLACK_KING: usize = 11;
-
     const ASCII_PIECES: &[u8; 12] = b"PpNnBbRrQqKk";
     const UNICODE_PIECES: [char; 12] = ['♙', '♟', '♘', '♞', '♗', '♝', '♖', '♜', '♕', '♛', '♔', '♚'];
 
@@ -44,6 +31,7 @@ impl Board {
     #[allow(clippy::wildcard_imports)]
     pub fn initial_board() -> Self {
         use crate::constants::*;
+        // Same order as in pieces.rs
         let pieces = [
             WHITE_PAWNS,
             BLACK_PAWNS,
@@ -92,5 +80,17 @@ impl Board {
             println!();
         }
         println!("     a b c d e f g h");
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_initial_board() {
+        let board = Board::initial_board();
+        assert_eq!(board.pieces.len(), 12);
+        assert_eq!(board.all.len(), 2);
     }
 }
