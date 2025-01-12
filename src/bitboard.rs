@@ -42,6 +42,22 @@ impl From<u64> for BitBoard {
     }
 }
 
+impl From<&[u64]> for BitBoard {
+    fn from(value: &[u64]) -> Self {
+        let bb = value
+            .chunks(8)
+            .map(|line| {
+                line.iter()
+                    .enumerate()
+                    .fold(0u64, |acc, (f, b)| acc + (b << f))
+            })
+            .rev()
+            .enumerate()
+            .fold(0u64, |acc, (r, b)| acc + (b << (r * 8)));
+        Self(bb)
+    }
+}
+
 impl From<&str> for BitBoard {
     // Converts a list of 0 and 1s into a BitBoard. Starts with A8, A7, etc.
     // The string may have line breaks, spaces etc, they are just ignored.
@@ -49,23 +65,13 @@ impl From<&str> for BitBoard {
         let filtered = value
             .chars()
             .filter_map(|c| match c {
-                '0' => Some(0),
-                '1' => Some(1),
+                '0' => Some(0u64),
+                '1' => Some(1u64),
                 _ => None,
             })
             .collect_vec();
         assert_eq!(filtered.len(), 64);
-        let bb = filtered
-            .chunks(8)
-            .map(|line| {
-                line.iter()
-                    .enumerate()
-                    .fold(0, |acc, (f, b)| acc + (b << f))
-            })
-            .rev()
-            .enumerate()
-            .fold(0, |acc, (r, b)| acc + (b << (r * 8)));
-        Self(bb)
+        Into::<BitBoard>::into(&*filtered)
     }
 }
 

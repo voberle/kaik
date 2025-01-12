@@ -108,23 +108,16 @@ impl From<&str> for Board {
         let pieces = ALL_PIECES
             .iter()
             .map(|piece| {
-                BitBoard::new(
-                    piece_placement
-                        .chunks(8)
-                        .map(|line| {
-                            line.iter().enumerate().fold(0, |acc, (index, s)| {
-                                if let Some(p) = s {
-                                    if p == piece {
-                                        return acc + (1u64 << index);
-                                    }
-                                }
-                                acc
-                            })
-                        })
-                        .rev()
-                        .enumerate()
-                        .fold(0, |acc, (r, b)| acc + (b << (r * 8))),
-                )
+                // Get a vector of 0/1 where 1 is set if there is the same piece as 'piece' at this position.
+                let filtered = piece_placement
+                    .iter()
+                    .map(|c| match c {
+                        Some(p) if p == piece => 1u64,
+                        _ => 0u64,
+                    })
+                    .collect_vec();
+                assert_eq!(filtered.len(), 64);
+                Into::<BitBoard>::into(&*filtered)
             })
             .collect_array()
             .unwrap();
@@ -148,5 +141,8 @@ mod tests {
         let board = Board::initial_board();
         assert_eq!(board.pieces.len(), 12);
         assert_eq!(board.all.len(), 2);
+
+        let via_fen: Board = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1".into();
+        assert_eq!(board, via_fen);
     }
 }
