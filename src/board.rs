@@ -2,63 +2,74 @@ use crate::bitboard::BitBoard;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Board {
-    white: [BitBoard; 6],
-    black: [BitBoard; 6],
+    // Even indexes are white pieces, odd are black pieces.
+    pieces: [BitBoard; 12],
+    all: [BitBoard; 2],
+    occupied: BitBoard,
+    // Should we have empty as well?
 
-    all_white: BitBoard,
-    all_black: BitBoard,
-    all: BitBoard,
+    // Side to move
+    // side: usize,
+    // En passant square
+    // en_passant: Square,
+    // Castle
+    // castle: TBD,
 }
 
 impl Board {
-    const PAWNS: usize = 0;
-    const ROOKS: usize = 1;
-    const KNIGHTS: usize = 2;
-    const BISHOPS: usize = 3;
-    const QUEENS: usize = 4;
-    const KING: usize = 5;
+    const WHITE_PAWNS: usize = 0;
+    const BLACK_PAWNS: usize = 1;
+    const WHITE_KNIGHTS: usize = 2;
+    const BLACK_KNIGHTS: usize = 3;
+    const WHITE_BISHOPS: usize = 4;
+    const BLACK_BISHOPS: usize = 5;
+    const WHITE_ROOKS: usize = 6;
+    const BLACK_ROOKS: usize = 7;
+    const WHITE_QUEENS: usize = 8;
+    const BLACK_QUEENS: usize = 9;
+    const WHITE_KING: usize = 10;
+    const BLACK_KING: usize = 11;
 
-    const ASCII_PIECES: &[u8; 12] = b"PNBRQKpnbrqk";
-    const UNICODE_PIECES: [char; 12] = ['♙', '♘', '♗', '♖', '♕', '♔', '♟', '♞', '♝', '♜', '♛', '♚'];
+    const ASCII_PIECES: &[u8; 12] = b"PpNnBbRrQqKk";
+    const UNICODE_PIECES: [char; 12] = ['♙', '♟', '♘', '♞', '♗', '♝', '♖', '♜', '♕', '♛', '♔', '♚'];
 
     pub fn empty() -> Self {
         Self {
-            white: [BitBoard::EMPTY; 6],
-            black: [BitBoard::EMPTY; 6],
-            all_white: BitBoard::EMPTY,
-            all_black: BitBoard::EMPTY,
-            all: BitBoard::EMPTY,
+            pieces: [BitBoard::EMPTY; 12],
+            all: [BitBoard::EMPTY; 2],
+            occupied: BitBoard::EMPTY,
         }
     }
 
     #[allow(clippy::wildcard_imports)]
     pub fn initial_board() -> Self {
         use crate::constants::*;
-        let white = [
+        let pieces = [
             WHITE_PAWNS,
-            WHITE_ROOKS,
-            WHITE_KNIGHTS,
-            WHITE_BISHOPS,
-            WHITE_QUEENS,
-            WHITE_KING,
-        ];
-        let black = [
             BLACK_PAWNS,
-            BLACK_ROOKS,
+            WHITE_KNIGHTS,
             BLACK_KNIGHTS,
+            WHITE_BISHOPS,
             BLACK_BISHOPS,
+            WHITE_ROOKS,
+            BLACK_ROOKS,
+            WHITE_QUEENS,
             BLACK_QUEENS,
+            WHITE_KING,
             BLACK_KING,
         ];
-        let all_white = white.iter().fold(BitBoard::EMPTY, |acc, bb| acc | *bb);
-        let all_black = black.iter().fold(BitBoard::EMPTY, |acc, bb| acc | *bb);
-        let all = all_white | all_black;
+        let all = pieces.iter().enumerate().fold(
+            [BitBoard::EMPTY, BitBoard::EMPTY],
+            |mut acc, (i, bb)| {
+                acc[i % 2] |= *bb;
+                acc
+            },
+        );
+        let occupied = all[0] | all[1];
         Self {
-            white,
-            black,
-            all_white,
-            all_black,
+            pieces,
             all,
+            occupied,
         }
     }
 
@@ -69,8 +80,7 @@ impl Board {
                 let index = rank * 8 + file;
 
                 let mut piece_char = '.';
-                for (piece, bitboard) in [self.white, self.black].as_flattened().iter().enumerate()
-                {
+                for (piece, bitboard) in self.pieces.iter().enumerate() {
                     if bitboard.is_set(index) {
                         piece_char = Self::UNICODE_PIECES[piece];
                         // piece_char = Self::ASCII_PIECES[piece] as char;
