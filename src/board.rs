@@ -1,4 +1,6 @@
-use crate::bitboard::BitBoard;
+use itertools::Itertools;
+
+use crate::{bitboard::BitBoard, fen, pieces::ALL_PIECES};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Board {
@@ -14,6 +16,20 @@ pub struct Board {
     // en_passant: Square,
     // Castle
     // castle: TBD,
+}
+
+fn get_all_bitboards(pieces: &[BitBoard]) -> [BitBoard; 2] {
+    pieces
+        .iter()
+        .enumerate()
+        .fold([BitBoard::EMPTY, BitBoard::EMPTY], |mut acc, (i, bb)| {
+            acc[i % 2] |= *bb;
+            acc
+        })
+}
+
+fn get_occupied_bitboard(all: &[BitBoard]) -> BitBoard {
+    all[0] | all[1]
 }
 
 impl Board {
@@ -46,14 +62,8 @@ impl Board {
             WHITE_KING,
             BLACK_KING,
         ];
-        let all = pieces.iter().enumerate().fold(
-            [BitBoard::EMPTY, BitBoard::EMPTY],
-            |mut acc, (i, bb)| {
-                acc[i % 2] |= *bb;
-                acc
-            },
-        );
-        let occupied = all[0] | all[1];
+        let all = get_all_bitboards(&pieces);
+        let occupied = get_occupied_bitboard(&all);
         Self {
             pieces,
             all,
@@ -80,6 +90,52 @@ impl Board {
             println!();
         }
         println!("     a b c d e f g h");
+    }
+}
+
+// Creates the board from a FEN string.
+impl From<&str> for Board {
+    fn from(value: &str) -> Self {
+        let (
+            piece_placement,
+            _side_to_move,
+            _castling_ability,
+            _en_passant_target_square,
+            _half_move_clock,
+            _full_move_counter,
+        ) = fen::parse(value);
+
+        let pieces = ALL_PIECES
+            .iter()
+            .map(|piece| {
+                BitBoard::new(
+                    piece_placement
+                        .chunks(8)
+                        .map(|line| {
+                            line.iter().enumerate().fold(0, |acc, (index, s)| {
+                                if let Some(p) = s {
+                                    if p == piece {
+                                        return acc + (1u64 << index);
+                                    }
+                                }
+                                acc
+                            })
+                        })
+                        .rev()
+                        .enumerate()
+                        .fold(0, |acc, (r, b)| acc + (b << (r * 8))),
+                )
+            })
+            .collect_array()
+            .unwrap();
+
+        let all = get_all_bitboards(&pieces);
+        let occupied = get_occupied_bitboard(&all);
+        Self {
+            pieces,
+            all,
+            occupied,
+        }
     }
 }
 

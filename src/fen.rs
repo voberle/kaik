@@ -250,6 +250,12 @@ mod tests {
         let (pieces, side, castling, en_passant, half_move, full_move) = parse(fen);
 
         assert_eq!(pieces.len(), 64);
+        assert_eq!(
+            pieces,
+            pieces::parse(
+                "rnbqkbnr pppppppp ........ ........ ........ ........ PPPPPPPP RNBQKBNR",
+            )
+        );
         assert_eq!(side, Side::White);
         assert_eq!(castling.len(), 4);
         assert!(castling.contains(&Piece::WhiteKing));
@@ -267,6 +273,12 @@ mod tests {
         let (pieces, side, castling, en_passant, half_move, full_move) = parse(fen);
 
         assert_eq!(pieces.len(), 64);
+        assert_eq!(
+            pieces,
+            pieces::parse(
+                "r.bqkbnr pppppppp ..n..... ........ ....P... .....N.. PPPP.PPP RNBQKB.R",
+            )
+        );
         assert_eq!(side, Side::Black);
         assert_eq!(castling.len(), 4);
         assert!(castling.contains(&Piece::WhiteKing));
@@ -284,6 +296,7 @@ mod tests {
         let (pieces, side, castling, en_passant, half_move, full_move) = parse(fen);
 
         assert_eq!(pieces.len(), 64);
+        assert!(pieces.iter().all(|p| p.is_none()));
         assert_eq!(side, Side::White);
         assert_eq!(castling.len(), 0);
         assert_eq!(en_passant, None);

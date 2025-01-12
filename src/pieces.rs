@@ -18,6 +18,21 @@ pub enum Piece {
     BlackKing,
 }
 
+pub const ALL_PIECES: [Piece; 12] = [
+    Piece::WhitePawn,
+    Piece::BlackPawn,
+    Piece::WhiteKnight,
+    Piece::BlackKnight,
+    Piece::WhiteBishop,
+    Piece::BlackBishop,
+    Piece::WhiteRook,
+    Piece::BlackRook,
+    Piece::WhiteQueen,
+    Piece::BlackQueen,
+    Piece::WhiteKing,
+    Piece::BlackKing,
+];
+
 impl TryFrom<char> for Piece {
     type Error = &'static str;
 
