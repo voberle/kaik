@@ -5,12 +5,16 @@ use itertools::Itertools;
 use crate::squares::Square;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct BitBoard(pub u64);
+pub struct BitBoard(u64);
 
 impl BitBoard {
     pub const EMPTY: BitBoard = BitBoard(0);
 
-    pub fn is_set(self, index: u8) -> bool {
+    pub const fn new(v: u64) -> Self {
+        Self(v)
+    }
+
+    pub const fn is_set(self, index: u8) -> bool {
         self.0 & (1 << index) != 0
     }
 

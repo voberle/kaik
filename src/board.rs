@@ -2,21 +2,21 @@ use crate::bitboard::BitBoard;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Board {
-    pub white: [BitBoard; 6],
-    pub black: [BitBoard; 6],
+    white: [BitBoard; 6],
+    black: [BitBoard; 6],
 
-    pub all_white: BitBoard,
-    pub all_black: BitBoard,
-    pub all: BitBoard,
+    all_white: BitBoard,
+    all_black: BitBoard,
+    all: BitBoard,
 }
 
 impl Board {
-    pub const PAWNS: usize = 0;
-    pub const ROOKS: usize = 1;
-    pub const KNIGHTS: usize = 2;
-    pub const BISHOPS: usize = 3;
-    pub const QUEENS: usize = 4;
-    pub const KING: usize = 5;
+    const PAWNS: usize = 0;
+    const ROOKS: usize = 1;
+    const KNIGHTS: usize = 2;
+    const BISHOPS: usize = 3;
+    const QUEENS: usize = 4;
+    const KING: usize = 5;
 
     const ASCII_PIECES: &[u8; 12] = b"PNBRQKpnbrqk";
     const UNICODE_PIECES: [char; 12] = ['♙', '♘', '♗', '♖', '♕', '♔', '♟', '♞', '♝', '♜', '♛', '♚'];

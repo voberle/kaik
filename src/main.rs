@@ -28,5 +28,5 @@ fn main() {
     let b = Board::initial_board();
     b.print();
 
-    b.all.print();
+    // b.all.print();
 }
