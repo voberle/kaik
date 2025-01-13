@@ -1,6 +1,14 @@
+use std::fmt::Display;
+
 use itertools::Itertools;
 
-use crate::{bitboard::BitBoard, fen, pieces::ALL_PIECES};
+use crate::{
+    bitboard::BitBoard,
+    fen,
+    moves::Move,
+    pieces::{Piece, ALL_PIECES},
+    side::Side,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Board {
@@ -91,9 +99,29 @@ impl Board {
         }
         println!("     a b c d e f g h");
     }
+
+    // Updates the board with the specified move.
+    // Update by Move explained at <https://www.chessprogramming.org/General_Setwise_Operations#UpdateByMove>
+    pub fn update_by_move(&mut self, mv: Move) {
+        // TODO: Support for castling, promotions and en-passant captures.
+        if mv.get_promotion().is_some() {
+            unimplemented!("Update by move for promotion");
+        }
+        let from_bb: BitBoard = mv.get_from().into();
+        let to_bb: BitBoard = mv.get_to().into();
+        let from_to_bb = from_bb ^ to_bb;
+        self.pieces[mv.get_piece() as usize] ^= from_to_bb;
+        self.all[mv.get_piece().get_side() as usize] ^= from_to_bb;
+        if let Some(captured_piece) = mv.get_captured_piece() {
+            self.pieces[captured_piece as usize] ^= to_bb;
+            self.all[captured_piece.get_side() as usize] ^= to_bb;
+        }
+        self.occupied ^= from_to_bb;
+    }
 }
 
 // Creates the board from a FEN string.
+// TODO: Switch to using serialization maybe?
 impl From<&str> for Board {
     fn from(value: &str) -> Self {
         let (
@@ -132,8 +160,39 @@ impl From<&str> for Board {
     }
 }
 
+impl Display for Board {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let piece_placement = (0..8)
+            .rev()
+            .flat_map(|rank| {
+                (0..8).map(move |file| {
+                    let index = rank * 8 + file;
+                    let mut piece = None;
+                    for (piece_index, bitboard) in self.pieces.iter().enumerate() {
+                        if bitboard.is_set(index) {
+                            piece = Some(ALL_PIECES[piece_index]);
+                            break;
+                        }
+                    }
+                    piece
+                })
+            })
+            .collect_vec();
+        let castling_ability = [
+            Piece::WhiteKing,
+            Piece::WhiteQueen,
+            Piece::BlackKing,
+            Piece::BlackQueen,
+        ];
+        let fen = fen::create(&piece_placement, Side::White, &castling_ability, None, 0, 1);
+        write!(f, "{fen}")
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use crate::{pieces::Piece, squares::Square::*};
+
     use super::*;
 
     #[test]
@@ -144,5 +203,44 @@ mod tests {
 
         let via_fen: Board = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1".into();
         assert_eq!(board, via_fen);
+    }
+
+    #[test]
+    fn test_empty_board() {
+        let board = Board::empty();
+        assert_eq!(board.pieces, [BitBoard::EMPTY; 12]);
+        assert_eq!(board.all, [BitBoard::EMPTY; 2]);
+        assert_eq!(board.occupied, BitBoard::EMPTY);
+    }
+
+    #[test]
+    fn test_update_by_move() {
+        let mut board = Board::initial_board();
+        let mv = Move::new(B2, B3, None, Piece::WhitePawn, None);
+        board.update_by_move(mv);
+
+        // TODO: Would be better to not depend on FEN serialization for this.
+        assert_eq!(
+            board.to_string(),
+            "rnbqkbnr/pppppppp/8/8/8/1P6/P1PPPPPP/RNBQKBNR w KQkq - 0 1"
+        );
+    }
+
+    #[test]
+    fn test_from_fen() {
+        let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        let board: Board = fen.into();
+        assert_eq!(board.pieces.len(), 12);
+        assert_eq!(board.all.len(), 2);
+
+        let initial_board = Board::initial_board();
+        assert_eq!(board, initial_board);
+    }
+
+    #[test]
+    fn test_print_board() {
+        let board = Board::initial_board();
+        board.print();
+        // Manually verify the printed output
     }
 }

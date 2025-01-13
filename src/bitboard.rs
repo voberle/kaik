@@ -1,4 +1,7 @@
-use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, Not, Shl, ShlAssign, Shr, ShrAssign};
+use std::ops::{
+    BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Not, Shl, ShlAssign, Shr,
+    ShrAssign,
+};
 
 use itertools::Itertools;
 
@@ -114,6 +117,20 @@ impl BitOr for BitBoard {
 impl BitOrAssign for BitBoard {
     fn bitor_assign(&mut self, rhs: Self) {
         *self = Self(self.0 | rhs.0);
+    }
+}
+
+impl BitXor for BitBoard {
+    type Output = Self;
+
+    fn bitxor(self, rhs: Self) -> Self::Output {
+        Self(self.0 ^ rhs.0)
+    }
+}
+
+impl BitXorAssign for BitBoard {
+    fn bitxor_assign(&mut self, rhs: Self) {
+        *self = Self(self.0 ^ rhs.0);
     }
 }
 

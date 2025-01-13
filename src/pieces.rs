@@ -1,5 +1,7 @@
 use std::fmt;
 
+use crate::side::Side;
+
 // The order of the enum is important because it is used to index arrays.
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -91,6 +93,36 @@ impl fmt::Display for Piece {
             Piece::BlackKing => "♚",
         };
         write!(f, "{piece_str}")
+    }
+}
+
+impl Piece {
+    pub fn is_pawn(self) -> bool {
+        [Piece::WhitePawn, Piece::BlackPawn].contains(&self)
+    }
+
+    pub fn is_knight(self) -> bool {
+        [Piece::WhiteKnight, Piece::BlackKnight].contains(&self)
+    }
+
+    pub fn is_bishop(self) -> bool {
+        [Piece::WhiteBishop, Piece::BlackBishop].contains(&self)
+    }
+
+    pub fn is_rook(self) -> bool {
+        [Piece::WhiteRook, Piece::BlackRook].contains(&self)
+    }
+
+    pub fn is_queen(self) -> bool {
+        [Piece::WhiteQueen, Piece::BlackQueen].contains(&self)
+    }
+
+    pub fn is_king(self) -> bool {
+        [Piece::WhiteKing, Piece::BlackKing].contains(&self)
+    }
+
+    pub fn get_side(self) -> Side {
+        Side::new(self as usize % 2)
     }
 }
 

@@ -1,3 +1,6 @@
+//! Square enumeration.
+//! Converting the square to an integer gives us the position of the corresponding bit in the bitboard.
+
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[rustfmt::skip]
