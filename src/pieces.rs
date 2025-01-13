@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::side::Side;
+use crate::color::Color;
 
 // The order of the enum is important because it is used to index arrays.
 #[repr(u8)]
@@ -121,8 +121,8 @@ impl Piece {
         [Piece::WhiteKing, Piece::BlackKing].contains(&self)
     }
 
-    pub fn get_side(self) -> Side {
-        Side::new(self as usize % 2)
+    pub fn color(self) -> Color {
+        Color::new(self as usize % 2)
     }
 }
 

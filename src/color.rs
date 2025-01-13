@@ -1,11 +1,11 @@
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Side {
+pub enum Color {
     White,
     Black,
 }
 
-impl Side {
+impl Color {
     pub fn new(v: usize) -> Self {
         match v {
             0 => Self::White,

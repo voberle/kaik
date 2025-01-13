@@ -7,7 +7,7 @@ use crate::{
     fen,
     moves::Move,
     pieces::{Piece, ALL_PIECES},
-    side::Side,
+    color::Color,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -111,10 +111,10 @@ impl Board {
         let to_bb: BitBoard = mv.get_to().into();
         let from_to_bb = from_bb ^ to_bb;
         self.pieces[mv.get_piece() as usize] ^= from_to_bb;
-        self.all[mv.get_piece().get_side() as usize] ^= from_to_bb;
+        self.all[mv.get_piece().color() as usize] ^= from_to_bb;
         if let Some(captured_piece) = mv.get_captured_piece() {
             self.pieces[captured_piece as usize] ^= to_bb;
-            self.all[captured_piece.get_side() as usize] ^= to_bb;
+            self.all[captured_piece.color() as usize] ^= to_bb;
         }
         self.occupied ^= from_to_bb;
     }
@@ -184,7 +184,7 @@ impl Display for Board {
             Piece::BlackKing,
             Piece::BlackQueen,
         ];
-        let fen = fen::create(&piece_placement, Side::White, &castling_ability, None, 0, 1);
+        let fen = fen::create(&piece_placement, Color::White, &castling_ability, None, 0, 1);
         write!(f, "{fen}")
     }
 }

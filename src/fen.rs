@@ -4,7 +4,7 @@
 use itertools::Itertools;
 
 use crate::pieces::{Piece, PieceListBoard};
-use crate::side::Side;
+use crate::color::Color;
 use crate::squares::Square;
 
 fn create_rank(rank: &[Option<Piece>]) -> String {
@@ -33,10 +33,10 @@ fn get_piece_placement(piece_placement: &[Option<Piece>]) -> String {
     piece_placement.chunks(8).map(create_rank).join("/")
 }
 
-fn get_side_to_move(side_to_move: Side) -> &'static str {
+fn get_side_to_move(side_to_move: Color) -> &'static str {
     match side_to_move {
-        Side::White => "w",
-        Side::Black => "b",
+        Color::White => "w",
+        Color::Black => "b",
     }
 }
 
@@ -82,7 +82,7 @@ fn get_full_move_counter(full_move_counter: usize) -> String {
 
 pub fn create(
     piece_placement: &[Option<Piece>],
-    side_to_move: Side,
+    side_to_move: Color,
     castling_ability: &[Piece], // max 4, only king or queen
     en_passant_target_square: Option<Square>,
     half_move_clock: usize,
@@ -117,10 +117,10 @@ fn parse_piece_placement(s: &str) -> PieceListBoard {
     pieces
 }
 
-fn parse_side_to_move(s: &str) -> Side {
+fn parse_side_to_move(s: &str) -> Color {
     match s {
-        "w" => Side::White,
-        "b" => Side::Black,
+        "w" => Color::White,
+        "b" => Color::Black,
         _ => panic!("Invalid side to move"),
     }
 }
@@ -153,7 +153,7 @@ pub fn parse(
     fen: &str,
 ) -> (
     PieceListBoard,
-    Side,
+    Color,
     Vec<Piece>,
     Option<Square>,
     usize,
@@ -175,7 +175,7 @@ pub fn parse(
 mod tests {
     use super::*;
     use crate::pieces::{self, Piece::*};
-    use crate::side::Side;
+    use crate::color::Color;
     use crate::squares::Square;
 
     #[test]
@@ -217,7 +217,7 @@ mod tests {
             "rnbqkbnr pppppppp ........ ........ ........ ........ PPPPPPPP RNBQKBNR",
         );
         let castling_ability = [WhiteKing, WhiteQueen, BlackKing, BlackQueen];
-        let fen = create(&piece_placement, Side::White, &castling_ability, None, 0, 1);
+        let fen = create(&piece_placement, Color::White, &castling_ability, None, 0, 1);
         assert_eq!(
             fen,
             "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -232,7 +232,7 @@ mod tests {
         let castling_ability = [WhiteKing, WhiteQueen, BlackKing, BlackQueen];
         let fen = create(
             &piece_placement,
-            Side::White,
+            Color::White,
             &castling_ability,
             Some(Square::C6),
             0,
@@ -256,7 +256,7 @@ mod tests {
                 "rnbqkbnr pppppppp ........ ........ ........ ........ PPPPPPPP RNBQKBNR",
             )
         );
-        assert_eq!(side, Side::White);
+        assert_eq!(side, Color::White);
         assert_eq!(castling.len(), 4);
         assert!(castling.contains(&Piece::WhiteKing));
         assert!(castling.contains(&Piece::WhiteQueen));
@@ -279,7 +279,7 @@ mod tests {
                 "r.bqkbnr pppppppp ..n..... ........ ....P... .....N.. PPPP.PPP RNBQKB.R",
             )
         );
-        assert_eq!(side, Side::Black);
+        assert_eq!(side, Color::Black);
         assert_eq!(castling.len(), 4);
         assert!(castling.contains(&Piece::WhiteKing));
         assert!(castling.contains(&Piece::WhiteQueen));
@@ -297,7 +297,7 @@ mod tests {
 
         assert_eq!(pieces.len(), 64);
         assert!(pieces.iter().all(|p| p.is_none()));
-        assert_eq!(side, Side::White);
+        assert_eq!(side, Color::White);
         assert_eq!(castling.len(), 0);
         assert_eq!(en_passant, None);
         assert_eq!(half_move, 0);

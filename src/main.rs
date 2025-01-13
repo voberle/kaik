@@ -9,7 +9,7 @@ mod fen;
 mod movements;
 mod moves;
 mod pieces;
-mod side;
+mod color;
 mod squares;
 
 fn main() {
