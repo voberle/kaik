@@ -94,30 +94,7 @@ impl Board {
         println!("     a b c d e f g h");
     }
 
-    // Updates the board with the specified move.
-    // Update by Move explained at <https://www.chessprogramming.org/General_Setwise_Operations#UpdateByMove>
-    pub fn update_by_move(&mut self, mv: Move) {
-        // TODO: Support for castling, promotions and en-passant captures.
-        if mv.get_promotion().is_some() {
-            unimplemented!("Update by move for promotion");
-        }
-        let from_bb: BitBoard = mv.get_from().into();
-        let to_bb: BitBoard = mv.get_to().into();
-        let from_to_bb = from_bb ^ to_bb;
-        self.pieces[mv.get_piece() as usize] ^= from_to_bb;
-        self.all[mv.get_piece().color() as usize] ^= from_to_bb;
-        if let Some(captured_piece) = mv.get_captured_piece() {
-            self.pieces[captured_piece as usize] ^= to_bb;
-            self.all[captured_piece.color() as usize] ^= to_bb;
-        }
-        self.occupied ^= from_to_bb;
-    }
-}
-
-// Creates the board from a FEN string.
-// TODO: Switch to using serialization maybe?
-impl From<&str> for Board {
-    fn from(value: &str) -> Self {
+    fn from_fen(fen: &str) -> Self {
         let (
             piece_placement,
             _side_to_move,
@@ -125,7 +102,7 @@ impl From<&str> for Board {
             _en_passant_target_square,
             _half_move_clock,
             _full_move_counter,
-        ) = fen::parse(value);
+        ) = fen::parse(fen);
 
         let pieces = Piece::ALL_PIECES
             .iter()
@@ -152,10 +129,8 @@ impl From<&str> for Board {
             occupied,
         }
     }
-}
 
-impl Display for Board {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn as_fen(&self) -> String {
         let piece_placement = (0..8)
             .rev()
             .flat_map(|rank| {
@@ -178,15 +153,46 @@ impl Display for Board {
             Piece::BlackKing,
             Piece::BlackQueen,
         ];
-        let fen = fen::create(
+        fen::create(
             &piece_placement,
             Color::White,
             &castling_ability,
             None,
             0,
             1,
-        );
-        write!(f, "{fen}")
+        )
+    }
+
+    // Updates the board with the specified move.
+    // Update by Move explained at <https://www.chessprogramming.org/General_Setwise_Operations#UpdateByMove>
+    pub fn update_by_move(&mut self, mv: Move) {
+        // TODO: Support for castling, promotions and en-passant captures.
+        if mv.get_promotion().is_some() {
+            unimplemented!("Update by move for promotion");
+        }
+        let from_bb: BitBoard = mv.get_from().into();
+        let to_bb: BitBoard = mv.get_to().into();
+        let from_to_bb = from_bb ^ to_bb;
+        self.pieces[mv.get_piece() as usize] ^= from_to_bb;
+        self.all[mv.get_piece().color() as usize] ^= from_to_bb;
+        if let Some(captured_piece) = mv.get_captured_piece() {
+            self.pieces[captured_piece as usize] ^= to_bb;
+            self.all[captured_piece.color() as usize] ^= to_bb;
+        }
+        self.occupied ^= from_to_bb;
+    }
+}
+
+// Creates the board from a FEN string.
+impl From<&str> for Board {
+    fn from(value: &str) -> Self {
+        Board::from_fen(value)
+    }
+}
+
+impl Display for Board {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_fen())
     }
 }
 
