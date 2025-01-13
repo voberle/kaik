@@ -30,7 +30,7 @@ fn king_moves(king_loc: BitBoard, own_pieces: BitBoard) -> BitBoard {
 
 #[cfg(test)]
 mod tests {
-    use crate::squares::Square::*;
+    use crate::common::Square::*;
 
     use super::*;
 

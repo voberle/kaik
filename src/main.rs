@@ -4,13 +4,11 @@ use board::Board;
 
 mod bitboard;
 mod board;
+mod common;
 mod constants;
 mod fen;
 mod movements;
 mod moves;
-mod pieces;
-mod color;
-mod squares;
 
 fn main() {
     println!("Kaik Chess Engine");

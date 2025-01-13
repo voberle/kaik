@@ -1,7 +1,7 @@
 //! Move encoding.
 //! <https://www.chessprogramming.org/Encoding_Moves>
 
-use crate::{pieces::Piece, squares::Square};
+use crate::{common::Piece, common::Square};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Move {

@@ -3,9 +3,9 @@
 
 use itertools::Itertools;
 
-use crate::pieces::{Piece, PieceListBoard};
-use crate::color::Color;
-use crate::squares::Square;
+use crate::common::Color;
+use crate::common::Square;
+use crate::common::{Piece, PieceListBoard};
 
 fn create_rank(rank: &[Option<Piece>]) -> String {
     assert_eq!(rank.len(), 8);
@@ -174,9 +174,9 @@ pub fn parse(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::pieces::{self, Piece::*};
-    use crate::color::Color;
-    use crate::squares::Square;
+    use crate::common::Color;
+    use crate::common::Piece::*;
+    use crate::common::Square;
 
     #[test]
     fn test_create_rank() {
@@ -213,11 +213,18 @@ mod tests {
 
     #[test]
     fn test_create_rank_starting_position() {
-        let piece_placement = pieces::parse(
+        let piece_placement = Piece::build_list_board(
             "rnbqkbnr pppppppp ........ ........ ........ ........ PPPPPPPP RNBQKBNR",
         );
         let castling_ability = [WhiteKing, WhiteQueen, BlackKing, BlackQueen];
-        let fen = create(&piece_placement, Color::White, &castling_ability, None, 0, 1);
+        let fen = create(
+            &piece_placement,
+            Color::White,
+            &castling_ability,
+            None,
+            0,
+            1,
+        );
         assert_eq!(
             fen,
             "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -226,7 +233,7 @@ mod tests {
 
     #[test]
     fn test_create_rank_2nd_position() {
-        let piece_placement = pieces::parse(
+        let piece_placement = Piece::build_list_board(
             "rnbqkbnr pp.ppppp ........ ..p..... ....P... ........ PPPP.PPP RNBQKBNR",
         );
         let castling_ability = [WhiteKing, WhiteQueen, BlackKing, BlackQueen];
@@ -252,7 +259,7 @@ mod tests {
         assert_eq!(pieces.len(), 64);
         assert_eq!(
             pieces,
-            pieces::parse(
+            Piece::build_list_board(
                 "rnbqkbnr pppppppp ........ ........ ........ ........ PPPPPPPP RNBQKBNR",
             )
         );
@@ -275,7 +282,7 @@ mod tests {
         assert_eq!(pieces.len(), 64);
         assert_eq!(
             pieces,
-            pieces::parse(
+            Piece::build_list_board(
                 "r.bqkbnr pppppppp ..n..... ........ ....P... .....N.. PPPP.PPP RNBQKB.R",
             )
         );

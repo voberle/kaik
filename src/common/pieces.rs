@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::color::Color;
+use crate::common::Color;
 
 // The order of the enum is important because it is used to index arrays.
 #[repr(u8)]
@@ -20,20 +20,7 @@ pub enum Piece {
     BlackKing,
 }
 
-pub const ALL_PIECES: [Piece; 12] = [
-    Piece::WhitePawn,
-    Piece::BlackPawn,
-    Piece::WhiteKnight,
-    Piece::BlackKnight,
-    Piece::WhiteBishop,
-    Piece::BlackBishop,
-    Piece::WhiteRook,
-    Piece::BlackRook,
-    Piece::WhiteQueen,
-    Piece::BlackQueen,
-    Piece::WhiteKing,
-    Piece::BlackKing,
-];
+pub type PieceListBoard = Vec<Option<Piece>>;
 
 impl TryFrom<char> for Piece {
     type Error = &'static str;
@@ -97,6 +84,21 @@ impl fmt::Display for Piece {
 }
 
 impl Piece {
+    pub const ALL_PIECES: [Piece; 12] = [
+        Piece::WhitePawn,
+        Piece::BlackPawn,
+        Piece::WhiteKnight,
+        Piece::BlackKnight,
+        Piece::WhiteBishop,
+        Piece::BlackBishop,
+        Piece::WhiteRook,
+        Piece::BlackRook,
+        Piece::WhiteQueen,
+        Piece::BlackQueen,
+        Piece::WhiteKing,
+        Piece::BlackKing,
+    ];
+
     pub fn is_pawn(self) -> bool {
         [Piece::WhitePawn, Piece::BlackPawn].contains(&self)
     }
@@ -124,27 +126,25 @@ impl Piece {
     pub fn color(self) -> Color {
         Color::new(self as usize % 2)
     }
-}
 
-pub type PieceListBoard = Vec<Option<Piece>>;
-
-// Converts a string with pieces into vector of Piece. Starts with pieces on A8, A7, etc.
-// Empty squares are represented with dots.
-// The string may have line breaks, spaces etc, they are just ignored.
-pub fn parse(value: &str) -> PieceListBoard {
-    value
-        .chars()
-        .filter_map(|c| match c.try_into() {
-            Ok(p) => Some(Some(p)),
-            Err(_) => {
-                if c == '.' {
-                    Some(None)
-                } else {
-                    None
+    // Converts a string with pieces into vector of Piece. Starts with pieces on A8, A7, etc.
+    // Empty squares are represented with dots.
+    // The string may have line breaks, spaces etc, they are just ignored.
+    pub fn build_list_board(value: &str) -> PieceListBoard {
+        value
+            .chars()
+            .filter_map(|c| match c.try_into() {
+                Ok(p) => Some(Some(p)),
+                Err(_) => {
+                    if c == '.' {
+                        Some(None)
+                    } else {
+                        None
+                    }
                 }
-            }
-        })
-        .collect()
+            })
+            .collect()
+    }
 }
 
 #[cfg(test)]

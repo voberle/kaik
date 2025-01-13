@@ -5,7 +5,7 @@ use std::ops::{
 
 use itertools::Itertools;
 
-use crate::squares::Square;
+use crate::common::Square;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct BitBoard(u64);
@@ -166,7 +166,7 @@ impl ShrAssign<usize> for BitBoard {
 
 #[cfg(test)]
 mod tests {
-    use crate::squares::Square;
+    use crate::common::Square;
 
     use super::*;
 

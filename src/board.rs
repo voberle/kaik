@@ -2,13 +2,7 @@ use std::fmt::Display;
 
 use itertools::Itertools;
 
-use crate::{
-    bitboard::BitBoard,
-    fen,
-    moves::Move,
-    pieces::{Piece, ALL_PIECES},
-    color::Color,
-};
+use crate::{bitboard::BitBoard, common::Color, common::Piece, fen, moves::Move};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Board {
@@ -133,7 +127,7 @@ impl From<&str> for Board {
             _full_move_counter,
         ) = fen::parse(value);
 
-        let pieces = ALL_PIECES
+        let pieces = Piece::ALL_PIECES
             .iter()
             .map(|piece| {
                 // Get a vector of 0/1 where 1 is set if there is the same piece as 'piece' at this position.
@@ -170,7 +164,7 @@ impl Display for Board {
                     let mut piece = None;
                     for (piece_index, bitboard) in self.pieces.iter().enumerate() {
                         if bitboard.is_set(index) {
-                            piece = Some(ALL_PIECES[piece_index]);
+                            piece = Some(Piece::ALL_PIECES[piece_index]);
                             break;
                         }
                     }
@@ -184,14 +178,21 @@ impl Display for Board {
             Piece::BlackKing,
             Piece::BlackQueen,
         ];
-        let fen = fen::create(&piece_placement, Color::White, &castling_ability, None, 0, 1);
+        let fen = fen::create(
+            &piece_placement,
+            Color::White,
+            &castling_ability,
+            None,
+            0,
+            1,
+        );
         write!(f, "{fen}")
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{pieces::Piece, squares::Square::*};
+    use crate::{common::Piece, common::Square::*};
 
     use super::*;
 
