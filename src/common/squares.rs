@@ -1,6 +1,8 @@
 //! Square enumeration.
 //! Converting the square to an integer gives us the position of the corresponding bit in the bitboard.
 
+use std::fmt::Display;
+
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[rustfmt::skip]
@@ -102,6 +104,12 @@ impl Square {
 
     pub fn get_file(self) -> char {
         (self as u8 % 8 + b'a') as char
+    }
+}
+
+impl Display for Square {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}{}", self.get_file(), self.get_rank())
     }
 }
 

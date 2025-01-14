@@ -65,21 +65,8 @@ impl From<Piece> for char {
 
 impl fmt::Display for Piece {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let piece_str = match self {
-            Piece::WhitePawn => "♙",
-            Piece::BlackPawn => "♟",
-            Piece::WhiteKnight => "♘",
-            Piece::BlackKnight => "♞",
-            Piece::WhiteBishop => "♗",
-            Piece::BlackBishop => "♝",
-            Piece::WhiteRook => "♖",
-            Piece::BlackRook => "♜",
-            Piece::WhiteQueen => "♕",
-            Piece::BlackQueen => "♛",
-            Piece::WhiteKing => "♔",
-            Piece::BlackKing => "♚",
-        };
-        write!(f, "{piece_str}")
+        // write!(f, "{}", self.as_unicode())
+        write!(f, "{}", char::from(*self))
     }
 }
 
@@ -125,6 +112,23 @@ impl Piece {
 
     pub fn color(self) -> Color {
         Color::new(self as usize % 2)
+    }
+
+    pub fn as_unicode(self) -> char {
+        match self {
+            Piece::WhitePawn => '♙',
+            Piece::BlackPawn => '♟',
+            Piece::WhiteKnight => '♘',
+            Piece::BlackKnight => '♞',
+            Piece::WhiteBishop => '♗',
+            Piece::BlackBishop => '♝',
+            Piece::WhiteRook => '♖',
+            Piece::BlackRook => '♜',
+            Piece::WhiteQueen => '♕',
+            Piece::BlackQueen => '♛',
+            Piece::WhiteKing => '♔',
+            Piece::BlackKing => '♚',
+        }
     }
 
     // Converts a string with pieces into vector of Piece. Starts with pieces on A8, A7, etc.

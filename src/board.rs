@@ -75,7 +75,7 @@ impl Board {
 
     pub fn print(&self) {
         for rank in (0..8).rev() {
-            print!("  {rank} ");
+            print!("  {} ", rank + 1);
             for file in 0..8 {
                 let index = rank * 8 + file;
 
