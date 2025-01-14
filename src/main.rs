@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 use board::Board;
+use moves::Move;
 
 mod bitboard;
 mod board;
@@ -17,7 +18,12 @@ fn main() {
     let b = Board::initial_board();
     b.print();
 
-    let b: Board = "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2".into();
+    // let b: Board = "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2".into();
+    // b.print();
+    // println!("FEN: {b}");
+
+    let b: Board = "8/8/8/8/8/8/2Pp4/2K5 w - - 0 1".into();
     b.print();
-    println!("FEN: {b}");
+    let moves = b.generate_moves();
+    Move::print_list(&moves);
 }

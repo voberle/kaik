@@ -1,6 +1,6 @@
 use std::ops::{
-    BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Not, Shl, ShlAssign, Shr,
-    ShrAssign,
+    BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Neg, Not, Shl, ShlAssign, Shr,
+    ShrAssign, Sub, SubAssign,
 };
 
 use itertools::Itertools;
@@ -37,6 +37,27 @@ impl BitBoard {
         println!("     a b c d e f g h");
         println!("{:064b}", self.0);
     }
+
+    pub fn is_zero(self) -> bool {
+        self.0 == 0
+    }
+
+    // Returns the index of lowest bit in the bitboard.
+    pub fn get_index(self) -> u32 {
+        // Should be one CPU instruction.
+        self.0.trailing_zeros()
+    }
+
+    // Least Significant One
+    // <https://www.chessprogramming.org/General_Setwise_Operations#Least_Significant_One>
+    pub fn get_ls1b(self) -> Self {
+        self & -self
+    }
+
+    pub fn reset_ls1b(self) -> Self {
+        const ONE: BitBoard = BitBoard::new(1);
+        self & (self - ONE)
+    }
 }
 
 impl From<u64> for BitBoard {
@@ -63,12 +84,13 @@ impl From<&[u64]> for BitBoard {
 
 impl From<&str> for BitBoard {
     // Converts a list of 0 and 1s into a BitBoard. Starts with A8, A7, etc.
+    // Dot ('.') is synonymn with 0.
     // The string may have line breaks, spaces etc, they are just ignored.
     fn from(value: &str) -> Self {
         let filtered = value
             .chars()
             .filter_map(|c| match c {
-                '0' => Some(0u64),
+                '0' | '.' => Some(0u64),
                 '1' => Some(1u64),
                 _ => None,
             })
@@ -164,6 +186,28 @@ impl ShrAssign<usize> for BitBoard {
     }
 }
 
+impl Neg for BitBoard {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Self(self.0.wrapping_neg())
+    }
+}
+
+impl Sub for BitBoard {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self(self.0 - rhs.0)
+    }
+}
+
+impl SubAssign for BitBoard {
+    fn sub_assign(&mut self, rhs: Self) {
+        self.0 -= rhs.0;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::common::Square;
@@ -206,6 +250,59 @@ mod tests {
         assert_eq!(
             bb.0,
             0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0100_0000_0000_0000_0000
+        );
+    }
+
+    const SAMPLE_BB: &str = r"
+        . . . . . . . .
+        . . 1 . 1 . . .
+        . 1 . . . 1 . .
+        . . . . . . . .
+        . 1 . . . 1 . .
+        . . 1 . 1 . . .
+        . . . . . . . .
+        . . . . . . . .";
+
+    #[test]
+    fn test_get_index() {
+        let x: BitBoard = SAMPLE_BB.into();
+        assert_eq!(x.get_index(), 18);
+    }
+
+    #[test]
+    fn test_subtraction() {
+        let x: BitBoard = SAMPLE_BB.into();
+        let one: BitBoard = BitBoard::new(1);
+        assert_eq!(
+            x - one,
+            r"
+            . . . . . . . .
+            . . 1 . 1 . . .
+            . 1 . . . 1 . .
+            . . . . . . . .
+            . 1 . . . 1 . .
+            1 1 . . 1 . . .
+            1 1 1 1 1 1 1 1
+            1 1 1 1 1 1 1 1"
+                .into()
+        );
+    }
+
+    #[test]
+    fn test_ls1b() {
+        let x: BitBoard = SAMPLE_BB.into();
+        assert_eq!(
+            x.get_ls1b(),
+            r"
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . 1 . . . . .
+            . . . . . . . .
+            . . . . . . . ."
+                .into()
         );
     }
 }

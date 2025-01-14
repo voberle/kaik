@@ -23,6 +23,22 @@ impl From<Square> for u8 {
     }
 }
 
+impl From<u8> for Square {
+    fn from(val: u8) -> Self {
+        assert!(val < 64);
+        // The safe alternative would be to use a match, but seems a big match like this would be slower.
+        unsafe { std::mem::transmute(val) }
+    }
+}
+
+impl From<u32> for Square {
+    #[allow(clippy::cast_possible_truncation)]
+    fn from(val: u32) -> Self {
+        assert!(val < 64);
+        unsafe { std::mem::transmute(val as u8) }
+    }
+}
+
 impl TryFrom<&str> for Square {
     type Error = &'static str;
 
@@ -116,6 +132,11 @@ impl Display for Square {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_from_u8() {
+        assert_eq!(Into::<Square>::into(32u8), Square::A5);
+    }
 
     #[test]
     fn test_get_rank() {

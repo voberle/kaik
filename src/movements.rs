@@ -3,7 +3,7 @@ use crate::{
     constants::{NOT_A_FILE, NOT_H_FILE},
 };
 
-fn king_moves(king_loc: BitBoard, own_pieces: BitBoard) -> BitBoard {
+pub fn king_moves(king_loc: BitBoard, own_pieces: BitBoard) -> BitBoard {
     // See Peter Keller https://pages.cs.wisc.edu/~psilord/blog/data/chess-pages/index.html
     // NB: The code there is buggy...
     // 1 2 3    +7 +8 +9

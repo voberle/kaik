@@ -8,8 +8,5 @@ edition = "2021"
 [lints.clippy]
 pedantic = "deny"
 
-[lints.rust]
-unsafe_code = "forbid"
-
 [dependencies]
 itertools = "0.14.0"

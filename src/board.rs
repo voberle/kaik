@@ -2,7 +2,13 @@ use std::fmt::Display;
 
 use itertools::Itertools;
 
-use crate::{bitboard::BitBoard, common::Color, common::Piece, fen, moves::Move};
+use crate::{
+    bitboard::BitBoard,
+    common::{Color, Piece, Square},
+    fen,
+    movements::king_moves,
+    moves::Move,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Board {
@@ -181,6 +187,48 @@ impl Board {
         }
         self.occupied ^= from_to_bb;
     }
+
+    // fn find_attacked_piece(&self) -> Piece {
+    //     // TODO
+    //     Piece::BlackPawn
+    // }
+
+    // Generate all possible moves from this board.
+    pub fn generate_moves(&self) -> Vec<Move> {
+        // Pseudo-legal or legal ones?
+
+        let mut moves = Vec::new();
+
+        // King moves
+        let king_bb = self.pieces[Piece::WhiteKing as usize];
+        let from_square = king_bb.get_index().into();
+        // No need to loop or get the LS1B, there is only one king.
+        let mut attacks = king_moves(king_bb, self.all[Color::White as usize]);
+        // Generate moves.
+        while !attacks.is_zero() {
+            let to_bb = attacks.get_ls1b();
+            let to_square: Square = to_bb.get_index().into();
+            let captured_piece = if (self.all[Color::Black as usize] & to_bb).is_zero() {
+                None
+            } else {
+                // Some(self.find_attacked_piece())
+                Some(Piece::BlackPawn)
+            };
+
+            let mv = Move::new(
+                from_square,
+                to_square,
+                None,
+                Piece::WhiteKing,
+                captured_piece,
+            );
+            moves.push(mv);
+
+            attacks = attacks.reset_ls1b();
+        }
+
+        moves
+    }
 }
 
 // Creates the board from a FEN string.
@@ -200,7 +248,7 @@ impl Display for Board {
 mod tests {
     use fen::START_POSITION;
 
-    use crate::{common::Piece, common::Square::*};
+    use crate::{common::Piece::*, common::Square::*};
 
     use super::*;
 
@@ -225,7 +273,7 @@ mod tests {
     #[test]
     fn test_update_by_move() {
         let mut board = Board::initial_board();
-        let mv = Move::new(B2, B3, None, Piece::WhitePawn, None);
+        let mv = Move::new(B2, B3, None, WhitePawn, None);
         board.update_by_move(mv);
 
         // TODO: Would be better to not depend on FEN serialization for this.
@@ -237,8 +285,7 @@ mod tests {
 
     #[test]
     fn test_from_fen() {
-        let fen = START_POSITION;
-        let board: Board = fen.into();
+        let board: Board = START_POSITION.into();
         assert_eq!(board.pieces.len(), 12);
         assert_eq!(board.all.len(), 2);
 
@@ -251,5 +298,20 @@ mod tests {
         let board = Board::initial_board();
         board.print();
         // Manually verify the printed output
+    }
+
+    #[test]
+    fn test_generate_moves() {
+        let board: Board = "2k5/8/8/8/8/8/2Pp4/2K5 w - - 0 1".into();
+        let moves = board.generate_moves();
+        assert_eq!(
+            moves,
+            &[
+                Move::new(C1, B1, None, WhiteKing, None),
+                Move::new(C1, D1, None, WhiteKing, None),
+                Move::new(C1, B2, None, WhiteKing, None),
+                Move::new(C1, D2, None, WhiteKing, Some(BlackPawn)),
+            ]
+        );
     }
 }
