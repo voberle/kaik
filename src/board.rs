@@ -191,8 +191,7 @@ impl Board {
         if mv.is_capture() {
             // Loop over bitboards opposite color.
             for bb in &mut self.pieces {
-                if !(*bb & to_bb).is_zero() {
-                    // TODO: Improve BitBoard API for this
+                if *bb == to_bb {
                     *bb ^= to_bb;
                     self.all[color.opposite() as usize] ^= to_bb;
                     // Actually important to avoid setting it back to the other value.
@@ -226,7 +225,7 @@ impl Board {
         while !attacks.is_zero() {
             let to_bb = attacks.get_ls1b();
             let to_square: Square = to_bb.get_index().into();
-            let is_capture = !(self.all[self.opposite_side() as usize] & to_bb).is_zero();
+            let is_capture = self.all[self.opposite_side() as usize].contains(to_bb);
 
             let mv = Move::new(from_square, to_square, None, king, is_capture);
             moves.push(mv);

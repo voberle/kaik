@@ -42,6 +42,10 @@ impl BitBoard {
         self.0 == 0
     }
 
+    pub fn contains(self, other: BitBoard) -> bool {
+        self.0 & other.0 != 0
+    }
+
     // Returns the index of lowest bit in the bitboard.
     pub fn get_index(self) -> u32 {
         // Should be one CPU instruction.
