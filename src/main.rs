@@ -22,7 +22,8 @@ fn main() {
     // b.print();
     // println!("FEN: {b}");
 
-    let b: Board = "8/8/8/8/8/8/2Pp4/2K5 w - - 0 1".into();
+    let _b: Board = "2k5/8/8/8/8/8/2Pp4/2K5 w - - 0 1".into();
+    let b: Board = "2k5/2Pp4/8/8/8/8/8/2K5 b - - 0 1".into();
     b.print();
     let moves = b.generate_moves();
     Move::print_list(&moves);

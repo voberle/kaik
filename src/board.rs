@@ -177,6 +177,14 @@ impl Board {
         )
     }
 
+    pub fn side_to_move(&self) -> Color {
+        self.side_to_move
+    }
+
+    pub fn opposite_side(&self) -> Color {
+        self.side_to_move.opposite()
+    }
+
     fn toggle_side(&mut self) {
         self.side_to_move = self.side_to_move.opposite();
     }
@@ -221,17 +229,22 @@ impl Board {
         let mut moves = Vec::new();
 
         // King moves
-        let king_bb = self.pieces[Piece::WhiteKing as usize];
+        let king = if self.side_to_move() == Color::White {
+            Piece::WhiteKing
+        } else {
+            Piece::BlackKing
+        };
+        let king_bb = self.pieces[king as usize];
         let from_square = king_bb.get_index().into();
         // No need to loop or get the LS1B, there is only one king.
-        let mut attacks = king_moves(king_bb, self.all[Color::White as usize]);
+        let mut attacks = king_moves(king_bb, self.all[self.side_to_move() as usize]);
         // Generate moves.
         while !attacks.is_zero() {
             let to_bb = attacks.get_ls1b();
             let to_square: Square = to_bb.get_index().into();
-            let is_capture = !(self.all[Color::Black as usize] & to_bb).is_zero();
+            let is_capture = !(self.all[self.opposite_side() as usize] & to_bb).is_zero();
 
-            let mv = Move::new(from_square, to_square, None, Piece::WhiteKing, is_capture);
+            let mv = Move::new(from_square, to_square, None, king, is_capture);
             moves.push(mv);
 
             attacks = attacks.reset_ls1b();
@@ -321,6 +334,18 @@ mod tests {
                 Move::quiet(C1, D1, WhiteKing),
                 Move::quiet(C1, B2, WhiteKing),
                 Move::capture(C1, D2, WhiteKing),
+            ]
+        );
+
+        let board: Board = "2k5/2Pp4/8/8/8/8/8/2K5 b - - 0 1".into();
+        let moves = board.generate_moves();
+        assert_eq!(
+            moves,
+            &[
+                Move::quiet(C8, B7, BlackKing),
+                Move::capture(C8, C7, BlackKing),
+                Move::quiet(C8, B8, BlackKing),
+                Move::quiet(C8, D8, BlackKing),
             ]
         );
     }
