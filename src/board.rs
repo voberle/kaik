@@ -230,28 +230,34 @@ impl Board {
 
         let mut moves = Vec::new();
 
-        // King moves
-        let king = if self.side_to_move() == Color::White {
-            Piece::WhiteKing
+        for (pieces, move_fn) in if self.side_to_move() == Color::White {
+            [Piece::WhiteKing, Piece::WhiteKnight]
         } else {
-            Piece::BlackKing
-        };
-        let king_bb = self.pieces[king as usize];
-        let from_square = king_bb.get_index().into();
-        // No need to loop or get the LS1B, there is only one king.
-        let mut attacks = movements::king_moves(king_bb, self.all[self.side_to_move() as usize]);
-        // Generate moves.
-        while !attacks.is_zero() {
-            let to_bb = attacks.get_ls1b();
-            let to_square: Square = to_bb.get_index().into();
-            let is_capture = self.all[self.opposite_side() as usize].contains(to_bb);
-
-            let mv = Move::new(from_square, to_square, None, king, is_capture);
-            moves.push(mv);
-
-            attacks = attacks.reset_ls1b();
+            [Piece::BlackKing, Piece::BlackKnight]
         }
+        .into_iter()
+        .zip([movements::king_moves, movements::knight_moves])
+        {
+            let mut pieces_bb = self.pieces[pieces as usize];
+            while !pieces_bb.is_zero() {
+                let from_bb = pieces_bb.get_ls1b();
+                let from_square = from_bb.get_index().into();
+                let mut attacks = move_fn(from_bb, self.all[self.side_to_move() as usize]);
+                // Generate moves.
+                while !attacks.is_zero() {
+                    let to_bb = attacks.get_ls1b();
+                    let to_square: Square = to_bb.get_index().into();
+                    let is_capture = self.all[self.opposite_side() as usize].contains(to_bb);
 
+                    let mv = Move::new(from_square, to_square, None, pieces, is_capture);
+                    moves.push(mv);
+
+                    attacks = attacks.reset_ls1b();
+                }
+
+                pieces_bb = pieces_bb.reset_ls1b();
+            }
+        }
         moves
     }
 }
@@ -348,6 +354,28 @@ mod tests {
                 Move::capture(C8, C7, BlackKing),
                 Move::quiet(C8, B8, BlackKing),
                 Move::quiet(C8, D8, BlackKing),
+            ]
+        );
+
+        let board: Board = "8/8/6p1/5N2/8/1N6/8/8 w - - 0 1".into();
+        let moves = board.generate_moves();
+        assert_eq!(
+            moves,
+            &[
+                Move::quiet(B3, A1, WhiteKnight),
+                Move::quiet(B3, C1, WhiteKnight),
+                Move::quiet(B3, D2, WhiteKnight),
+                Move::quiet(B3, D4, WhiteKnight),
+                Move::quiet(B3, A5, WhiteKnight),
+                Move::quiet(B3, C5, WhiteKnight),
+                Move::quiet(F5, E3, WhiteKnight),
+                Move::quiet(F5, G3, WhiteKnight),
+                Move::quiet(F5, D4, WhiteKnight),
+                Move::quiet(F5, H4, WhiteKnight),
+                Move::quiet(F5, D6, WhiteKnight),
+                Move::quiet(F5, H6, WhiteKnight),
+                Move::quiet(F5, E7, WhiteKnight),
+                Move::quiet(F5, G7, WhiteKnight),
             ]
         );
     }
