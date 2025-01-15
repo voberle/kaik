@@ -69,10 +69,8 @@ impl Move {
             println!("{mv}");
         }
     }
-}
 
-impl Display for Move {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt_as_pure(self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // Pure coordinate notation
         // <https://www.chessprogramming.org/Algebraic_Chess_Notation#Pure_coordinate_notation>
         let promotion = match self.get_promotion() {
@@ -84,5 +82,32 @@ impl Display for Move {
             _ => panic!("Invalid promotion value"),
         };
         write!(f, "{}{}{}", self.get_from(), self.get_to(), promotion)
+    }
+
+    fn fmt_as_lan(self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // Long Algebraic Notation
+        // <https://www.chessprogramming.org/Algebraic_Chess_Notation#Long_Algebraic_Notation_.28LAN.29>
+        let from = self.get_from().to_string().to_uppercase();
+        let to = self.get_to().to_string().to_uppercase();
+        let separator = if self.is_capture { 'x' } else { '-' };
+        if self.piece.is_pawn() {
+            let promotion = match self.get_promotion() {
+                Some(Piece::WhiteQueen | Piece::BlackQueen) => "Q",
+                Some(Piece::WhiteRook | Piece::BlackRook) => "R",
+                Some(Piece::WhiteBishop | Piece::BlackBishop) => "B",
+                Some(Piece::WhiteKnight | Piece::BlackKnight) => "N",
+                None => "",
+                _ => panic!("Invalid promotion value"),
+            };
+            write!(f, "{from}{separator}{to}{promotion}")
+        } else {
+            write!(f, "{}{from}{separator}{to}", self.get_piece())
+        }
+    }
+}
+
+impl Display for Move {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.fmt_as_lan(f)
     }
 }
