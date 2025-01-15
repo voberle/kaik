@@ -28,6 +28,23 @@ pub const BLACK_QUEENS: BitBoard =
 pub const BLACK_KING: BitBoard =
     BitBoard::new(0b0001000000000000000000000000000000000000000000000000000000000000);
 
+// Same order as in pieces.rs
+pub const INITIAL_BOARD: [BitBoard; 12] = [
+    WHITE_PAWNS,
+    BLACK_PAWNS,
+    WHITE_KNIGHTS,
+    BLACK_KNIGHTS,
+    WHITE_BISHOPS,
+    BLACK_BISHOPS,
+    WHITE_ROOKS,
+    BLACK_ROOKS,
+    WHITE_QUEENS,
+    BLACK_QUEENS,
+    WHITE_KING,
+    BLACK_KING,
+];
+
+// Clipping bit boards. For example the A file is:
 //   8  0 1 1 1 1 1 1 1
 //   7  0 1 1 1 1 1 1 1
 //   6  0 1 1 1 1 1 1 1
@@ -38,8 +55,9 @@ pub const BLACK_KING: BitBoard =
 //   1  0 1 1 1 1 1 1 1
 //      a b c d e f g h
 pub const NOT_A_FILE: BitBoard = BitBoard::new(18374403900871474942);
-
 pub const NOT_H_FILE: BitBoard = BitBoard::new(9187201950435737471);
+pub const NOT_HG_FILE: BitBoard = BitBoard::new(4557430888798830399);
+pub const NOT_AB_FILE: BitBoard = BitBoard::new(18229723555195321596);
 
 #[cfg(test)]
 mod tests {

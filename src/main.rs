@@ -6,9 +6,7 @@ use moves::Move;
 mod bitboard;
 mod board;
 mod common;
-mod constants;
 mod fen;
-mod movements;
 mod moves;
 
 fn main() {

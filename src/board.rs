@@ -3,10 +3,9 @@ use std::fmt::Display;
 use itertools::Itertools;
 
 use crate::{
-    bitboard::BitBoard,
+    bitboard::{movements, BitBoard, INITIAL_BOARD},
     common::{Color, Piece, Square},
     fen,
-    movements::king_moves,
     moves::Move,
 };
 
@@ -50,22 +49,7 @@ impl Board {
 
     #[allow(clippy::wildcard_imports)]
     pub fn initial_board() -> Self {
-        use crate::constants::*;
-        // Same order as in pieces.rs
-        let pieces = [
-            WHITE_PAWNS,
-            BLACK_PAWNS,
-            WHITE_KNIGHTS,
-            BLACK_KNIGHTS,
-            WHITE_BISHOPS,
-            BLACK_BISHOPS,
-            WHITE_ROOKS,
-            BLACK_ROOKS,
-            WHITE_QUEENS,
-            BLACK_QUEENS,
-            WHITE_KING,
-            BLACK_KING,
-        ];
+        let pieces = INITIAL_BOARD;
         let all = get_all_bitboards(&pieces);
         let occupied = get_occupied_bitboard(&all);
         Self {
@@ -237,7 +221,7 @@ impl Board {
         let king_bb = self.pieces[king as usize];
         let from_square = king_bb.get_index().into();
         // No need to loop or get the LS1B, there is only one king.
-        let mut attacks = king_moves(king_bb, self.all[self.side_to_move() as usize]);
+        let mut attacks = movements::king_moves(king_bb, self.all[self.side_to_move() as usize]);
         // Generate moves.
         while !attacks.is_zero() {
             let to_bb = attacks.get_ls1b();
