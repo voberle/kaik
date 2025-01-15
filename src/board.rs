@@ -17,9 +17,7 @@ pub struct Board {
     all: [BitBoard; 2],
     occupied: BitBoard,
     // Should we have empty as well?
-
-    // Side to move
-    // side: usize,
+    side_to_move: Color,
     // En passant square
     // en_passant: Square,
     // Castle
@@ -41,14 +39,12 @@ fn get_occupied_bitboard(all: &[BitBoard]) -> BitBoard {
 }
 
 impl Board {
-    const ASCII_PIECES: &[u8; 12] = b"PpNnBbRrQqKk";
-    const UNICODE_PIECES: [char; 12] = ['♙', '♟', '♘', '♞', '♗', '♝', '♖', '♜', '♕', '♛', '♔', '♚'];
-
     pub fn empty() -> Self {
         Self {
             pieces: [BitBoard::EMPTY; 12],
             all: [BitBoard::EMPTY; 2],
             occupied: BitBoard::EMPTY,
+            side_to_move: Color::White,
         }
     }
 
@@ -76,10 +72,14 @@ impl Board {
             pieces,
             all,
             occupied,
+            side_to_move: Color::White,
         }
     }
 
     pub fn print(&self) {
+        const ASCII_PIECES: &[u8; 12] = b"PpNnBbRrQqKk";
+        const UNICODE_PIECES: [char; 12] =
+            ['♙', '♟', '♘', '♞', '♗', '♝', '♖', '♜', '♕', '♛', '♔', '♚'];
         for rank in (0..8).rev() {
             print!("  {} ", rank + 1);
             for file in 0..8 {
@@ -88,8 +88,8 @@ impl Board {
                 let mut piece_char = '.';
                 for (piece, bitboard) in self.pieces.iter().enumerate() {
                     if bitboard.is_set(index) {
-                        piece_char = Self::UNICODE_PIECES[piece];
-                        // piece_char = Self::ASCII_PIECES[piece] as char;
+                        piece_char = UNICODE_PIECES[piece];
+                        // piece_char = ASCII_PIECES[piece] as char;
                         break;
                     }
                 }
@@ -97,13 +97,20 @@ impl Board {
             }
             println!();
         }
-        println!("     a b c d e f g h");
+        println!(
+            " {}  a b c d e f g h",
+            if self.side_to_move == Color::White {
+                "=>"
+            } else {
+                "  "
+            }
+        );
     }
 
     fn from_fen(fen: &str) -> Self {
         let (
             piece_placement,
-            _side_to_move,
+            side_to_move,
             _castling_ability,
             _en_passant_target_square,
             _half_move_clock,
@@ -133,6 +140,7 @@ impl Board {
             pieces,
             all,
             occupied,
+            side_to_move,
         }
     }
 
@@ -161,12 +169,16 @@ impl Board {
         ];
         fen::create(
             &piece_placement,
-            Color::White,
+            self.side_to_move,
             &castling_ability,
             None,
             0,
             1,
         )
+    }
+
+    fn toggle_side(&mut self) {
+        self.side_to_move = self.side_to_move.opposite();
     }
 
     // Updates the board with the specified move.
@@ -199,6 +211,7 @@ impl Board {
         }
 
         self.occupied ^= from_to_bb;
+        self.toggle_side();
     }
 
     // Generate all possible moves from this board.
@@ -254,9 +267,8 @@ mod tests {
         let board = Board::initial_board();
         assert_eq!(board.pieces.len(), 12);
         assert_eq!(board.all.len(), 2);
-
-        let via_fen: Board = START_POSITION.into();
-        assert_eq!(board, via_fen);
+        assert_eq!(board, START_POSITION.into());
+        assert_eq!(board.side_to_move, Color::White);
     }
 
     #[test]
@@ -265,6 +277,7 @@ mod tests {
         assert_eq!(board.pieces, [BitBoard::EMPTY; 12]);
         assert_eq!(board.all, [BitBoard::EMPTY; 2]);
         assert_eq!(board.occupied, BitBoard::EMPTY);
+        assert_eq!(board.side_to_move, Color::White);
     }
 
     #[test]
@@ -272,9 +285,8 @@ mod tests {
         let board: Board = START_POSITION.into();
         assert_eq!(board.pieces.len(), 12);
         assert_eq!(board.all.len(), 2);
-
-        let initial_board = Board::initial_board();
-        assert_eq!(board, initial_board);
+        assert_eq!(board.side_to_move, Color::White);
+        assert_eq!(board, Board::initial_board());
     }
 
     #[test]
@@ -286,7 +298,7 @@ mod tests {
         // TODO: Would be better to not depend on FEN serialization for this.
         assert_eq!(
             board.to_string(),
-            "rnbqkbnr/pppppppp/8/8/8/1P6/P1PPPPPP/RNBQKBNR w KQkq - 0 1"
+            "rnbqkbnr/pppppppp/8/8/8/1P6/P1PPPPPP/RNBQKBNR b KQkq - 0 1"
         );
     }
 
@@ -295,7 +307,7 @@ mod tests {
         let mut board: Board = "2k5/8/8/8/8/8/2Pp4/2K5 w - - 0 1".into();
         let mv = Move::capture(C1, D2, WhiteKing);
         board.update_by_move(mv);
-        assert_eq!(board.to_string(), "2k5/8/8/8/8/8/2PK4/8 w KQkq - 0 1");
+        assert_eq!(board.to_string(), "2k5/8/8/8/8/8/2PK4/8 b KQkq - 0 1");
     }
 
     #[test]
