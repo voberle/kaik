@@ -271,7 +271,7 @@ mod tests {
     }
 
     #[test]
-    fn test_update_by_move() {
+    fn test_update_by_move_quiet() {
         let mut board = Board::initial_board();
         let mv = Move::new(B2, B3, None, WhitePawn, None);
         board.update_by_move(mv);
@@ -281,6 +281,14 @@ mod tests {
             board.to_string(),
             "rnbqkbnr/pppppppp/8/8/8/1P6/P1PPPPPP/RNBQKBNR w KQkq - 0 1"
         );
+    }
+
+    #[test]
+    fn test_update_by_move_capture() {
+        let mut board: Board = "2k5/8/8/8/8/8/2Pp4/2K5 w - - 0 1".into();
+        let mv = Move::new(C1, D2, None, WhiteKing, Some(BlackPawn));
+        board.update_by_move(mv);
+        assert_eq!(board.to_string(), "2k5/8/8/8/8/8/2PK4/8 w KQkq - 0 1");
     }
 
     #[test]
