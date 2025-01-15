@@ -110,7 +110,7 @@ impl Piece {
         [Piece::WhiteKing, Piece::BlackKing].contains(&self)
     }
 
-    pub fn color(self) -> Color {
+    pub fn get_color(self) -> Color {
         Color::new(self as usize % 2)
     }
 

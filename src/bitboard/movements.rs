@@ -1,7 +1,7 @@
 use crate::bitboard::BitBoard;
 
 impl BitBoard {
-    pub fn get_king_attacks(self, own_pieces: BitBoard) -> BitBoard {
+    pub fn get_king_moves(self, own_pieces: BitBoard) -> BitBoard {
         // See Peter Keller https://pages.cs.wisc.edu/~psilord/blog/data/chess-pages/index.html
         // NB: The code there is buggy...
         // 1 2 3    +7 +8 +9
@@ -27,7 +27,7 @@ impl BitBoard {
         moves & !own_pieces
     }
 
-    pub fn get_knight_attacks(self, own_pieces: BitBoard) -> BitBoard {
+    pub fn get_knight_moves(self, own_pieces: BitBoard) -> BitBoard {
         //  2 3
         // 1   3
         //   N
@@ -52,6 +52,38 @@ impl BitBoard {
 
         moves & !own_pieces
     }
+
+    pub fn get_white_pawn_moves(
+        self,
+        all_pieces: BitBoard,
+        all_black_pieces: BitBoard,
+    ) -> BitBoard {
+        // Pawns move in different ways for each color, so we need to seperate functions to
+        // deal with the change in shifting and the opponents color.
+
+        // Check the single space in front of the white pawn.
+        let white_pawn_one_step = (self << 8) & !all_pieces;
+
+        // For all moves that came from rank 2 (home row) and passed the above filter,
+        // thereby being on rank 3, check and see if I can move forward one more.
+        let white_pawn_two_steps =
+            ((white_pawn_one_step & BitBoard::MASK_RANK_3) << 8) & !all_pieces;
+
+        // The union of the movements dictate the possible moves forward available.
+        let white_pawn_valid_moves = white_pawn_one_step | white_pawn_two_steps;
+
+        // Pawn attacks:
+        // Left side of the pawn, minding the underflow File A.
+        let white_pawn_left_attack = (self & BitBoard::NOT_A_FILE) << 7;
+        // Right side
+        let white_pawn_right_attack = (self & BitBoard::NOT_H_FILE) << 9;
+        let white_pawn_attacks = white_pawn_left_attack | white_pawn_right_attack;
+
+        // Is there something to attack?
+        let white_pawn_valid_attacks = white_pawn_attacks & all_black_pieces;
+
+        white_pawn_valid_moves | white_pawn_valid_attacks
+    }
 }
 
 #[cfg(test)]
@@ -63,7 +95,7 @@ mod tests {
     #[test]
     fn test_king_moves_empty_board() {
         let king: BitBoard = E1.into();
-        let moves = king.get_king_attacks(BitBoard::EMPTY);
+        let moves = king.get_king_moves(BitBoard::EMPTY);
         assert_eq!(
             moves,
             r"
@@ -79,7 +111,7 @@ mod tests {
         );
 
         let king: BitBoard = H4.into();
-        let moves = king.get_king_attacks(BitBoard::EMPTY);
+        let moves = king.get_king_moves(BitBoard::EMPTY);
         assert_eq!(
             moves,
             r"
@@ -95,7 +127,7 @@ mod tests {
         );
 
         let king: BitBoard = A8.into();
-        let moves = king.get_king_attacks(BitBoard::EMPTY);
+        let moves = king.get_king_moves(BitBoard::EMPTY);
         assert_eq!(
             moves,
             r"
@@ -115,7 +147,7 @@ mod tests {
     fn test_king_moves_not_empty_board() {
         let king: BitBoard = E1.into();
         let own_pieces: BitBoard = Into::<BitBoard>::into(D2) | F1.into();
-        let moves = king.get_king_attacks(own_pieces);
+        let moves = king.get_king_moves(own_pieces);
         assert_eq!(
             moves,
             r"
@@ -135,7 +167,7 @@ mod tests {
     fn test_knight_moves() {
         let knight: BitBoard = B4.into();
         let own_pieces: BitBoard = Into::<BitBoard>::into(D4) | A2.into() | D1.into();
-        let moves = knight.get_knight_attacks(own_pieces);
+        let moves = knight.get_knight_moves(own_pieces);
         assert_eq!(
             moves,
             r"
@@ -146,6 +178,54 @@ mod tests {
             0 0 0 0 0 0 0 0
             0 0 0 1 0 0 0 0
             0 0 1 0 0 0 0 0
+            0 0 0 0 0 0 0 0"
+                .into()
+        );
+    }
+
+    #[test]
+    fn test_white_pawn_moves() {
+        let pawns: BitBoard = r"
+            0 0 0 0 0 0 0 0
+            0 0 0 0 0 0 0 0
+            0 0 0 0 0 0 0 0
+            0 0 0 0 0 0 0 0
+            0 0 0 0 0 0 0 0
+            0 0 0 0 0 0 1 0
+            1 1 1 1 1 1 1 1
+            0 0 0 0 0 0 0 0"
+            .into();
+        let all_pieces: BitBoard = r"
+            0 0 0 0 0 0 0 0
+            0 0 0 0 0 0 0 0
+            0 0 0 0 0 0 0 0
+            0 0 0 0 0 0 0 0
+            0 0 0 0 1 0 0 0
+            1 0 1 1 0 0 1 0
+            1 1 1 1 1 1 1 1
+            0 0 0 0 0 0 0 0"
+            .into();
+        let all_black_pieces: BitBoard = r"
+            0 0 0 0 0 0 0 0
+            0 0 0 0 0 0 0 0
+            0 0 0 0 0 0 0 0
+            0 0 0 0 0 0 0 0
+            0 0 0 0 0 0 0 0
+            1 0 1 0 0 0 0 0
+            0 0 0 0 0 0 0 0
+            0 0 0 0 0 0 0 0"
+            .into();
+        let moves = pawns.get_white_pawn_moves(all_pieces, all_black_pieces);
+        assert_eq!(
+            moves,
+            r"
+            0 0 0 0 0 0 0 0
+            0 0 0 0 0 0 0 0
+            0 0 0 0 0 0 0 0
+            0 0 0 0 0 0 0 0
+            0 1 0 0 0 1 1 1
+            1 1 1 0 1 1 0 1
+            0 0 0 0 0 0 0 0
             0 0 0 0 0 0 0 0"
                 .into()
         );

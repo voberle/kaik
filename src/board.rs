@@ -199,7 +199,7 @@ impl Board {
         if mv.get_promotion().is_some() {
             unimplemented!("Update by move for promotion");
         }
-        let color = mv.get_piece().color();
+        let color = mv.get_piece().get_color();
         let from_bb: BitBoard = mv.get_from().into();
         let to_bb: BitBoard = mv.get_to().into();
         let from_to_bb = from_bb ^ to_bb;
@@ -225,40 +225,58 @@ impl Board {
     }
 
     // Generate all possible moves from this board.
-    pub fn generate_moves(&self) -> Vec<Move> {
+    pub fn generate_moves_for(&self, pieces: &[Piece]) -> Vec<Move> {
         // Pseudo-legal or legal ones?
 
         let mut moves = Vec::new();
 
-        for (pieces, move_fn) in if self.side_to_move() == Color::White {
-            [Piece::WhiteKing, Piece::WhiteKnight]
-        } else {
-            [Piece::BlackKing, Piece::BlackKnight]
-        }
-        .into_iter()
-        .zip([BitBoard::get_king_attacks, BitBoard::get_knight_attacks])
+        for &moving_pieces in pieces
+            .iter()
+            .filter(|p| self.side_to_move() == p.get_color())
         {
-            let mut pieces_bb = self.pieces[pieces as usize];
+            let own_bb = self.all[self.side_to_move() as usize];
+            let opposite_bb = self.all[self.opposite_side() as usize];
+
+            let mut pieces_bb = self.pieces[moving_pieces as usize];
             while !pieces_bb.is_zero() {
                 let from_bb = pieces_bb.get_ls1b();
                 let from_square = from_bb.get_index().into();
-                let mut attacks = move_fn(from_bb, self.all[self.side_to_move() as usize]);
+                let mut moves_bb = match moving_pieces {
+                    Piece::WhiteKing | Piece::BlackKing => from_bb.get_king_moves(own_bb),
+                    Piece::WhiteKnight | Piece::BlackKnight => from_bb.get_knight_moves(own_bb),
+                    Piece::WhitePawn => from_bb.get_white_pawn_moves(self.occupied, opposite_bb),
+                    Piece::BlackPawn => todo!(),
+                    Piece::WhiteBishop | Piece::BlackBishop => todo!(),
+                    Piece::WhiteRook | Piece::BlackRook => todo!(),
+                    Piece::WhiteQueen | Piece::BlackQueen => todo!(),
+                };
                 // Generate moves.
-                while !attacks.is_zero() {
-                    let to_bb = attacks.get_ls1b();
+                while !moves_bb.is_zero() {
+                    let to_bb = moves_bb.get_ls1b();
                     let to_square: Square = to_bb.get_index().into();
-                    let is_capture = self.all[self.opposite_side() as usize].contains(to_bb);
+                    let is_capture = opposite_bb.contains(to_bb);
 
-                    let mv = Move::new(from_square, to_square, None, pieces, is_capture);
+                    let mv = Move::new(from_square, to_square, None, moving_pieces, is_capture);
                     moves.push(mv);
 
-                    attacks = attacks.reset_ls1b();
+                    moves_bb = moves_bb.reset_ls1b();
                 }
 
                 pieces_bb = pieces_bb.reset_ls1b();
             }
         }
         moves
+    }
+
+    pub fn generate_moves(&self) -> Vec<Move> {
+        // self.generate_moves_for(&Piece::ALL_PIECES)
+        self.generate_moves_for(&[
+            Piece::WhiteKing,
+            Piece::WhiteKnight,
+            Piece::WhitePawn,
+            Piece::BlackKing,
+            Piece::BlackKnight,
+        ])
     }
 }
 
@@ -334,7 +352,7 @@ mod tests {
     #[test]
     fn test_generate_moves() {
         let board: Board = "2k5/8/8/8/8/8/2Pp4/2K5 w - - 0 1".into();
-        let moves = board.generate_moves();
+        let moves = board.generate_moves_for(&[WhiteKing]);
         assert_eq!(
             moves,
             &[
@@ -346,7 +364,7 @@ mod tests {
         );
 
         let board: Board = "2k5/2Pp4/8/8/8/8/8/2K5 b - - 0 1".into();
-        let moves = board.generate_moves();
+        let moves = board.generate_moves_for(&[BlackKing]);
         assert_eq!(
             moves,
             &[
@@ -358,7 +376,7 @@ mod tests {
         );
 
         let board: Board = "8/8/6p1/5N2/8/1N6/8/8 w - - 0 1".into();
-        let moves = board.generate_moves();
+        let moves = board.generate_moves_for(&[WhiteKnight]);
         assert_eq!(
             moves,
             &[
@@ -376,6 +394,25 @@ mod tests {
                 Move::quiet(F5, H6, WhiteKnight),
                 Move::quiet(F5, E7, WhiteKnight),
                 Move::quiet(F5, G7, WhiteKnight),
+            ]
+        );
+
+        let board: Board = "8/8/8/8/4N3/n1pB2P1/PPPPPPPP/8 w - - 0 1".into();
+        let moves = board.generate_moves_for(&[WhitePawn]);
+        assert_eq!(
+            moves,
+            &[
+                Move::capture(B2, A3, WhitePawn),
+                Move::quiet(B2, B3, WhitePawn),
+                Move::capture(B2, C3, WhitePawn),
+                Move::quiet(B2, B4, WhitePawn),
+                Move::capture(D2, C3, WhitePawn),
+                Move::quiet(E2, E3, WhitePawn),
+                Move::quiet(F2, F3, WhitePawn),
+                Move::quiet(F2, F4, WhitePawn),
+                Move::quiet(H2, H3, WhitePawn),
+                Move::quiet(H2, H4, WhitePawn),
+                Move::quiet(G3, G4, WhitePawn),
             ]
         );
     }

@@ -61,6 +61,7 @@ impl BitBoard {
     pub const NOT_H_FILE: BitBoard = BitBoard::new(9187201950435737471);
     pub const NOT_HG_FILE: BitBoard = BitBoard::new(4557430888798830399);
     pub const NOT_AB_FILE: BitBoard = BitBoard::new(18229723555195321596);
+    pub const MASK_RANK_3: BitBoard = BitBoard::new(16711680);
 }
 
 #[cfg(test)]
@@ -68,29 +69,45 @@ mod tests {
     use crate::bitboard::BitBoard;
 
     #[test]
-    fn test_clear_file() {
+    fn test_constants() {
         assert_eq!(
             BitBoard::NOT_A_FILE,
             r"0 1 1 1 1 1 1 1
-            0 1 1 1 1 1 1 1
-            0 1 1 1 1 1 1 1
-            0 1 1 1 1 1 1 1
-            0 1 1 1 1 1 1 1
-            0 1 1 1 1 1 1 1
-            0 1 1 1 1 1 1 1
-            0 1 1 1 1 1 1 1"
+              0 1 1 1 1 1 1 1
+              0 1 1 1 1 1 1 1
+              0 1 1 1 1 1 1 1
+              0 1 1 1 1 1 1 1
+              0 1 1 1 1 1 1 1
+              0 1 1 1 1 1 1 1
+              0 1 1 1 1 1 1 1"
                 .into()
         );
         assert_eq!(
             BitBoard::NOT_H_FILE,
             r"1 1 1 1 1 1 1 0
-            1 1 1 1 1 1 1 0
-            1 1 1 1 1 1 1 0
-            1 1 1 1 1 1 1 0
-            1 1 1 1 1 1 1 0
-            1 1 1 1 1 1 1 0
-            1 1 1 1 1 1 1 0
-            1 1 1 1 1 1 1 0"
+              1 1 1 1 1 1 1 0
+              1 1 1 1 1 1 1 0
+              1 1 1 1 1 1 1 0
+              1 1 1 1 1 1 1 0
+              1 1 1 1 1 1 1 0
+              1 1 1 1 1 1 1 0
+              1 1 1 1 1 1 1 0"
+                .into()
+        );
+    }
+
+    #[test]
+    fn test_clipping_bitboards() {
+        assert_eq!(
+            BitBoard::MASK_RANK_3,
+            r"0 0 0 0 0 0 0 0
+              0 0 0 0 0 0 0 0
+              0 0 0 0 0 0 0 0
+              0 0 0 0 0 0 0 0
+              0 0 0 0 0 0 0 0
+              1 1 1 1 1 1 1 1
+              0 0 0 0 0 0 0 0
+              0 0 0 0 0 0 0 0"
                 .into()
         );
     }
