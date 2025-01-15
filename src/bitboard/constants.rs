@@ -62,6 +62,7 @@ impl BitBoard {
     pub const NOT_HG_FILE: BitBoard = BitBoard::new(4557430888798830399);
     pub const NOT_AB_FILE: BitBoard = BitBoard::new(18229723555195321596);
     pub const MASK_RANK_3: BitBoard = BitBoard::new(16711680);
+    pub const MASK_RANK_6: BitBoard = BitBoard::new(280375465082880);
 }
 
 #[cfg(test)]

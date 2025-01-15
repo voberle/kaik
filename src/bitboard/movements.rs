@@ -56,33 +56,50 @@ impl BitBoard {
     pub fn get_white_pawn_moves(
         self,
         all_pieces: BitBoard,
-        all_black_pieces: BitBoard,
+        all_other_pieces: BitBoard,
     ) -> BitBoard {
         // Pawns move in different ways for each color, so we need to seperate functions to
         // deal with the change in shifting and the opponents color.
 
         // Check the single space in front of the white pawn.
-        let white_pawn_one_step = (self << 8) & !all_pieces;
+        let pawn_one_step = (self << 8) & !all_pieces;
 
         // For all moves that came from rank 2 (home row) and passed the above filter,
         // thereby being on rank 3, check and see if I can move forward one more.
-        let white_pawn_two_steps =
-            ((white_pawn_one_step & BitBoard::MASK_RANK_3) << 8) & !all_pieces;
+        let pawn_two_steps = ((pawn_one_step & BitBoard::MASK_RANK_3) << 8) & !all_pieces;
 
         // The union of the movements dictate the possible moves forward available.
-        let white_pawn_valid_moves = white_pawn_one_step | white_pawn_two_steps;
+        let pawn_valid_moves = pawn_one_step | pawn_two_steps;
 
         // Pawn attacks:
         // Left side of the pawn, minding the underflow File A.
-        let white_pawn_left_attack = (self & BitBoard::NOT_A_FILE) << 7;
+        let pawn_left_attack = (self & BitBoard::NOT_A_FILE) << 7;
         // Right side
-        let white_pawn_right_attack = (self & BitBoard::NOT_H_FILE) << 9;
-        let white_pawn_attacks = white_pawn_left_attack | white_pawn_right_attack;
+        let pawn_right_attack = (self & BitBoard::NOT_H_FILE) << 9;
+        let pawn_attacks = pawn_left_attack | pawn_right_attack;
 
         // Is there something to attack?
-        let white_pawn_valid_attacks = white_pawn_attacks & all_black_pieces;
+        let pawn_valid_attacks = pawn_attacks & all_other_pieces;
 
-        white_pawn_valid_moves | white_pawn_valid_attacks
+        pawn_valid_moves | pawn_valid_attacks
+    }
+
+    pub fn get_black_pawn_moves(
+        self,
+        all_pieces: BitBoard,
+        all_other_pieces: BitBoard,
+    ) -> BitBoard {
+        let pawn_one_step = (self >> 8) & !all_pieces;
+        // For all moves that came from rank 7 (home row) and passed the above filter.
+        let pawn_two_steps = ((pawn_one_step & BitBoard::MASK_RANK_6) >> 8) & !all_pieces;
+        let pawn_valid_moves = pawn_one_step | pawn_two_steps;
+
+        let pawn_left_attack = (self & BitBoard::NOT_A_FILE) >> 9;
+        let pawn_right_attack = (self & BitBoard::NOT_H_FILE) >> 7;
+        let pawn_attacks = pawn_left_attack | pawn_right_attack;
+
+        let pawn_valid_attacks = pawn_attacks & all_other_pieces;
+        pawn_valid_moves | pawn_valid_attacks
     }
 }
 

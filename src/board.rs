@@ -245,7 +245,7 @@ impl Board {
                     Piece::WhiteKing | Piece::BlackKing => from_bb.get_king_moves(own_bb),
                     Piece::WhiteKnight | Piece::BlackKnight => from_bb.get_knight_moves(own_bb),
                     Piece::WhitePawn => from_bb.get_white_pawn_moves(self.occupied, opposite_bb),
-                    Piece::BlackPawn => todo!(),
+                    Piece::BlackPawn => from_bb.get_black_pawn_moves(self.occupied, opposite_bb),
                     Piece::WhiteBishop | Piece::BlackBishop => todo!(),
                     Piece::WhiteRook | Piece::BlackRook => todo!(),
                     Piece::WhiteQueen | Piece::BlackQueen => todo!(),
@@ -272,10 +272,11 @@ impl Board {
         // self.generate_moves_for(&Piece::ALL_PIECES)
         self.generate_moves_for(&[
             Piece::WhiteKing,
-            Piece::WhiteKnight,
-            Piece::WhitePawn,
             Piece::BlackKing,
+            Piece::WhiteKnight,
             Piece::BlackKnight,
+            Piece::WhitePawn,
+            Piece::BlackPawn,
         ])
     }
 }
@@ -350,7 +351,7 @@ mod tests {
     }
 
     #[test]
-    fn test_generate_moves() {
+    fn test_generate_moves_white_king() {
         let board: Board = "2k5/8/8/8/8/8/2Pp4/2K5 w - - 0 1".into();
         let moves = board.generate_moves_for(&[WhiteKing]);
         assert_eq!(
@@ -362,7 +363,10 @@ mod tests {
                 Move::capture(C1, D2, WhiteKing),
             ]
         );
+    }
 
+    #[test]
+    fn test_generate_moves_black_king() {
         let board: Board = "2k5/2Pp4/8/8/8/8/8/2K5 b - - 0 1".into();
         let moves = board.generate_moves_for(&[BlackKing]);
         assert_eq!(
@@ -374,7 +378,10 @@ mod tests {
                 Move::quiet(C8, D8, BlackKing),
             ]
         );
+    }
 
+    #[test]
+    fn test_generate_moves_white_knight() {
         let board: Board = "8/8/6p1/5N2/8/1N6/8/8 w - - 0 1".into();
         let moves = board.generate_moves_for(&[WhiteKnight]);
         assert_eq!(
@@ -396,7 +403,10 @@ mod tests {
                 Move::quiet(F5, G7, WhiteKnight),
             ]
         );
+    }
 
+    #[test]
+    fn test_generate_moves_white_pawn() {
         let board: Board = "8/8/8/8/4N3/n1pB2P1/PPPPPPPP/8 w - - 0 1".into();
         let moves = board.generate_moves_for(&[WhitePawn]);
         assert_eq!(
@@ -413,6 +423,29 @@ mod tests {
                 Move::quiet(H2, H3, WhitePawn),
                 Move::quiet(H2, H4, WhitePawn),
                 Move::quiet(G3, G4, WhitePawn),
+            ]
+        );
+    }
+
+    #[test]
+    fn test_generate_moves_black_pawn() {
+        let board: Board = "8/pppppppp/n1pB2P1/4N3/8/8/8/8 b - - 0 1".into();
+        let moves = board.generate_moves_for(&[BlackPawn]);
+        assert_eq!(
+            moves,
+            &[
+                Move::quiet(C6, C5, BlackPawn),
+                Move::quiet(B7, B5, BlackPawn),
+                Move::quiet(B7, B6, BlackPawn),
+                Move::capture(C7, D6, BlackPawn),
+                Move::capture(E7, D6, BlackPawn),
+                Move::quiet(E7, E6, BlackPawn),
+                Move::quiet(F7, F5, BlackPawn),
+                Move::quiet(F7, F6, BlackPawn),
+                Move::capture(F7, G6, BlackPawn),
+                Move::quiet(H7, H5, BlackPawn),
+                Move::capture(H7, G6, BlackPawn),
+                Move::quiet(H7, H6, BlackPawn),
             ]
         );
     }
