@@ -39,6 +39,16 @@ impl From<u32> for Square {
     }
 }
 
+impl From<(char, usize)> for Square {
+    fn from(value: (char, usize)) -> Self {
+        // Not the most efficient, but only for debugging a priori.
+        format!("{}{}", value.0, value.1)
+            .as_str()
+            .try_into()
+            .unwrap()
+    }
+}
+
 impl TryFrom<&str> for Square {
     type Error = &'static str;
 

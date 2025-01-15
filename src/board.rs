@@ -61,13 +61,22 @@ impl Board {
     }
 
     pub fn print(&self) {
+        self.print_with_move(None);
+    }
+
+    pub fn print_with_move(&self, mv: Option<Move>) {
         const ASCII_PIECES: &[u8; 12] = b"PpNnBbRrQqKk";
         const UNICODE_PIECES: [char; 12] =
             ['♙', '♟', '♘', '♞', '♗', '♝', '♖', '♜', '♕', '♛', '♔', '♚'];
+        const RED: &str = "\x1b[31m";
+        const GREEN: &str = "\x1b[32m";
+        const RESET: &str = "\x1b[0m";
+        const INVERSE: &str = "\x1b[7m";
         for rank in (0..8).rev() {
             print!("  {} ", rank + 1);
             for file in 0..8 {
                 let index = rank * 8 + file;
+                let square: Square = ((b'a' + file) as char, rank as usize + 1).into();
 
                 let mut piece_char = '.';
                 for (piece, bitboard) in self.pieces.iter().enumerate() {
@@ -77,7 +86,17 @@ impl Board {
                         break;
                     }
                 }
-                print!(" {piece_char}");
+                if let Some(m) = mv {
+                    if m.get_from() == square {
+                        print!(" {INVERSE}{RED}{piece_char}{RESET}");
+                    } else if m.get_to() == square {
+                        print!(" {INVERSE}{GREEN}{piece_char}{RESET}");
+                    } else {
+                        print!(" {piece_char}");
+                    }
+                } else {
+                    print!(" {piece_char}");
+                }
             }
             println!();
         }

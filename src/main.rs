@@ -24,5 +24,13 @@ fn main() {
     let b: Board = "2k5/2Pp4/8/8/8/8/8/2K5 b - - 0 1".into();
     b.print();
     let moves = b.generate_moves();
-    Move::print_list(&moves);
+    // Move::print_list(&moves);
+    print_moves_with_board(&b, &moves);
+}
+
+fn print_moves_with_board(board: &Board, moves: &[Move]) {
+    for mv in moves {
+        println!("{mv}");
+        board.print_with_move(Some(*mv));
+    }
 }
