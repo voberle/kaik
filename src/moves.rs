@@ -13,8 +13,9 @@ pub struct Move {
     to: Square,
     promotion: Option<Piece>,
     // Following information helps to avoid board lookups when applying moves.
-    piece: Piece,                  // Piece performing the move
-    captured_piece: Option<Piece>, // Piece being captured.
+    piece: Piece, // Piece performing the move
+    is_capture: bool,
+    // We can add more flags: Castling, double push pawn, en passant.
 }
 
 impl Move {
@@ -23,7 +24,7 @@ impl Move {
         to: Square,
         promotion: Option<Piece>,
         piece: Piece,
-        captured_piece: Option<Piece>,
+        is_capture: bool,
     ) -> Self {
         assert!(promotion.is_none_or(|p| !p.is_pawn() && !p.is_king()));
         Self {
@@ -31,8 +32,16 @@ impl Move {
             to,
             promotion,
             piece,
-            captured_piece,
+            is_capture,
         }
+    }
+
+    pub fn quiet(from: Square, to: Square, piece: Piece) -> Self {
+        Self::new(from, to, None, piece, false)
+    }
+
+    pub fn capture(from: Square, to: Square, piece: Piece) -> Self {
+        Self::new(from, to, None, piece, true)
     }
 
     pub fn get_from(self) -> Square {
@@ -51,8 +60,8 @@ impl Move {
         self.piece
     }
 
-    pub fn get_captured_piece(self) -> Option<Piece> {
-        self.captured_piece
+    pub fn is_capture(self) -> bool {
+        self.is_capture
     }
 
     pub fn print_list(moves: &[Move]) {
@@ -66,7 +75,7 @@ impl Display for Move {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // Pure coordinate notation
         // <https://www.chessprogramming.org/Algebraic_Chess_Notation#Pure_coordinate_notation>
-        let promotion = match self.promotion {
+        let promotion = match self.get_promotion() {
             Some(Piece::WhiteQueen | Piece::BlackQueen) => "q",
             Some(Piece::WhiteRook | Piece::BlackRook) => "r",
             Some(Piece::WhiteBishop | Piece::BlackBishop) => "b",
@@ -74,6 +83,6 @@ impl Display for Move {
             None => "",
             _ => panic!("Invalid promotion value"),
         };
-        write!(f, "{}{}{}", self.from, self.to, promotion)
+        write!(f, "{}{}{}", self.get_from(), self.get_to(), promotion)
     }
 }

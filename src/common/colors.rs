@@ -13,4 +13,11 @@ impl Color {
             _ => panic!("Invalid side value"),
         }
     }
+
+    pub fn opposite(self) -> Self {
+        match self {
+            Self::White => Self::Black,
+            Self::Black => Self::White,
+        }
+    }
 }

@@ -176,22 +176,30 @@ impl Board {
         if mv.get_promotion().is_some() {
             unimplemented!("Update by move for promotion");
         }
+        let color = mv.get_piece().color();
         let from_bb: BitBoard = mv.get_from().into();
         let to_bb: BitBoard = mv.get_to().into();
         let from_to_bb = from_bb ^ to_bb;
+
         self.pieces[mv.get_piece() as usize] ^= from_to_bb;
-        self.all[mv.get_piece().color() as usize] ^= from_to_bb;
-        if let Some(captured_piece) = mv.get_captured_piece() {
-            self.pieces[captured_piece as usize] ^= to_bb;
-            self.all[captured_piece.color() as usize] ^= to_bb;
+        self.all[color as usize] ^= from_to_bb;
+
+        if mv.is_capture() {
+            // Loop over bitboards opposite color.
+            for bb in &mut self.pieces {
+                if !(*bb & to_bb).is_zero() {
+                    // TODO: Improve BitBoard API for this
+                    *bb ^= to_bb;
+                    self.all[color.opposite() as usize] ^= to_bb;
+                    // Actually important to avoid setting it back to the other value.
+                    // Alternative could be to skip every second bitboard with a step_by(2).
+                    break;
+                }
+            }
         }
+
         self.occupied ^= from_to_bb;
     }
-
-    // fn find_attacked_piece(&self) -> Piece {
-    //     // TODO
-    //     Piece::BlackPawn
-    // }
 
     // Generate all possible moves from this board.
     pub fn generate_moves(&self) -> Vec<Move> {
@@ -208,20 +216,9 @@ impl Board {
         while !attacks.is_zero() {
             let to_bb = attacks.get_ls1b();
             let to_square: Square = to_bb.get_index().into();
-            let captured_piece = if (self.all[Color::Black as usize] & to_bb).is_zero() {
-                None
-            } else {
-                // Some(self.find_attacked_piece())
-                Some(Piece::BlackPawn)
-            };
+            let is_capture = !(self.all[Color::Black as usize] & to_bb).is_zero();
 
-            let mv = Move::new(
-                from_square,
-                to_square,
-                None,
-                Piece::WhiteKing,
-                captured_piece,
-            );
+            let mv = Move::new(from_square, to_square, None, Piece::WhiteKing, is_capture);
             moves.push(mv);
 
             attacks = attacks.reset_ls1b();
@@ -271,9 +268,19 @@ mod tests {
     }
 
     #[test]
+    fn test_from_fen() {
+        let board: Board = START_POSITION.into();
+        assert_eq!(board.pieces.len(), 12);
+        assert_eq!(board.all.len(), 2);
+
+        let initial_board = Board::initial_board();
+        assert_eq!(board, initial_board);
+    }
+
+    #[test]
     fn test_update_by_move_quiet() {
         let mut board = Board::initial_board();
-        let mv = Move::new(B2, B3, None, WhitePawn, None);
+        let mv = Move::quiet(B2, B3, WhitePawn);
         board.update_by_move(mv);
 
         // TODO: Would be better to not depend on FEN serialization for this.
@@ -286,26 +293,9 @@ mod tests {
     #[test]
     fn test_update_by_move_capture() {
         let mut board: Board = "2k5/8/8/8/8/8/2Pp4/2K5 w - - 0 1".into();
-        let mv = Move::new(C1, D2, None, WhiteKing, Some(BlackPawn));
+        let mv = Move::capture(C1, D2, WhiteKing);
         board.update_by_move(mv);
         assert_eq!(board.to_string(), "2k5/8/8/8/8/8/2PK4/8 w KQkq - 0 1");
-    }
-
-    #[test]
-    fn test_from_fen() {
-        let board: Board = START_POSITION.into();
-        assert_eq!(board.pieces.len(), 12);
-        assert_eq!(board.all.len(), 2);
-
-        let initial_board = Board::initial_board();
-        assert_eq!(board, initial_board);
-    }
-
-    #[test]
-    fn test_print_board() {
-        let board = Board::initial_board();
-        board.print();
-        // Manually verify the printed output
     }
 
     #[test]
@@ -315,10 +305,10 @@ mod tests {
         assert_eq!(
             moves,
             &[
-                Move::new(C1, B1, None, WhiteKing, None),
-                Move::new(C1, D1, None, WhiteKing, None),
-                Move::new(C1, B2, None, WhiteKing, None),
-                Move::new(C1, D2, None, WhiteKing, Some(BlackPawn)),
+                Move::quiet(C1, B1, WhiteKing),
+                Move::quiet(C1, D1, WhiteKing),
+                Move::quiet(C1, B2, WhiteKing),
+                Move::capture(C1, D2, WhiteKing),
             ]
         );
     }
