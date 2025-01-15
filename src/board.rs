@@ -3,7 +3,7 @@ use std::fmt::Display;
 use itertools::Itertools;
 
 use crate::{
-    bitboard::{movements, BitBoard, INITIAL_BOARD},
+    bitboard::BitBoard,
     common::{Color, Piece, Square},
     fen,
     moves::Move,
@@ -49,7 +49,7 @@ impl Board {
 
     #[allow(clippy::wildcard_imports)]
     pub fn initial_board() -> Self {
-        let pieces = INITIAL_BOARD;
+        let pieces = BitBoard::INITIAL_BOARD;
         let all = get_all_bitboards(&pieces);
         let occupied = get_occupied_bitboard(&all);
         Self {
@@ -236,7 +236,7 @@ impl Board {
             [Piece::BlackKing, Piece::BlackKnight]
         }
         .into_iter()
-        .zip([movements::king_moves, movements::knight_moves])
+        .zip([BitBoard::get_king_attacks, BitBoard::get_knight_attacks])
         {
             let mut pieces_bb = self.pieces[pieces as usize];
             while !pieces_bb.is_zero() {

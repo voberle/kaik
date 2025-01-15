@@ -11,8 +11,6 @@ use crate::common::Square;
 pub struct BitBoard(u64);
 
 impl BitBoard {
-    pub const EMPTY: BitBoard = BitBoard(0);
-
     pub const fn new(v: u64) -> Self {
         Self(v)
     }
