@@ -198,6 +198,8 @@ impl Display for Board {
 
 #[cfg(test)]
 mod tests {
+    use fen::START_POSITION;
+
     use crate::{common::Piece, common::Square::*};
 
     use super::*;
@@ -208,7 +210,7 @@ mod tests {
         assert_eq!(board.pieces.len(), 12);
         assert_eq!(board.all.len(), 2);
 
-        let via_fen: Board = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1".into();
+        let via_fen: Board = START_POSITION.into();
         assert_eq!(board, via_fen);
     }
 
@@ -235,7 +237,7 @@ mod tests {
 
     #[test]
     fn test_from_fen() {
-        let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        let fen = START_POSITION;
         let board: Board = fen.into();
         assert_eq!(board.pieces.len(), 12);
         assert_eq!(board.all.len(), 2);

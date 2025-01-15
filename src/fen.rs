@@ -1,4 +1,5 @@
 //! Parsing and creation of FEN strings.
+//! Only valid FEN strings are supported. Invalid will cause the code to assert.
 //! Doc: <https://www.chessprogramming.org/Forsyth-Edwards_Notation>
 
 use itertools::Itertools;
@@ -6,6 +7,12 @@ use itertools::Itertools;
 use crate::common::Color;
 use crate::common::Square;
 use crate::common::{Piece, PieceListBoard};
+
+// More on <https://www.chessprogramming.org/Perft_Results>
+pub const EMPTY_BOARD: &str = "8/8/8/8/8/8/8/8 w - - 0 1";
+pub const START_POSITION: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+pub const TRICKY_POSITION: &str =
+    "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
 
 fn create_rank(rank: &[Option<Piece>]) -> String {
     assert_eq!(rank.len(), 8);
@@ -80,6 +87,7 @@ fn get_full_move_counter(full_move_counter: usize) -> String {
     full_move_counter.to_string()
 }
 
+// Creates a FEN string.
 pub fn create(
     piece_placement: &[Option<Piece>],
     side_to_move: Color,
@@ -149,6 +157,7 @@ fn parse_full_move_counter(s: &str) -> usize {
     s.parse().unwrap()
 }
 
+// Parses a FEN string.
 pub fn parse(
     fen: &str,
 ) -> (
@@ -169,6 +178,21 @@ pub fn parse(
         parse_half_move_clock(parts[4]),
         parse_full_move_counter(parts[5]),
     )
+}
+
+// Parses only a list of pieces, populating the rest with sensible defaults.
+// For writing tests mainly.
+pub fn parse_pieces(
+    pieces: &str,
+) -> (
+    PieceListBoard,
+    Color,
+    Vec<Piece>,
+    Option<Square>,
+    usize,
+    usize,
+) {
+    parse(&format!("{pieces}  w KQkq - 0 1"))
 }
 
 #[cfg(test)]
@@ -225,10 +249,7 @@ mod tests {
             0,
             1,
         );
-        assert_eq!(
-            fen,
-            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-        );
+        assert_eq!(fen, START_POSITION);
     }
 
     #[test]
@@ -299,7 +320,7 @@ mod tests {
 
     #[test]
     fn test_parse_end_game_position() {
-        let fen = "8/8/8/8/8/8/8/8 w - - 0 1";
+        let fen = EMPTY_BOARD;
         let (pieces, side, castling, en_passant, half_move, full_move) = parse(fen);
 
         assert_eq!(pieces.len(), 64);
