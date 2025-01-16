@@ -3,7 +3,8 @@
 use crate::bitboard::BitBoard;
 
 impl BitBoard {
-    pub const EMPTY: BitBoard = BitBoard::new(0);
+    pub const EMPTY: BitBoard = BitBoard::new(u64::MIN);
+    pub const UNIVERSAL: BitBoard = BitBoard::new(u64::MAX);
 
     // All the initial locations.
     pub const WHITE_PAWNS: BitBoard =
@@ -70,7 +71,7 @@ mod tests {
     use crate::bitboard::BitBoard;
 
     #[test]
-    fn test_constants() {
+    fn test_clipping_bitboards() {
         assert_eq!(
             BitBoard::NOT_A_FILE,
             r"0 1 1 1 1 1 1 1
@@ -98,7 +99,7 @@ mod tests {
     }
 
     #[test]
-    fn test_clipping_bitboards() {
+    fn test_masks() {
         assert_eq!(
             BitBoard::MASK_RANK_3,
             r"0 0 0 0 0 0 0 0
