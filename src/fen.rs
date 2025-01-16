@@ -70,9 +70,7 @@ fn get_castling_ability(castling_ability: &[Piece]) -> String {
 
 fn get_en_passant_target_square(square: Option<Square>) -> String {
     if let Some(s) = square {
-        let rank = s.get_rank();
-        assert!([3, 6].contains(&rank));
-        format!("{}{}", s.get_file(), rank)
+        s.to_string()
     } else {
         "-".to_string()
     }
@@ -236,7 +234,7 @@ mod tests {
     }
 
     #[test]
-    fn test_create_rank_starting_position() {
+    fn test_create_starting_position() {
         let piece_placement = Piece::build_list_board(
             "rnbqkbnr pppppppp ........ ........ ........ ........ PPPPPPPP RNBQKBNR",
         );
@@ -253,7 +251,7 @@ mod tests {
     }
 
     #[test]
-    fn test_create_rank_2nd_position() {
+    fn test_create_2nd_position() {
         let piece_placement = Piece::build_list_board(
             "rnbqkbnr pp.ppppp ........ ..p..... ....P... ........ PPPP.PPP RNBQKBNR",
         );
