@@ -1,4 +1,7 @@
-use crate::{bitboard::BitBoard, common::Color};
+use crate::{
+    bitboard::BitBoard,
+    common::{Color, Square},
+};
 
 mod board_type;
 mod display;
@@ -12,8 +15,7 @@ pub struct Board {
     all: [BitBoard; 2],
     occupied: BitBoard,
     side_to_move: Color,
-    // En passant square
-    // en_passant: Square,
+    en_passant_target_square: Option<Square>,
     // Castle
     // castle: TBD,
 }

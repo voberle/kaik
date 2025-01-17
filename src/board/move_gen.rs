@@ -48,6 +48,20 @@ impl Board {
                     Move::new(from_square, to_square, None, piece, is_capture)
                 }));
 
+                // En passant.
+                if let Some(en_passant) = self.en_passant_target_square {
+                    let target_bb = en_passant.into();
+                    let ep_attacks_bb = match piece {
+                        Piece::WhitePawn => from_bb.get_white_pawn_attacks(target_bb),
+                        Piece::BlackPawn => from_bb.get_black_pawn_attacks(target_bb),
+                        _ => BitBoard::EMPTY,
+                    };
+
+                    moves_list.extend(ep_attacks_bb.into_iter().map(|to_bb| {
+                        Move::new(from_square, to_bb.get_index().into(), None, piece, true)
+                    }));
+                }
+
                 pieces_bb = pieces_bb.reset_ls1b();
             }
         }
@@ -159,6 +173,27 @@ mod tests {
                 Move::capture(F7, G6, BlackPawn),
                 Move::quiet(H7, H5, BlackPawn),
                 Move::capture(H7, G6, BlackPawn),
+                Move::quiet(H7, H6, BlackPawn),
+            ]
+        );
+    }
+
+    #[test]
+    fn test_generate_en_passant_attacks() {
+        // Two black pawns can take the same en passant white pawn.
+        // Example from <https://www.chessprogramming.org/En_passant#En_passant_bugs>
+        let board: Board = "2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 0 23".into();
+        let moves = board.generate_moves_for(&[BlackPawn]);
+        assert_eq!(
+            moves,
+            &[
+                Move::capture(A4, B3, BlackPawn),
+                Move::capture(C4, B3, BlackPawn),
+                Move::quiet(F7, F5, BlackPawn),
+                Move::quiet(F7, F6, BlackPawn),
+                Move::quiet(G7, G5, BlackPawn),
+                Move::quiet(G7, G6, BlackPawn),
+                Move::quiet(H7, H5, BlackPawn),
                 Move::quiet(H7, H6, BlackPawn),
             ]
         );

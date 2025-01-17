@@ -30,6 +30,7 @@ impl Board {
             all: [BitBoard::EMPTY; 2],
             occupied: BitBoard::EMPTY,
             side_to_move: Color::White,
+            en_passant_target_square: None,
         }
     }
 
@@ -42,6 +43,7 @@ impl Board {
             all,
             occupied,
             side_to_move: Color::White,
+            en_passant_target_square: None,
         }
     }
 
@@ -50,7 +52,7 @@ impl Board {
             piece_placement,
             side_to_move,
             _castling_ability,
-            _en_passant_target_square,
+            en_passant_target_square,
             _half_move_clock,
             _full_move_counter,
         ) = fen::parse(fen);
@@ -79,6 +81,7 @@ impl Board {
             all,
             occupied,
             side_to_move,
+            en_passant_target_square,
         }
     }
 
@@ -109,7 +112,7 @@ impl Board {
             &piece_placement,
             self.side_to_move,
             &castling_ability,
-            None,
+            self.en_passant_target_square,
             0,
             1,
         )

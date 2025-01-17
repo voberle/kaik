@@ -55,6 +55,17 @@ impl BitBoard {
         moves & !own_pieces
     }
 
+    pub fn get_white_pawn_attacks(self, all_other_pieces: BitBoard) -> BitBoard {
+        // Left side of the pawn, minding the underflow File A.
+        let pawn_left_attack = (self & BitBoard::NOT_A_FILE) << 7;
+        // Right side
+        let pawn_right_attack = (self & BitBoard::NOT_H_FILE) << 9;
+        let pawn_attacks = pawn_left_attack | pawn_right_attack;
+
+        // Is there something to attack?
+        pawn_attacks & all_other_pieces
+    }
+
     pub fn get_white_pawn_moves(
         self,
         all_pieces: BitBoard,
@@ -75,15 +86,23 @@ impl BitBoard {
 
         // Pawn attacks:
         // Left side of the pawn, minding the underflow File A.
-        let pawn_left_attack = (self & BitBoard::NOT_A_FILE) << 7;
-        // Right side
-        let pawn_right_attack = (self & BitBoard::NOT_H_FILE) << 9;
-        let pawn_attacks = pawn_left_attack | pawn_right_attack;
+        // let pawn_left_attack = (self & BitBoard::NOT_A_FILE) << 7;
+        // // Right side
+        // let pawn_right_attack = (self & BitBoard::NOT_H_FILE) << 9;
+        // let pawn_attacks = pawn_left_attack | pawn_right_attack;
 
-        // Is there something to attack?
-        let pawn_valid_attacks = pawn_attacks & all_other_pieces;
+        // Pawn attacks:
+        let pawn_valid_attacks = self.get_white_pawn_attacks(all_other_pieces);
 
         pawn_valid_moves | pawn_valid_attacks
+    }
+
+    pub fn get_black_pawn_attacks(self, all_other_pieces: BitBoard) -> BitBoard {
+        let pawn_left_attack = (self & BitBoard::NOT_A_FILE) >> 9;
+        let pawn_right_attack = (self & BitBoard::NOT_H_FILE) >> 7;
+        let pawn_attacks = pawn_left_attack | pawn_right_attack;
+
+        pawn_attacks & all_other_pieces
     }
 
     pub fn get_black_pawn_moves(
@@ -96,11 +115,7 @@ impl BitBoard {
         let pawn_two_steps = ((pawn_one_step & BitBoard::MASK_RANK_6) >> 8) & !all_pieces;
         let pawn_valid_moves = pawn_one_step | pawn_two_steps;
 
-        let pawn_left_attack = (self & BitBoard::NOT_A_FILE) >> 9;
-        let pawn_right_attack = (self & BitBoard::NOT_H_FILE) >> 7;
-        let pawn_attacks = pawn_left_attack | pawn_right_attack;
-
-        let pawn_valid_attacks = pawn_attacks & all_other_pieces;
+        let pawn_valid_attacks = self.get_black_pawn_attacks(all_other_pieces);
         pawn_valid_moves | pawn_valid_attacks
     }
 

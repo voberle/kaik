@@ -38,12 +38,15 @@ fn main() {
     // let b: Board = fen::TRICKY_POSITION.into();
     // let moves = b.generate_moves();
 
-    // b.print();
-    // Move::print_list(&moves);
-    // print_moves_with_board(&b, &moves);
-    // print_moves_statistics(&moves);
+    let b: Board = "2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 0 23".into();
+    let moves = b.generate_moves_for(&[Piece::BlackPawn]);
 
-    divide(&b, 3);
+    b.print();
+    Move::print_list(&moves);
+    print_moves_with_board(&b, &moves);
+    print_moves_statistics(&moves);
+
+    // divide(&b, 3);
 }
 
 fn perft(board: &Board, depth: usize) {
