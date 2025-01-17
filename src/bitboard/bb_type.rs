@@ -1,6 +1,6 @@
 use std::ops::{
-    BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Neg, Not, Shl, ShlAssign, Shr,
-    ShrAssign, Sub, SubAssign,
+    BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Mul, MulAssign, Neg, Not, Shl,
+    ShlAssign, Shr, ShrAssign, Sub, SubAssign,
 };
 
 use itertools::Itertools;
@@ -28,12 +28,13 @@ impl BitBoard {
             print!("  {} ", 8 - rank); // display starts at 1
             for file in 0..8 {
                 let index = (7 - rank) * 8 + file;
-                print!(" {}", u8::from(self.is_set(index)));
+                // print!(" {}", u8::from(self.is_set(index)));
+                print!(" {}", if self.is_set(index) { '1' } else { '.' });
             }
             println!();
         }
         println!("     a b c d e f g h");
-        println!("{:064b}", self.0);
+        println!("{} = {:064b}", self.0, self.0);
     }
 
     pub fn is_zero(self) -> bool {
@@ -59,6 +60,12 @@ impl BitBoard {
     pub fn reset_ls1b(self) -> Self {
         const ONE: BitBoard = BitBoard::new(1);
         self & (self - ONE)
+    }
+}
+
+impl From<BitBoard> for u64 {
+    fn from(val: BitBoard) -> Self {
+        val.0
     }
 }
 
@@ -207,6 +214,20 @@ impl Sub for BitBoard {
 impl SubAssign for BitBoard {
     fn sub_assign(&mut self, rhs: Self) {
         self.0 -= rhs.0;
+    }
+}
+
+impl Mul for BitBoard {
+    type Output = Self;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        Self(self.0 * rhs.0)
+    }
+}
+
+impl MulAssign for BitBoard {
+    fn mul_assign(&mut self, rhs: Self) {
+        self.0 *= rhs.0;
     }
 }
 
