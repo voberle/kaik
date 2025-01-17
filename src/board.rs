@@ -278,22 +278,6 @@ impl Board {
     pub fn generate_moves(&self) -> Vec<Move> {
         self.generate_moves_for(&Piece::ALL_PIECES)
     }
-
-    // perft function <https://www.chessprogramming.org/Perft>
-    pub fn perft(&self, depth: usize) -> usize {
-        if depth == 0 {
-            return 1;
-        }
-
-        let mut nodes = 0;
-        let move_list = self.generate_moves();
-        for mv in move_list {
-            let mut board_copy = *self;
-            board_copy.update_by_move(mv);
-            nodes += board_copy.perft(depth - 1);
-        }
-        nodes
-    }
 }
 
 // Creates the board from a FEN string.

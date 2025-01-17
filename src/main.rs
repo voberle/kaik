@@ -10,6 +10,7 @@ mod board;
 mod common;
 mod fen;
 mod moves;
+mod perft;
 
 #[allow(unused_variables)]
 fn main() {
