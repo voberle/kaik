@@ -20,9 +20,8 @@ impl Board {
             let own_bb = self.all[self.get_side_to_move() as usize];
             let opposite_bb = self.all[self.opposite_side() as usize];
 
-            let mut pieces_bb = self.pieces[piece as usize];
-            while !pieces_bb.is_zero() {
-                let from_bb = pieces_bb.get_ls1b();
+            let pieces_bb = self.pieces[piece as usize];
+            for from_bb in pieces_bb.into_iter() {
                 let from_square = from_bb.get_index().into();
 
                 let moves_bb = match piece {
@@ -61,8 +60,6 @@ impl Board {
                         Move::new(from_square, to_bb.get_index().into(), None, piece, true)
                     }));
                 }
-
-                pieces_bb = pieces_bb.reset_ls1b();
             }
         }
         moves_list
