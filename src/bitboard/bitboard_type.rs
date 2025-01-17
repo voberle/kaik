@@ -61,6 +61,28 @@ impl BitBoard {
         const ONE: BitBoard = BitBoard::new(1);
         self & (self - ONE)
     }
+
+    // Creates an iterator that yields each set bit as a separate bitboard.
+    pub fn into_iter(self) -> BitBoardIterator {
+        BitBoardIterator(self.0)
+    }
+}
+
+pub struct BitBoardIterator(u64);
+
+impl Iterator for BitBoardIterator {
+    type Item = BitBoard;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.0 == 0 {
+            return None;
+        }
+
+        let ls1b = self.0 & (!self.0 + 1); // Isolate least significant bit
+        self.0 &= self.0 - 1; // Reset least significant bit
+
+        Some(BitBoard(ls1b))
+    }
 }
 
 impl From<BitBoard> for u64 {

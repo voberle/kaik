@@ -1,6 +1,7 @@
 use super::Board;
 
 use crate::{
+    bitboard::BitBoard,
     common::{Piece, Square},
     moves::Move,
 };
@@ -12,18 +13,19 @@ impl Board {
 
         let mut moves_list = Vec::new();
 
-        for &moving_pieces in pieces
+        for &piece in pieces
             .iter()
             .filter(|p| self.get_side_to_move() == p.get_color())
         {
             let own_bb = self.all[self.get_side_to_move() as usize];
             let opposite_bb = self.all[self.opposite_side() as usize];
 
-            let mut pieces_bb = self.pieces[moving_pieces as usize];
+            let mut pieces_bb = self.pieces[piece as usize];
             while !pieces_bb.is_zero() {
                 let from_bb = pieces_bb.get_ls1b();
                 let from_square = from_bb.get_index().into();
-                let mut moves_bb = match moving_pieces {
+
+                let moves_bb = match piece {
                     Piece::WhiteKing | Piece::BlackKing => from_bb.get_king_moves(own_bb),
                     Piece::WhiteKnight | Piece::BlackKnight => from_bb.get_knight_moves(own_bb),
                     Piece::WhitePawn => from_bb.get_white_pawn_moves(self.occupied, opposite_bb),
@@ -40,16 +42,11 @@ impl Board {
                 };
 
                 // Generate moves.
-                while !moves_bb.is_zero() {
-                    let to_bb = moves_bb.get_ls1b();
+                moves_list.extend(moves_bb.into_iter().map(|to_bb| {
                     let to_square: Square = to_bb.get_index().into();
                     let is_capture = opposite_bb.contains(to_bb);
-
-                    let mv = Move::new(from_square, to_square, None, moving_pieces, is_capture);
-                    moves_list.push(mv);
-
-                    moves_bb = moves_bb.reset_ls1b();
-                }
+                    Move::new(from_square, to_square, None, piece, is_capture)
+                }));
 
                 pieces_bb = pieces_bb.reset_ls1b();
             }

@@ -11,7 +11,6 @@ pub struct Board {
     pieces: [BitBoard; 12],
     all: [BitBoard; 2],
     occupied: BitBoard,
-    // Should we have empty as well?
     side_to_move: Color,
     // En passant square
     // en_passant: Square,
