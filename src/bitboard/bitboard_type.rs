@@ -7,8 +7,7 @@ use itertools::Itertools;
 
 use crate::common::Square;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct BitBoard(u64);
+use super::BitBoard;
 
 impl BitBoard {
     pub const fn new(v: u64) -> Self {

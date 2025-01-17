@@ -6,4 +6,5 @@ mod sliding_pieces_with_hq;
 
 pub mod movements;
 
-pub use bitboard_type::BitBoard;
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct BitBoard(u64);
