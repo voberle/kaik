@@ -44,12 +44,27 @@ fn main() {
     // print_moves_with_board(&b, &moves);
     // print_moves_statistics(&moves);
 
-    perft(&b, 3);
+    divide(&b, 3);
 }
 
 fn perft(board: &Board, depth: usize) {
     let nodes_count = board.perft(depth);
     println!("Perft results for depth {depth}: {nodes_count} nodes.");
+}
+
+fn divide(board: &Board, depth: usize) {
+    // Output format is the same as Stockfish "go perft <depth>" command.
+    // Save both outputs to p_stockfish and p_kaik, and compare with:
+    //   diff <(sort p_stockfish) <(sort p_kaik)
+    let nodes = board.divide(depth);
+    for (mv, count) in &nodes {
+        println!("{}: {count}", mv.pure());
+    }
+    println!();
+    println!(
+        "Nodes searched: {}",
+        nodes.iter().map(|(_, count)| *count).sum::<usize>()
+    );
 }
 
 fn print_moves_with_board(board: &Board, moves: &[Move]) {

@@ -104,6 +104,16 @@ impl Move {
             write!(f, "{}{from}{separator}{to}", self.get_piece())
         }
     }
+
+    pub fn pure(&self) -> impl std::fmt::Display + '_ {
+        struct Pure<'a>(&'a Move);
+        impl<'a> std::fmt::Display for Pure<'a> {
+            fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                self.0.fmt_as_pure(f)
+            }
+        }
+        Pure(self)
+    }
 }
 
 impl Display for Move {
