@@ -1,5 +1,7 @@
 use crate::bitboard::BitBoard;
 
+use super::sliding_pieces_with_hq::{get_bishop_attacks, get_queen_attacks, get_rook_attacks};
+
 impl BitBoard {
     pub fn get_king_moves(self, own_pieces: BitBoard) -> BitBoard {
         // See Peter Keller https://pages.cs.wisc.edu/~psilord/blog/data/chess-pages/index.html
@@ -100,6 +102,24 @@ impl BitBoard {
 
         let pawn_valid_attacks = pawn_attacks & all_other_pieces;
         pawn_valid_moves | pawn_valid_attacks
+    }
+
+    pub fn get_bishop_moves(self, all_pieces: BitBoard, own_pieces: BitBoard) -> BitBoard {
+        let own: u64 = own_pieces.into();
+        let val = get_bishop_attacks(all_pieces.into(), self.get_index()) & !own;
+        BitBoard::new(val)
+    }
+
+    pub fn get_rook_moves(self, all_pieces: BitBoard, own_pieces: BitBoard) -> BitBoard {
+        let own: u64 = own_pieces.into();
+        let val = get_rook_attacks(all_pieces.into(), self.get_index()) & !own;
+        BitBoard::new(val)
+    }
+
+    pub fn get_queen_moves(self, all_pieces: BitBoard, own_pieces: BitBoard) -> BitBoard {
+        let own: u64 = own_pieces.into();
+        let val = get_queen_attacks(all_pieces.into(), self.get_index()) & !own;
+        BitBoard::new(val)
     }
 }
 

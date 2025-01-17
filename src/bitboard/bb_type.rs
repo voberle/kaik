@@ -46,9 +46,10 @@ impl BitBoard {
     }
 
     // Returns the index of lowest bit in the bitboard.
-    pub fn get_index(self) -> u32 {
+    #[allow(clippy::cast_possible_truncation)]
+    pub fn get_index(self) -> u8 {
         // Should be one CPU instruction.
-        self.0.trailing_zeros()
+        self.0.trailing_zeros() as u8
     }
 
     // Least Significant One

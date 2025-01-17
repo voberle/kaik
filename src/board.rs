@@ -228,7 +228,7 @@ impl Board {
     pub fn generate_moves_for(&self, pieces: &[Piece]) -> Vec<Move> {
         // Pseudo-legal or legal ones?
 
-        let mut moves = Vec::new();
+        let mut moves_list = Vec::new();
 
         for &moving_pieces in pieces
             .iter()
@@ -246,10 +246,17 @@ impl Board {
                     Piece::WhiteKnight | Piece::BlackKnight => from_bb.get_knight_moves(own_bb),
                     Piece::WhitePawn => from_bb.get_white_pawn_moves(self.occupied, opposite_bb),
                     Piece::BlackPawn => from_bb.get_black_pawn_moves(self.occupied, opposite_bb),
-                    Piece::WhiteBishop | Piece::BlackBishop => todo!(),
-                    Piece::WhiteRook | Piece::BlackRook => todo!(),
-                    Piece::WhiteQueen | Piece::BlackQueen => todo!(),
+                    Piece::WhiteBishop | Piece::BlackBishop => {
+                        from_bb.get_bishop_moves(self.occupied, own_bb)
+                    }
+                    Piece::WhiteRook | Piece::BlackRook => {
+                        from_bb.get_rook_moves(self.occupied, own_bb)
+                    }
+                    Piece::WhiteQueen | Piece::BlackQueen => {
+                        from_bb.get_queen_moves(self.occupied, own_bb)
+                    }
                 };
+
                 // Generate moves.
                 while !moves_bb.is_zero() {
                     let to_bb = moves_bb.get_ls1b();
@@ -257,7 +264,7 @@ impl Board {
                     let is_capture = opposite_bb.contains(to_bb);
 
                     let mv = Move::new(from_square, to_square, None, moving_pieces, is_capture);
-                    moves.push(mv);
+                    moves_list.push(mv);
 
                     moves_bb = moves_bb.reset_ls1b();
                 }
@@ -265,19 +272,11 @@ impl Board {
                 pieces_bb = pieces_bb.reset_ls1b();
             }
         }
-        moves
+        moves_list
     }
 
     pub fn generate_moves(&self) -> Vec<Move> {
-        // self.generate_moves_for(&Piece::ALL_PIECES)
-        self.generate_moves_for(&[
-            Piece::WhiteKing,
-            Piece::BlackKing,
-            Piece::WhiteKnight,
-            Piece::BlackKnight,
-            Piece::WhitePawn,
-            Piece::BlackPawn,
-        ])
+        self.generate_moves_for(&Piece::ALL_PIECES)
     }
 }
 
