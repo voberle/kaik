@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::common::{Piece, Square};
+use crate::common::{Color, Piece, Square};
 
 use super::CastlingAbility;
 
@@ -26,6 +26,10 @@ impl CastlingAbility {
         )
     }
 
+    pub fn any(self) -> bool {
+        self.0 != 0
+    }
+
     pub fn white_can_castle_king_side(self) -> bool {
         self.0 & 0b0001 != 0
     }
@@ -42,21 +46,31 @@ impl CastlingAbility {
         self.0 & 0b1000 != 0
     }
 
-    pub fn as_pieces_list(self) -> Vec<Piece> {
-        let mut pieces = Vec::new();
-        if self.white_can_castle_king_side() {
-            pieces.push(Piece::WhiteKing);
-        }
-        if self.white_can_castle_queen_side() {
-            pieces.push(Piece::WhiteQueen);
-        }
-        if self.black_can_castle_king_side() {
-            pieces.push(Piece::BlackKing);
-        }
-        if self.black_can_castle_queen_side() {
-            pieces.push(Piece::BlackQueen);
-        }
-        pieces
+    pub fn can_castle_king_side(self, color: Color) -> bool {
+        self.0 & (0b0001 << ((color as u8) * 2)) != 0
+    }
+
+    pub fn can_castle_queen_side(self, color: Color) -> bool {
+        self.0 & (0b0010 << ((color as u8) * 2)) != 0
+    }
+
+    pub fn as_pieces_iter(self) -> impl Iterator<Item = Piece> {
+        [
+            (self.white_can_castle_king_side(), Piece::WhiteKing),
+            (self.white_can_castle_queen_side(), Piece::WhiteQueen),
+            (self.black_can_castle_king_side(), Piece::BlackKing),
+            (self.black_can_castle_queen_side(), Piece::BlackQueen),
+        ]
+        .into_iter()
+        .filter_map(
+            |(condition, piece)| {
+                if condition {
+                    Some(piece)
+                } else {
+                    None
+                }
+            },
+        )
     }
 
     fn as_fen(self) -> String {

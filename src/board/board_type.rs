@@ -109,7 +109,7 @@ impl Board {
         fen::create(
             &piece_placement,
             self.side_to_move,
-            &self.castling_ability.as_pieces_list(),
+            &self.castling_ability.as_pieces_iter().collect_vec(),
             self.en_passant_target_square,
             0,
             1,

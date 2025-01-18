@@ -7,6 +7,20 @@ use crate::{
 };
 
 impl Board {
+    fn can_castle_king_side(&self) -> bool {
+        let side_to_move = self.get_side_to_move();
+        let castling_mask = BitBoard::CASTLING_KING_SIDE_MASKS[side_to_move as usize];
+        self.castling_ability.can_castle_king_side(side_to_move)
+            && (self.occupied & castling_mask).is_empty()
+    }
+
+    fn can_castle_queen_side(&self) -> bool {
+        let side_to_move = self.get_side_to_move();
+        let castling_mask = BitBoard::CASTLING_QUEEN_SIDE_MASKS[side_to_move as usize];
+        self.castling_ability.can_castle_queen_side(side_to_move)
+            && (self.occupied & castling_mask).is_empty()
+    }
+
     // Generate all possible moves from this board.
     pub fn generate_moves_for(&self, pieces: &[Piece]) -> Vec<Move> {
         // Pseudo-legal or legal ones?
@@ -56,12 +70,23 @@ impl Board {
                         _ => BitBoard::EMPTY,
                     };
 
-                    moves_list.extend(ep_attacks_bb.into_iter().map(|to_bb| {
-                        Move::new(from_square, to_bb.get_index().into(), None, piece, true)
-                    }));
+                    moves_list.extend(
+                        ep_attacks_bb.into_iter().map(|to_bb| {
+                            Move::capture(from_square, to_bb.get_index().into(), piece)
+                        }),
+                    );
                 }
             }
         }
+
+        // Castling
+        if self.can_castle_king_side() {
+            moves_list.push(Move::KING_TO_KING_SIDE_CASTLING[self.get_side_to_move() as usize]);
+        }
+        if self.can_castle_queen_side() {
+            moves_list.push(Move::KING_TO_QUEEN_SIDE_CASTLING[self.get_side_to_move() as usize]);
+        }
+
         moves_list
     }
 

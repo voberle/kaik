@@ -38,13 +38,19 @@ fn main() {
     // let b: Board = fen::TRICKY_POSITION.into();
     // let moves = b.generate_moves();
 
-    let b: Board = "2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 0 23".into();
-    let moves = b.generate_moves_for(&[Piece::BlackPawn]);
+    // let b: Board = "2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 0 23".into();
+    // let moves = b.generate_moves_for(&[Piece::BlackPawn]);
+
+    let b: Board = "8/8/8/8/8/8/8/R3K2R w KQkq - 0 1".into();
+    let moves = b.generate_moves_for(&[]);
 
     b.print();
     Move::print_list(&moves);
     print_moves_with_board(&b, &moves);
     print_moves_statistics(&moves);
+
+    // b.print();
+    // perft(&b, 1);
 
     // divide(&b, 3);
 }

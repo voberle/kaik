@@ -36,7 +36,7 @@ impl BitBoard {
         println!("{} = {:064b}", self.0, self.0);
     }
 
-    pub fn is_zero(self) -> bool {
+    pub fn is_empty(self) -> bool {
         self.0 == 0
     }
 
