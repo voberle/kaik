@@ -86,31 +86,31 @@ impl Piece {
         Piece::BlackKing,
     ];
 
-    pub fn is_pawn(self) -> bool {
-        [Piece::WhitePawn, Piece::BlackPawn].contains(&self)
+    pub const fn is_pawn(self) -> bool {
+        matches!(self, Piece::WhitePawn | Piece::BlackPawn)
     }
 
-    pub fn is_knight(self) -> bool {
-        [Piece::WhiteKnight, Piece::BlackKnight].contains(&self)
+    pub const fn is_knight(self) -> bool {
+        matches!(self, Piece::WhiteKnight | Piece::BlackKnight)
     }
 
-    pub fn is_bishop(self) -> bool {
-        [Piece::WhiteBishop, Piece::BlackBishop].contains(&self)
+    pub const fn is_bishop(self) -> bool {
+        matches!(self, Piece::WhiteBishop | Piece::BlackBishop)
     }
 
-    pub fn is_rook(self) -> bool {
-        [Piece::WhiteRook, Piece::BlackRook].contains(&self)
+    pub const fn is_rook(self) -> bool {
+        matches!(self, Piece::WhiteRook | Piece::BlackRook)
     }
 
-    pub fn is_queen(self) -> bool {
-        [Piece::WhiteQueen, Piece::BlackQueen].contains(&self)
+    pub const fn is_queen(self) -> bool {
+        matches!(self, Piece::WhiteQueen | Piece::BlackQueen)
     }
 
-    pub fn is_king(self) -> bool {
-        [Piece::WhiteKing, Piece::BlackKing].contains(&self)
+    pub const fn is_king(self) -> bool {
+        matches!(self, Piece::WhiteKing | Piece::BlackKing)
     }
 
-    pub fn get_color(self) -> Color {
+    pub const fn get_color(self) -> Color {
         Color::new(self as usize % 2)
     }
 

@@ -130,13 +130,9 @@ impl Board {
         self.side_to_move = self.side_to_move.opposite();
     }
 
-    // Updates the board with the specified move.
+    // Updates the bitboards only.
     // Update by Move explained at <https://www.chessprogramming.org/General_Setwise_Operations#UpdateByMove>
-    pub fn update_by_move(&mut self, mv: Move) {
-        // TODO: Support for castling, promotions and en-passant captures.
-        if mv.get_promotion().is_some() {
-            unimplemented!("Update by move for promotion");
-        }
+    fn update_bitboards_by_move(&mut self, mv: Move) {
         let color = mv.get_piece().get_color();
         let from_bb: BitBoard = mv.get_from().into();
         let to_bb: BitBoard = mv.get_to().into();
@@ -157,10 +153,23 @@ impl Board {
                 }
             }
         }
+        self.occupied ^= from_to_bb;
+    }
+
+    // Updates the board with the specified move.
+    pub fn update_by_move(&mut self, mv: Move) {
+        if mv.get_promotion().is_some() {
+            unimplemented!("Update by move for promotion");
+        }
+
+        self.update_bitboards_by_move(mv);
 
         self.en_passant_target_square = mv.get_en_passant_target_square();
 
-        self.occupied ^= from_to_bb;
+        if let Some(castling_rook_move) = mv.get_castling() {
+            self.update_bitboards_by_move(castling_rook_move);
+        }
+
         self.toggle_side();
     }
 }
@@ -236,5 +245,15 @@ mod tests {
             board,
             "rnbqkbnr/pppppppp/8/8/1P6/8/P1PPPPPP/RNBQKBNR b KQkq b3 0 1".into()
         );
+    }
+
+    #[test]
+    fn test_update_by_move_castling() {
+        let mut board: Board = "4k3/8/8/8/8/8/PPPPPPPP/R3K1NR w Q - 0 1".into();
+        let mv = Move::quiet(E1, C1, WhiteKing); // White queen castle
+        board.print();
+        board.update_by_move(mv);
+        board.print();
+        assert_eq!(board, "4k3/8/8/8/8/8/PPPPPPPP/2KR2NR b - - 0 1".into());
     }
 }

@@ -6,7 +6,7 @@ pub enum Color {
 }
 
 impl Color {
-    pub fn new(v: usize) -> Self {
+    pub const fn new(v: usize) -> Self {
         match v {
             0 => Self::White,
             1 => Self::Black,
@@ -14,7 +14,7 @@ impl Color {
         }
     }
 
-    pub fn opposite(self) -> Self {
+    pub const fn opposite(self) -> Self {
         match self {
             Self::White => Self::Black,
             Self::Black => Self::White,

@@ -19,14 +19,17 @@ pub struct Move {
 }
 
 impl Move {
-    pub fn new(
+    pub const fn new(
         from: Square,
         to: Square,
         promotion: Option<Piece>,
         piece: Piece,
         is_capture: bool,
     ) -> Self {
-        assert!(promotion.is_none_or(|p| !p.is_pawn() && !p.is_king()));
+        assert!(match promotion {
+            None => true,
+            Some(p) => !p.is_pawn() && !p.is_king(),
+        });
         Self {
             from,
             to,
@@ -36,11 +39,11 @@ impl Move {
         }
     }
 
-    pub fn quiet(from: Square, to: Square, piece: Piece) -> Self {
+    pub const fn quiet(from: Square, to: Square, piece: Piece) -> Self {
         Self::new(from, to, None, piece, false)
     }
 
-    pub fn capture(from: Square, to: Square, piece: Piece) -> Self {
+    pub const fn capture(from: Square, to: Square, piece: Piece) -> Self {
         Self::new(from, to, None, piece, true)
     }
 
@@ -76,6 +79,37 @@ impl Move {
         } else {
             None
         }
+    }
+
+    // If this is a castling move, the move itself indicates the king move.
+    // This function returns the extra rook move that needs to be done.
+    pub fn get_castling(self) -> Option<Move> {
+        const WHITE_KING_SIDE: Option<Move> =
+            Some(Move::quiet(Square::H1, Square::F1, Piece::WhiteRook));
+        const WHITE_QUEEN_SIDE: Option<Move> =
+            Some(Move::quiet(Square::A1, Square::D1, Piece::WhiteRook));
+        const BLACK_KING_SIDE: Option<Move> =
+            Some(Move::quiet(Square::H8, Square::F8, Piece::BlackRook));
+        const BLACK_QUEEN_SIDE: Option<Move> =
+            Some(Move::quiet(Square::A8, Square::D8, Piece::BlackRook));
+        if self.piece.is_king() {
+            if self.from == Square::E1 {
+                // White
+                if self.to == Square::G1 {
+                    return WHITE_KING_SIDE;
+                } else if self.to == Square::C1 {
+                    return WHITE_QUEEN_SIDE;
+                }
+            } else if self.from == Square::E8 {
+                // Black
+                if self.to == Square::G8 {
+                    return BLACK_KING_SIDE;
+                } else if self.to == Square::C8 {
+                    return BLACK_QUEEN_SIDE;
+                }
+            }
+        }
+        None
     }
 
     pub fn print_list(moves: &[Move]) {
