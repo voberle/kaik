@@ -7,7 +7,7 @@ use crate::{
     moves::Move,
 };
 
-use super::Board;
+use super::{Board, CastlingAbility};
 
 fn get_all_bitboards(pieces: &[BitBoard]) -> [BitBoard; 2] {
     pieces
@@ -31,6 +31,7 @@ impl Board {
             occupied: BitBoard::EMPTY,
             side_to_move: Color::White,
             en_passant_target_square: None,
+            castling_ability: CastlingAbility::NONE,
         }
     }
 
@@ -44,6 +45,7 @@ impl Board {
             occupied,
             side_to_move: Color::White,
             en_passant_target_square: None,
+            castling_ability: CastlingAbility::ALL,
         }
     }
 
@@ -51,7 +53,7 @@ impl Board {
         let (
             piece_placement,
             side_to_move,
-            _castling_ability,
+            castling_ability,
             en_passant_target_square,
             _half_move_clock,
             _full_move_counter,
@@ -76,12 +78,14 @@ impl Board {
 
         let all = get_all_bitboards(&pieces);
         let occupied = get_occupied_bitboard(&all);
+        let castling_ability = CastlingAbility::new(&castling_ability);
         Self {
             pieces,
             all,
             occupied,
             side_to_move,
             en_passant_target_square,
+            castling_ability,
         }
     }
 
@@ -102,16 +106,10 @@ impl Board {
                 })
             })
             .collect_vec();
-        let castling_ability = [
-            Piece::WhiteKing,
-            Piece::WhiteQueen,
-            Piece::BlackKing,
-            Piece::BlackQueen,
-        ];
         fen::create(
             &piece_placement,
             self.side_to_move,
-            &castling_ability,
+            &self.castling_ability.as_pieces_list(),
             self.en_passant_target_square,
             0,
             1,
@@ -130,7 +128,7 @@ impl Board {
         self.side_to_move = self.side_to_move.opposite();
     }
 
-    // Updates the bitboards only.
+    // Updates the bitboards and castling rights only.
     // Update by Move explained at <https://www.chessprogramming.org/General_Setwise_Operations#UpdateByMove>
     fn update_bitboards_by_move(&mut self, mv: Move) {
         let color = mv.get_piece().get_color();
@@ -154,6 +152,9 @@ impl Board {
             }
         }
         self.occupied ^= from_to_bb;
+
+        self.castling_ability.clear(mv.get_from());
+        self.castling_ability.clear(mv.get_to()); // in case rook gets taken
     }
 
     // Updates the board with the specified move.
@@ -233,7 +234,7 @@ mod tests {
         let mut board: Board = "2k5/8/8/8/8/8/2Pp4/2K5 w - - 0 1".into();
         let mv = Move::capture(C1, D2, WhiteKing);
         board.update_by_move(mv);
-        assert_eq!(board.to_string(), "2k5/8/8/8/8/8/2PK4/8 b KQkq - 0 1");
+        assert_eq!(board.to_string(), "2k5/8/8/8/8/8/2PK4/8 b - - 0 1");
     }
 
     #[test]
@@ -250,10 +251,20 @@ mod tests {
     #[test]
     fn test_update_by_move_castling() {
         let mut board: Board = "4k3/8/8/8/8/8/PPPPPPPP/R3K1NR w Q - 0 1".into();
-        let mv = Move::quiet(E1, C1, WhiteKing); // White queen castle
-        board.print();
+        let mv = Move::quiet(E1, C1, WhiteKing); // White queen side castle
         board.update_by_move(mv);
-        board.print();
         assert_eq!(board, "4k3/8/8/8/8/8/PPPPPPPP/2KR2NR b - - 0 1".into());
+    }
+
+    #[test]
+    fn test_update_by_move_castling_clearing() {
+        let mut board: Board =
+            "rnbqkbnr/ppp1pppp/3p4/8/8/5P2/PPPPP1PP/RNBQKBNR w KQkq - 0 1".into();
+        let mv = Move::quiet(E1, F2, WhiteKing);
+        board.update_by_move(mv);
+        assert_eq!(
+            board,
+            "rnbqkbnr/ppp1pppp/3p4/8/8/5P2/PPPPPKPP/RNBQ1BNR b kq - 0 1".into()
+        );
     }
 }

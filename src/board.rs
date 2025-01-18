@@ -4,9 +4,13 @@ use crate::{
 };
 
 mod board_type;
+mod castling;
 mod display;
 mod move_gen;
 mod perft;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+struct CastlingAbility(u8);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Board {
@@ -16,6 +20,5 @@ pub struct Board {
     occupied: BitBoard,
     side_to_move: Color,
     en_passant_target_square: Option<Square>,
-    // Castle
-    // castle: TBD,
+    castling_ability: CastlingAbility,
 }
