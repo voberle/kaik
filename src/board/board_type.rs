@@ -159,11 +159,14 @@ impl Board {
 
     // Updates the board with the specified move.
     pub fn update_by_move(&mut self, mv: Move) {
-        if mv.get_promotion().is_some() {
-            unimplemented!("Update by move for promotion");
-        }
-
         self.update_bitboards_by_move(mv);
+
+        if let Some(promote_to) = mv.get_promotion() {
+            // Pawn was moved. We now need to switch it to the new piece.
+            let to_bb: BitBoard = mv.get_to().into();
+            self.pieces[mv.get_piece() as usize] &= !to_bb;
+            self.pieces[promote_to as usize] |= to_bb;
+        }
 
         self.en_passant_target_square = mv.get_en_passant_target_square();
 
@@ -266,5 +269,15 @@ mod tests {
             board,
             "rnbqkbnr/ppp1pppp/3p4/8/8/5P2/PPPPPKPP/RNBQ1BNR b kq - 0 1".into()
         );
+    }
+
+    #[test]
+    fn test_update_by_move_promotion() {
+        let mut board: Board = "4k3/1P6/8/8/8/8/8/4K3 w - - 0 1".into();
+        let mv = Move::new(B7, B8, Some(WhiteQueen), WhitePawn, false);
+        board.print();
+        board.update_by_move(mv);
+        board.print();
+        assert_eq!(board, "1Q2k3/8/8/8/8/8/8/4K3 b - - 0 1".into());
     }
 }
