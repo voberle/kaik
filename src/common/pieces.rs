@@ -86,6 +86,21 @@ impl Piece {
         Piece::BlackKing,
     ];
 
+    pub const PROMOTION_PIECES: [[Piece; 4]; 2] = [
+        [
+            Piece::WhiteQueen,
+            Piece::WhiteKnight,
+            Piece::WhiteRook,
+            Piece::WhiteBishop,
+        ],
+        [
+            Piece::BlackQueen,
+            Piece::BlackKnight,
+            Piece::BlackRook,
+            Piece::BlackBishop,
+        ],
+    ];
+
     pub const fn is_pawn(self) -> bool {
         matches!(self, Piece::WhitePawn | Piece::BlackPawn)
     }

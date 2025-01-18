@@ -3,6 +3,8 @@
 
 use std::fmt::Display;
 
+use super::Color;
+
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[rustfmt::skip]
@@ -134,6 +136,11 @@ impl Square {
 
     pub fn get_file(self) -> u8 {
         self as u8 & 7
+    }
+
+    pub fn is_promotion_rank_for(self, color: Color) -> bool {
+        const PROMOTION_RANK: [u8; 2] = [7, 0];
+        self.get_rank() == PROMOTION_RANK[color as usize]
     }
 }
 

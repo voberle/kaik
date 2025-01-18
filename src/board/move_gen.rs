@@ -55,11 +55,29 @@ impl Board {
                 };
 
                 // Generate moves.
-                moves_list.extend(moves_bb.into_iter().map(|to_bb| {
+                for to_bb in moves_bb.into_iter() {
                     let to_square: Square = to_bb.get_index().into();
                     let is_capture = opposite_bb.contains(to_bb);
-                    Move::new(from_square, to_square, None, piece, is_capture)
-                }));
+
+                    // Promotions
+                    if piece.is_pawn() && to_square.is_promotion_rank_for(self.get_side_to_move()) {
+                        moves_list.extend(
+                            Piece::PROMOTION_PIECES[self.get_side_to_move() as usize]
+                                .iter()
+                                .map(|&promotion_piece| {
+                                    Move::new(
+                                        from_square,
+                                        to_square,
+                                        Some(promotion_piece),
+                                        piece,
+                                        is_capture,
+                                    )
+                                }),
+                        );
+                    } else {
+                        moves_list.push(Move::new(from_square, to_square, None, piece, is_capture));
+                    }
+                }
 
                 // En passant.
                 if let Some(en_passant) = self.en_passant_target_square {
