@@ -64,6 +64,20 @@ impl Move {
         self.is_capture
     }
 
+    pub fn is_pawn_double_push(self) -> bool {
+        self.piece.is_pawn() && self.from.get_rank().abs_diff(self.to.get_rank()) == 2
+    }
+
+    pub fn get_en_passant_target_square(self) -> Option<Square> {
+        if self.is_pawn_double_push() {
+            assert_eq!(self.from.get_file(), self.to.get_file());
+            let rank = (self.from.get_rank() + self.to.get_rank()) / 2;
+            Some(Square::new(rank, self.from.get_file()))
+        } else {
+            None
+        }
+    }
+
     pub fn print_list(moves: &[Move]) {
         for mv in moves {
             println!("{mv}");

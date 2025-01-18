@@ -158,6 +158,8 @@ impl Board {
             }
         }
 
+        self.en_passant_target_square = mv.get_en_passant_target_square();
+
         self.occupied ^= from_to_bb;
         self.toggle_side();
     }
@@ -183,6 +185,7 @@ mod tests {
         assert_eq!(board.all.len(), 2);
         assert_eq!(board, fen::START_POSITION.into());
         assert_eq!(board.side_to_move, Color::White);
+        assert_eq!(board.en_passant_target_square, None);
     }
 
     #[test]
@@ -192,6 +195,7 @@ mod tests {
         assert_eq!(board.all, [BitBoard::EMPTY; 2]);
         assert_eq!(board.occupied, BitBoard::EMPTY);
         assert_eq!(board.side_to_move, Color::White);
+        assert_eq!(board.en_passant_target_square, None);
     }
 
     #[test]
@@ -201,6 +205,7 @@ mod tests {
         assert_eq!(board.all.len(), 2);
         assert_eq!(board.side_to_move, Color::White);
         assert_eq!(board, Board::initial_board());
+        assert_eq!(board.en_passant_target_square, None);
     }
 
     #[test]
@@ -208,8 +213,6 @@ mod tests {
         let mut board = Board::initial_board();
         let mv = Move::quiet(B2, B3, WhitePawn);
         board.update_by_move(mv);
-
-        // TODO: Would be better to not depend on FEN serialization for this.
         assert_eq!(
             board.to_string(),
             "rnbqkbnr/pppppppp/8/8/8/1P6/P1PPPPPP/RNBQKBNR b KQkq - 0 1"
@@ -222,5 +225,16 @@ mod tests {
         let mv = Move::capture(C1, D2, WhiteKing);
         board.update_by_move(mv);
         assert_eq!(board.to_string(), "2k5/8/8/8/8/8/2PK4/8 b KQkq - 0 1");
+    }
+
+    #[test]
+    fn test_update_by_move_double_push() {
+        let mut board = Board::initial_board();
+        let mv = Move::quiet(B2, B4, WhitePawn);
+        board.update_by_move(mv);
+        assert_eq!(
+            board,
+            "rnbqkbnr/pppppppp/8/8/1P6/8/P1PPPPPP/RNBQKBNR b KQkq b3 0 1".into()
+        );
     }
 }

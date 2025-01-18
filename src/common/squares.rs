@@ -124,6 +124,10 @@ impl TryFrom<&str> for Square {
 }
 
 impl Square {
+    pub fn new(rank: u8, file: u8) -> Self {
+        ((rank << 3) + file).into()
+    }
+
     pub fn get_rank(self) -> u8 {
         (self as u8 & 56) >> 3
     }
@@ -148,6 +152,8 @@ mod tests {
     #[test]
     fn test_from_u8() {
         assert_eq!(Into::<Square>::into(32u8), Square::A5);
+        assert_eq!(Square::new(4, 0), Square::A5);
+        assert_eq!(Square::new(2, 2), Square::C3);
     }
 
     #[test]
