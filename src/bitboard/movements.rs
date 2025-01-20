@@ -3,7 +3,7 @@ use crate::bitboard::BitBoard;
 use super::sliding_pieces_with_hq::{get_bishop_attacks, get_queen_attacks, get_rook_attacks};
 
 impl BitBoard {
-    pub fn get_king_moves(self, own_pieces: BitBoard) -> BitBoard {
+    pub fn get_king_attacks(self) -> BitBoard {
         // See Peter Keller https://pages.cs.wisc.edu/~psilord/blog/data/chess-pages/index.html
         // NB: The code there is buggy...
         // 1 2 3    +7 +8 +9
@@ -24,12 +24,14 @@ impl BitBoard {
         let spot_7 = king_clip_file_a >> 9;
         let spot_8 = king_clip_file_a >> 1;
 
-        let moves = spot_1 | spot_2 | spot_3 | spot_4 | spot_5 | spot_6 | spot_7 | spot_8;
-
-        moves & !own_pieces
+        spot_1 | spot_2 | spot_3 | spot_4 | spot_5 | spot_6 | spot_7 | spot_8
     }
 
-    pub fn get_knight_moves(self, own_pieces: BitBoard) -> BitBoard {
+    pub fn get_king_moves(self, own_pieces: BitBoard) -> BitBoard {
+        self.get_king_attacks() & !own_pieces
+    }
+
+    pub fn get_knight_attacks(self) -> BitBoard {
         //  2 3
         // 1   3
         //   N
@@ -50,20 +52,24 @@ impl BitBoard {
         let spot_7 = knight_clip_file_a >> 17;
         let spot_8 = knight_clip_file_ab >> 10;
 
-        let moves = spot_1 | spot_2 | spot_3 | spot_4 | spot_5 | spot_6 | spot_7 | spot_8;
-
-        moves & !own_pieces
+        spot_1 | spot_2 | spot_3 | spot_4 | spot_5 | spot_6 | spot_7 | spot_8
     }
 
-    pub fn get_white_pawn_attacks(self, all_other_pieces: BitBoard) -> BitBoard {
+    pub fn get_knight_moves(self, own_pieces: BitBoard) -> BitBoard {
+        self.get_knight_attacks() & !own_pieces
+    }
+
+    pub fn get_white_pawn_attacks(self) -> BitBoard {
         // Left side of the pawn, minding the underflow File A.
         let pawn_left_attack = (self & BitBoard::NOT_A_FILE) << 7;
         // Right side
         let pawn_right_attack = (self & BitBoard::NOT_H_FILE) << 9;
-        let pawn_attacks = pawn_left_attack | pawn_right_attack;
+        pawn_left_attack | pawn_right_attack
+    }
 
+    pub fn get_valid_white_pawn_attacks(self, all_other_pieces: BitBoard) -> BitBoard {
         // Is there something to attack?
-        pawn_attacks & all_other_pieces
+        self.get_white_pawn_attacks() & all_other_pieces
     }
 
     pub fn get_white_pawn_moves(
@@ -92,17 +98,19 @@ impl BitBoard {
         // let pawn_attacks = pawn_left_attack | pawn_right_attack;
 
         // Pawn attacks:
-        let pawn_valid_attacks = self.get_white_pawn_attacks(all_other_pieces);
+        let pawn_valid_attacks = self.get_valid_white_pawn_attacks(all_other_pieces);
 
         pawn_valid_moves | pawn_valid_attacks
     }
 
-    pub fn get_black_pawn_attacks(self, all_other_pieces: BitBoard) -> BitBoard {
+    pub fn get_black_pawn_attacks(self) -> BitBoard {
         let pawn_left_attack = (self & BitBoard::NOT_A_FILE) >> 9;
         let pawn_right_attack = (self & BitBoard::NOT_H_FILE) >> 7;
-        let pawn_attacks = pawn_left_attack | pawn_right_attack;
+        pawn_left_attack | pawn_right_attack
+    }
 
-        pawn_attacks & all_other_pieces
+    pub fn get_valid_black_pawn_attacks(self, all_other_pieces: BitBoard) -> BitBoard {
+        self.get_black_pawn_attacks() & all_other_pieces
     }
 
     pub fn get_black_pawn_moves(
@@ -115,8 +123,16 @@ impl BitBoard {
         let pawn_two_steps = ((pawn_one_step & BitBoard::MASK_RANK_6) >> 8) & !all_pieces;
         let pawn_valid_moves = pawn_one_step | pawn_two_steps;
 
-        let pawn_valid_attacks = self.get_black_pawn_attacks(all_other_pieces);
+        let pawn_valid_attacks = self.get_valid_black_pawn_attacks(all_other_pieces);
         pawn_valid_moves | pawn_valid_attacks
+    }
+
+    pub fn get_bishop_attacks(self, all_pieces: BitBoard) -> BitBoard {
+        BitBoard::new(get_bishop_attacks(all_pieces.into(), self.get_index()))
+    }
+
+    pub fn get_rook_attacks(self, all_pieces: BitBoard) -> BitBoard {
+        BitBoard::new(get_rook_attacks(all_pieces.into(), self.get_index()))
     }
 
     pub fn get_bishop_moves(self, all_pieces: BitBoard, own_pieces: BitBoard) -> BitBoard {

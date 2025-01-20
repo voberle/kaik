@@ -83,8 +83,8 @@ impl Board {
                 if let Some(en_passant) = self.en_passant_target_square {
                     let target_bb = en_passant.into();
                     let ep_attacks_bb = match piece {
-                        Piece::WhitePawn => from_bb.get_white_pawn_attacks(target_bb),
-                        Piece::BlackPawn => from_bb.get_black_pawn_attacks(target_bb),
+                        Piece::WhitePawn => from_bb.get_valid_white_pawn_attacks(target_bb),
+                        Piece::BlackPawn => from_bb.get_valid_black_pawn_attacks(target_bb),
                         _ => BitBoard::EMPTY,
                     };
 
