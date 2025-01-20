@@ -1,8 +1,9 @@
 #![allow(dead_code)]
 
+use std::env;
+
 use board::Board;
-#[allow(unused_imports)]
-use common::Piece;
+use common::Square;
 use moves::Move;
 
 mod bitboard;
@@ -11,8 +12,29 @@ mod common;
 mod fen;
 mod moves;
 
-#[allow(unused_variables)]
+#[allow(unused_variables, unused_imports)]
 fn main() {
+    use common::Piece::*;
+    use common::Square::*;
+
+    let args: Vec<String> = env::args().collect();
+    if args.len() == 3 {
+        let depth: usize = args[1].parse().expect("Invalid depth argument");
+        let moves = &args[2];
+
+        let mut b = Board::initial_board();
+        for mv in moves.split_ascii_whitespace() {
+            assert_eq!(mv.len(), 4);
+            let from: Square = mv[0..2].try_into().unwrap();
+            let to: Square = mv[2..4].try_into().unwrap();
+            b.update_by_move(b.new_move(from, to));
+        }
+        // b.print();
+        divide(&b, depth);
+
+        return;
+    }
+
     println!("  Kaik Chess Engine");
     println!("         by Vincent");
     println!();
@@ -44,18 +66,34 @@ fn main() {
     // let b: Board = "8/8/8/8/8/8/8/R3K2R w KQkq - 0 1".into(); // Castling
     // let moves = b.generate_moves_for(&[]);
 
-    let b: Board = "4k3/1P6/8/8/8/8/8/4K3 w - - 0 1".into(); // Promotion
-    let moves = b.generate_moves_for(&[Piece::WhitePawn]);
-
-    b.print();
-    Move::print_list(&moves);
-    print_moves_with_board(&b, &moves);
-    print_moves_statistics(&moves);
+    // let b: Board = "4k3/1P6/8/8/8/8/8/4K3 w - - 0 1".into(); // Promotion
+    // let moves = b.generate_moves_for(&[Piece::WhitePawn]);
 
     // b.print();
-    // perft(&b, 1);
+    // Move::print_list(&moves);
+    // print_moves_with_board(&b, &moves);
+    // print_moves_statistics(&moves);
 
-    // divide(&b, 3);
+    // King attacks
+    // let b: Board = "rnbqk2r/pppp1ppp/8/8/1b2PP1P/1PP5/P2p1P2/RNBQKBNR w KQkq - 0 10".into();
+    // let b: Board = "rnbqk2r/pppp1ppp/8/3P4/1b2PP1P/1P6/P4P2/RNBQKBNR w KQkq - 0 10".into();
+    // b.print();
+    // let bb = b.attacks_king(common::Color::White);
+    // bb.print();
+
+    // let mut b = Board::initial_board();
+    // b.update_by_move(b.new_move(B1, C3));
+    // b.update_by_move(b.new_move(D7, D5));
+    // b.update_by_move(b.new_move(C3, D5));
+
+    // b.print();
+    // divide(&b, 1);
+
+    // b.print_bitboards();
+
+    // let moves = b.generate_moves();
+    // print_moves_with_board(&b, &moves);
+    // print_moves_statistics(&moves);
 }
 
 fn perft(board: &Board, depth: usize) {
