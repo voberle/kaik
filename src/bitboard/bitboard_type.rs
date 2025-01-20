@@ -18,8 +18,16 @@ impl BitBoard {
         self.0 & (1 << index) != 0
     }
 
+    pub const fn intersects(self, other: BitBoard) -> bool {
+        self.0 & other.0 != 0
+    }
+
     pub fn set(&mut self, index: u8) {
         self.0 |= 1 << index;
+    }
+
+    pub fn clear(&mut self, index: u8) {
+        self.0 &= !(1 << index);
     }
 
     pub fn print(self) {
@@ -38,10 +46,6 @@ impl BitBoard {
 
     pub fn is_empty(self) -> bool {
         self.0 == 0
-    }
-
-    pub fn contains(self, other: BitBoard) -> bool {
-        self.0 & other.0 != 0
     }
 
     // Returns the index of lowest bit in the bitboard.

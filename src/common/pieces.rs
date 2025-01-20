@@ -129,6 +129,54 @@ impl Piece {
         Color::new(self as usize % 2)
     }
 
+    pub const fn get_pawn_of(color: Color) -> Self {
+        if matches!(color, Color::White) {
+            Piece::WhitePawn
+        } else {
+            Piece::BlackPawn
+        }
+    }
+
+    pub const fn get_knight_of(color: Color) -> Self {
+        if matches!(color, Color::White) {
+            Piece::WhiteKnight
+        } else {
+            Piece::BlackKnight
+        }
+    }
+
+    pub const fn get_bishop_of(color: Color) -> Self {
+        if matches!(color, Color::White) {
+            Piece::WhiteBishop
+        } else {
+            Piece::BlackBishop
+        }
+    }
+
+    pub const fn get_rook_of(color: Color) -> Self {
+        if matches!(color, Color::White) {
+            Piece::WhiteRook
+        } else {
+            Piece::BlackRook
+        }
+    }
+
+    pub const fn get_queen_of(color: Color) -> Self {
+        if matches!(color, Color::White) {
+            Piece::WhiteQueen
+        } else {
+            Piece::BlackQueen
+        }
+    }
+
+    pub const fn get_king_of(color: Color) -> Self {
+        if matches!(color, Color::White) {
+            Piece::WhiteKing
+        } else {
+            Piece::BlackKing
+        }
+    }
+
     pub fn as_unicode(self) -> char {
         match self {
             Piece::WhitePawn => '♙',

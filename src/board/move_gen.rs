@@ -57,7 +57,7 @@ impl Board {
                 // Generate moves.
                 for to_bb in moves_bb.into_iter() {
                     let to_square: Square = to_bb.get_index().into();
-                    let is_capture = opposite_bb.contains(to_bb);
+                    let is_capture = opposite_bb.intersects(to_bb);
 
                     // Promotions
                     if piece.is_pawn() && to_square.is_promotion_rank_for(self.get_side_to_move()) {
