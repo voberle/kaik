@@ -138,20 +138,24 @@ impl Board {
 
         self.pieces[mv.get_piece() as usize] ^= from_to_bb;
         self.all[color as usize] ^= from_to_bb;
+        self.occupied ^= from_to_bb;
 
         if mv.is_capture() {
             // Loop over bitboards opposite color.
-            for bb in &mut self.pieces {
-                if *bb == to_bb {
+            for bb in self
+                .pieces
+                .iter_mut()
+                .skip(color.opposite() as usize)
+                .step_by(2)
+            {
+                if !(*bb & to_bb).is_empty() {
                     *bb ^= to_bb;
                     self.all[color.opposite() as usize] ^= to_bb;
-                    // Actually important to avoid setting it back to the other value.
-                    // Alternative could be to skip every second bitboard with a step_by(2).
+                    self.occupied ^= to_bb;
                     break;
                 }
             }
         }
-        self.occupied ^= from_to_bb;
 
         self.castling_ability.clear(mv.get_from());
         self.castling_ability.clear(mv.get_to()); // in case rook gets taken
@@ -238,6 +242,15 @@ mod tests {
         let mv = Move::capture(C1, D2, WhiteKing);
         board.update_by_move(mv);
         assert_eq!(board.to_string(), "2k5/8/8/8/8/8/2PK4/8 b - - 0 1");
+
+        let mut board: Board =
+            "rnbqkbnr/ppp1pppp/8/3p4/8/2N5/PPPPPPPP/R1BQKBNR w KQkq - 0 1".into();
+        let mv = Move::capture(C3, D5, WhiteKnight);
+        board.update_by_move(mv);
+        assert_eq!(
+            board.to_string(),
+            "rnbqkbnr/ppp1pppp/8/3N4/8/8/PPPPPPPP/R1BQKBNR b KQkq - 0 1"
+        );
     }
 
     #[test]
