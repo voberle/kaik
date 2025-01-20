@@ -180,6 +180,31 @@ impl Board {
 
         self.toggle_side();
     }
+
+    pub fn attacks_king(&self, king_color: Color) -> BitBoard {
+        // From <https://www.chessprogramming.org/Checks_and_Pinned_Pieces_(Bitboards)>
+        // Could be optimized a bit with things like:
+        //   let opposite_pawns = self.pieces[Piece::BlackPawn as usize - king_color as usize];
+        let opposite_pawns = self.pieces[Piece::get_pawn_of(king_color.opposite()) as usize];
+        let opposite_knights = self.pieces[Piece::get_knight_of(king_color.opposite()) as usize];
+        let opposite_rooks_queens = self.pieces
+            [Piece::get_queen_of(king_color.opposite()) as usize]
+            | self.pieces[Piece::get_rook_of(king_color.opposite()) as usize];
+        let opposite_bishops_queens = self.pieces
+            [Piece::get_queen_of(king_color.opposite()) as usize]
+            | self.pieces[Piece::get_bishop_of(king_color.opposite()) as usize];
+
+        let king_bb = self.pieces[Piece::get_king_of(king_color) as usize];
+        let pawn_attacks = if king_color == Color::White {
+            king_bb.get_white_pawn_attacks()
+        } else {
+            king_bb.get_black_pawn_attacks()
+        };
+        (pawn_attacks & opposite_pawns)
+            | (king_bb.get_knight_attacks() & opposite_knights)
+            | (king_bb.get_bishop_attacks(self.occupied) & opposite_bishops_queens)
+            | (king_bb.get_rook_attacks(self.occupied) & opposite_rooks_queens)
+    }
 }
 
 // Creates the board from a FEN string.

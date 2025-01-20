@@ -13,6 +13,11 @@ impl Board {
         for mv in move_list {
             let mut board_copy = *self;
             board_copy.update_by_move(mv);
+            // Drop the move if the king is left in check
+            let king_color = mv.get_piece().get_color(); // Color that just moved.
+            if !board_copy.attacks_king(king_color).is_empty() {
+                continue;
+            }
             nodes += board_copy.perft(depth - 1);
         }
         nodes
@@ -26,6 +31,11 @@ impl Board {
         for mv in move_list {
             let mut board_copy = *self;
             board_copy.update_by_move(mv);
+            // Drop the move if the king is left in check
+            let king_color = mv.get_piece().get_color(); // Color that just moved.
+            if !board_copy.attacks_king(king_color).is_empty() {
+                continue;
+            }
             nodes.push((mv, board_copy.perft(depth - 1)));
         }
         nodes
