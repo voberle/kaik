@@ -11,14 +11,14 @@ impl Board {
         let side_to_move = self.get_side_to_move();
         let castling_mask = BitBoard::CASTLING_KING_SIDE_MASKS[side_to_move as usize];
         self.castling_ability.can_castle_king_side(side_to_move)
-            && (self.occupied & castling_mask).is_empty()
+            && !self.occupied.intersects(castling_mask)
     }
 
     fn can_castle_queen_side(&self) -> bool {
         let side_to_move = self.get_side_to_move();
         let castling_mask = BitBoard::CASTLING_QUEEN_SIDE_MASKS[side_to_move as usize];
         self.castling_ability.can_castle_queen_side(side_to_move)
-            && (self.occupied & castling_mask).is_empty()
+            && !self.occupied.intersects(castling_mask)
     }
 
     // Generate all possible moves from this board.

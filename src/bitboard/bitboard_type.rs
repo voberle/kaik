@@ -30,27 +30,13 @@ impl BitBoard {
         self.0 &= !(1 << index);
     }
 
-    pub fn print(self) {
-        for rank in 0..8 {
-            print!("  {} ", 8 - rank); // display starts at 1
-            for file in 0..8 {
-                let index = (7 - rank) * 8 + file;
-                // print!(" {}", u8::from(self.is_set(index)));
-                print!(" {}", if self.is_set(index) { '1' } else { '.' });
-            }
-            println!();
-        }
-        println!("     a b c d e f g h");
-        println!("{} = {:064b}", self.0, self.0);
-    }
-
-    pub fn is_empty(self) -> bool {
+    pub const fn is_null(self) -> bool {
         self.0 == 0
     }
 
     // Returns the index of lowest bit in the bitboard.
     #[allow(clippy::cast_possible_truncation)]
-    pub fn get_index(self) -> u8 {
+    pub const fn get_index(self) -> u8 {
         // Should be one CPU instruction.
         self.0.trailing_zeros() as u8
     }
@@ -69,6 +55,20 @@ impl BitBoard {
     // Creates an iterator that yields each set bit as a separate bitboard.
     pub fn into_iter(self) -> BitBoardIterator {
         BitBoardIterator(self.0)
+    }
+
+    pub fn print(self) {
+        for rank in 0..8 {
+            print!("  {} ", 8 - rank); // display starts at 1
+            for file in 0..8 {
+                let index = (7 - rank) * 8 + file;
+                // print!(" {}", u8::from(self.is_set(index)));
+                print!(" {}", if self.is_set(index) { '1' } else { '.' });
+            }
+            println!();
+        }
+        println!("     a b c d e f g h");
+        println!("{} = {:064b}", self.0, self.0);
     }
 }
 
