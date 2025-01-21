@@ -1,7 +1,7 @@
 use itertools::Itertools;
 
 use crate::{
-    bitboard::BitBoard,
+    bitboard::{movements, BitBoard},
     common::{Color, Piece},
     fen,
     moves::Move,
@@ -196,14 +196,14 @@ impl Board {
 
         let king_bb = self.pieces[Piece::get_king_of(king_color) as usize];
         let pawn_attacks = if king_color == Color::White {
-            king_bb.get_white_pawn_attacks()
+            movements::get_white_pawn_attacks(king_bb)
         } else {
-            king_bb.get_black_pawn_attacks()
+            movements::get_black_pawn_attacks(king_bb)
         };
         (pawn_attacks & opposite_pawns)
-            | (king_bb.get_knight_attacks() & opposite_knights)
-            | (king_bb.get_bishop_attacks(self.occupied) & opposite_bishops_queens)
-            | (king_bb.get_rook_attacks(self.occupied) & opposite_rooks_queens)
+            | (movements::get_knight_attacks(king_bb) & opposite_knights)
+            | (movements::get_bishop_attacks(king_bb, self.occupied) & opposite_bishops_queens)
+            | (movements::get_rook_attacks(king_bb, self.occupied) & opposite_rooks_queens)
     }
 }
 

@@ -1,7 +1,7 @@
 use super::Board;
 
 use crate::{
-    bitboard::BitBoard,
+    bitboard::{movements, BitBoard},
     common::{Piece, Square},
     moves::Move,
 };
@@ -39,18 +39,26 @@ impl Board {
                 let from_square = from_bb.get_index().into();
 
                 let moves_bb = match piece {
-                    Piece::WhiteKing | Piece::BlackKing => from_bb.get_king_moves(own_bb),
-                    Piece::WhiteKnight | Piece::BlackKnight => from_bb.get_knight_moves(own_bb),
-                    Piece::WhitePawn => from_bb.get_white_pawn_moves(self.occupied, opposite_bb),
-                    Piece::BlackPawn => from_bb.get_black_pawn_moves(self.occupied, opposite_bb),
+                    Piece::WhiteKing | Piece::BlackKing => {
+                        movements::get_king_moves(from_bb, own_bb)
+                    }
+                    Piece::WhiteKnight | Piece::BlackKnight => {
+                        movements::get_knight_moves(from_bb, own_bb)
+                    }
+                    Piece::WhitePawn => {
+                        movements::get_white_pawn_moves(from_bb, self.occupied, opposite_bb)
+                    }
+                    Piece::BlackPawn => {
+                        movements::get_black_pawn_moves(from_bb, self.occupied, opposite_bb)
+                    }
                     Piece::WhiteBishop | Piece::BlackBishop => {
-                        from_bb.get_bishop_moves(self.occupied, own_bb)
+                        movements::get_bishop_moves(from_bb, self.occupied, own_bb)
                     }
                     Piece::WhiteRook | Piece::BlackRook => {
-                        from_bb.get_rook_moves(self.occupied, own_bb)
+                        movements::get_rook_moves(from_bb, self.occupied, own_bb)
                     }
                     Piece::WhiteQueen | Piece::BlackQueen => {
-                        from_bb.get_queen_moves(self.occupied, own_bb)
+                        movements::get_queen_moves(from_bb, self.occupied, own_bb)
                     }
                 };
 
@@ -83,8 +91,12 @@ impl Board {
                 if let Some(en_passant) = self.en_passant_target_square {
                     let target_bb = en_passant.into();
                     let ep_attacks_bb = match piece {
-                        Piece::WhitePawn => from_bb.get_valid_white_pawn_attacks(target_bb),
-                        Piece::BlackPawn => from_bb.get_valid_black_pawn_attacks(target_bb),
+                        Piece::WhitePawn => {
+                            movements::get_valid_white_pawn_attacks(from_bb, target_bb)
+                        }
+                        Piece::BlackPawn => {
+                            movements::get_valid_black_pawn_attacks(from_bb, target_bb)
+                        }
                         _ => BitBoard::EMPTY,
                     };
 
