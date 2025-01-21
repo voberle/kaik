@@ -23,12 +23,7 @@ fn main() {
         let moves = &args[2];
 
         let mut b = Board::initial_board();
-        for mv in moves.split_ascii_whitespace() {
-            assert_eq!(mv.len(), 4);
-            let from: Square = mv[0..2].try_into().unwrap();
-            let to: Square = mv[2..4].try_into().unwrap();
-            b.update_by_move(b.new_move(from, to));
-        }
+        apply_moves(&mut b, moves);
         // b.print();
         divide(&b, depth);
 
@@ -39,7 +34,7 @@ fn main() {
     println!("         by Vincent");
     println!();
 
-    let b = Board::initial_board();
+    let mut b = Board::initial_board();
     b.print();
     println!();
 
@@ -69,10 +64,16 @@ fn main() {
     // let b: Board = "4k3/1P6/8/8/8/8/8/4K3 w - - 0 1".into(); // Promotion
     // let moves = b.generate_moves_for(&[Piece::WhitePawn]);
 
-    // b.print();
+    apply_moves(&mut b, "a2a4 a7a6 a4a5 b7b5 a5b6");
+    b.print();
+
+    let moves = b.generate_moves();
+    print_moves_with_board(&b, &moves);
+    print_moves_statistics(&moves);
     // Move::print_list(&moves);
-    // print_moves_with_board(&b, &moves);
-    // print_moves_statistics(&moves);
+    for mv in &moves {
+        println!("{}", mv.pure());
+    }
 
     // King attacks
     // let b: Board = "rnbqk2r/pppp1ppp/8/8/1b2PP1P/1PP5/P2p1P2/RNBQKBNR w KQkq - 0 10".into();
@@ -130,4 +131,13 @@ fn print_moves_statistics(moves: &[Move]) {
         moves.len(),
         moves.iter().filter(|m| m.is_capture()).count()
     );
+}
+
+fn apply_moves(board: &mut Board, moves: &str) {
+    for mv in moves.split_ascii_whitespace() {
+        assert_eq!(mv.len(), 4);
+        let from: Square = mv[0..2].try_into().unwrap();
+        let to: Square = mv[2..4].try_into().unwrap();
+        board.update_by_move(board.new_move(from, to));
+    }
 }
