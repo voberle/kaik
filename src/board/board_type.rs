@@ -1,7 +1,7 @@
 use itertools::Itertools;
 
 use crate::{
-    bitboard::{constants, movements, BitBoard},
+    bitboard::{constants, from_array, movements, BitBoard},
     common::{Color, Piece},
     fen,
     moves::Move,
@@ -71,7 +71,7 @@ impl Board {
                     })
                     .collect_vec();
                 assert_eq!(filtered.len(), 64);
-                Into::<BitBoard>::into(&*filtered)
+                from_array(&filtered)
             })
             .collect_array()
             .unwrap();

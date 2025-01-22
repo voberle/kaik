@@ -168,7 +168,10 @@ pub fn get_queen_moves(
 
 #[cfg(test)]
 mod tests {
-    use crate::{bitboard::constants::EMPTY, common::Square::*};
+    use crate::{
+        bitboard::{self, constants::EMPTY},
+        common::Square::*,
+    };
 
     use super::*;
 
@@ -178,7 +181,8 @@ mod tests {
         let moves = get_king_moves(king, EMPTY);
         assert_eq!(
             moves,
-            r"
+            bitboard::from_str(
+                r"
             0 0 0 0 0 0 0 0
             0 0 0 0 0 0 0 0
             0 0 0 0 0 0 0 0
@@ -187,14 +191,15 @@ mod tests {
             0 0 0 0 0 0 0 0
             0 0 0 1 1 1 0 0
             0 0 0 1 0 1 0 0"
-                .into()
+            )
         );
 
         let king: BitBoard = H4.into();
         let moves = get_king_moves(king, EMPTY);
         assert_eq!(
             moves,
-            r"
+            bitboard::from_str(
+                r"
             0 0 0 0 0 0 0 0
             0 0 0 0 0 0 0 0
             0 0 0 0 0 0 0 0
@@ -203,14 +208,15 @@ mod tests {
             0 0 0 0 0 0 1 1
             0 0 0 0 0 0 0 0
             0 0 0 0 0 0 0 0"
-                .into()
+            )
         );
 
         let king: BitBoard = A8.into();
         let moves = get_king_moves(king, EMPTY);
         assert_eq!(
             moves,
-            r"
+            bitboard::from_str(
+                r"
             0 1 0 0 0 0 0 0
             1 1 0 0 0 0 0 0
             0 0 0 0 0 0 0 0
@@ -219,7 +225,7 @@ mod tests {
             0 0 0 0 0 0 0 0
             0 0 0 0 0 0 0 0
             0 0 0 0 0 0 0 0"
-                .into()
+            )
         );
     }
 
@@ -230,7 +236,8 @@ mod tests {
         let moves = get_king_moves(king, own_pieces);
         assert_eq!(
             moves,
-            r"
+            bitboard::from_str(
+                r"
             0 0 0 0 0 0 0 0
             0 0 0 0 0 0 0 0
             0 0 0 0 0 0 0 0
@@ -239,7 +246,7 @@ mod tests {
             0 0 0 0 0 0 0 0
             0 0 0 0 1 1 0 0
             0 0 0 1 0 0 0 0"
-                .into()
+            )
         );
     }
 
@@ -250,7 +257,8 @@ mod tests {
         let moves = get_knight_moves(knight, own_pieces);
         assert_eq!(
             moves,
-            r"
+            bitboard::from_str(
+                r"
             0 0 0 0 0 0 0 0
             0 0 0 0 0 0 0 0
             1 0 1 0 0 0 0 0
@@ -259,13 +267,14 @@ mod tests {
             0 0 0 1 0 0 0 0
             0 0 1 0 0 0 0 0
             0 0 0 0 0 0 0 0"
-                .into()
+            )
         );
     }
 
     #[test]
     fn test_white_pawn_moves() {
-        let pawns: BitBoard = r"
+        let pawns: BitBoard = bitboard::from_str(
+            r"
             0 0 0 0 0 0 0 0
             0 0 0 0 0 0 0 0
             0 0 0 0 0 0 0 0
@@ -273,9 +282,10 @@ mod tests {
             0 0 0 0 0 0 0 0
             0 0 0 0 0 0 1 0
             1 1 1 1 1 1 1 1
-            0 0 0 0 0 0 0 0"
-            .into();
-        let all_pieces: BitBoard = r"
+            0 0 0 0 0 0 0 0",
+        );
+        let all_pieces: BitBoard = bitboard::from_str(
+            r"
             0 0 0 0 0 0 0 0
             0 0 0 0 0 0 0 0
             0 0 0 0 0 0 0 0
@@ -283,9 +293,10 @@ mod tests {
             0 0 0 0 1 0 0 0
             1 0 1 1 0 0 1 0
             1 1 1 1 1 1 1 1
-            0 0 0 0 0 0 0 0"
-            .into();
-        let all_black_pieces: BitBoard = r"
+            0 0 0 0 0 0 0 0",
+        );
+        let all_black_pieces: BitBoard = bitboard::from_str(
+            r"
             0 0 0 0 0 0 0 0
             0 0 0 0 0 0 0 0
             0 0 0 0 0 0 0 0
@@ -293,12 +304,13 @@ mod tests {
             0 0 0 0 0 0 0 0
             1 0 1 0 0 0 0 0
             0 0 0 0 0 0 0 0
-            0 0 0 0 0 0 0 0"
-            .into();
+            0 0 0 0 0 0 0 0",
+        );
         let moves = get_white_pawn_moves(pawns, all_pieces, all_black_pieces);
         assert_eq!(
             moves,
-            r"
+            bitboard::from_str(
+                r"
             0 0 0 0 0 0 0 0
             0 0 0 0 0 0 0 0
             0 0 0 0 0 0 0 0
@@ -307,7 +319,7 @@ mod tests {
             1 1 1 0 1 1 0 1
             0 0 0 0 0 0 0 0
             0 0 0 0 0 0 0 0"
-                .into()
+            )
         );
     }
 }

@@ -51,13 +51,15 @@ pub const CASTLING_QUEEN_SIDE_MASKS: [BitBoard; 2] = [
 
 #[cfg(test)]
 mod tests {
-    use crate::bitboard::constants::*;
+    use crate::bitboard::{self, constants::*};
 
     #[test]
     fn test_clipping_bitboards() {
         assert_eq!(
             NOT_A_FILE,
-            r"0 1 1 1 1 1 1 1
+            bitboard::from_str(
+                r"
+              0 1 1 1 1 1 1 1
               0 1 1 1 1 1 1 1
               0 1 1 1 1 1 1 1
               0 1 1 1 1 1 1 1
@@ -65,11 +67,13 @@ mod tests {
               0 1 1 1 1 1 1 1
               0 1 1 1 1 1 1 1
               0 1 1 1 1 1 1 1"
-                .into()
+            )
         );
         assert_eq!(
             NOT_H_FILE,
-            r"1 1 1 1 1 1 1 0
+            bitboard::from_str(
+                r"
+            1 1 1 1 1 1 1 0
               1 1 1 1 1 1 1 0
               1 1 1 1 1 1 1 0
               1 1 1 1 1 1 1 0
@@ -77,7 +81,7 @@ mod tests {
               1 1 1 1 1 1 1 0
               1 1 1 1 1 1 1 0
               1 1 1 1 1 1 1 0"
-                .into()
+            )
         );
     }
 
@@ -85,7 +89,9 @@ mod tests {
     fn test_masks() {
         assert_eq!(
             MASK_RANK_3,
-            r"0 0 0 0 0 0 0 0
+            bitboard::from_str(
+                r"
+              0 0 0 0 0 0 0 0
               0 0 0 0 0 0 0 0
               0 0 0 0 0 0 0 0
               0 0 0 0 0 0 0 0
@@ -93,7 +99,7 @@ mod tests {
               1 1 1 1 1 1 1 1
               0 0 0 0 0 0 0 0
               0 0 0 0 0 0 0 0"
-                .into()
+            )
         );
     }
 }

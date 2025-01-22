@@ -1,5 +1,9 @@
 //! Functions to help debug Bit Boards.
 
+use itertools::Itertools;
+
+use crate::bitboard;
+
 use super::BitBoard;
 
 pub fn print(bitboard: BitBoard) {
@@ -14,4 +18,46 @@ pub fn print(bitboard: BitBoard) {
     }
     println!("     a b c d e f g h");
     println!("{} = {:064b}", bitboard.0, bitboard.0);
+}
+
+// Converts a list of 0 and 1s into a BitBoard. Starts with A8, A7, etc.
+// Dot ('.') is synonymn with 0.
+// The string may have line breaks, spaces etc, they are just ignored.
+pub fn from_str(value: &str) -> BitBoard {
+    let filtered = value
+        .chars()
+        .filter_map(|c| match c {
+            '0' | '.' => Some(0u64),
+            '1' => Some(1u64),
+            _ => None,
+        })
+        .collect_vec();
+    assert_eq!(filtered.len(), 64);
+    bitboard::from_array(&filtered)
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        bitboard::{self, constants},
+        common::Square,
+    };
+
+    use super::*;
+
+    #[test]
+    fn test_from_str() {
+        let not_a_file = bitboard::from_str(
+            r"0 1 1 1 1 1 1 1
+            0 1 1 1 1 1 1 1
+            0 1 1 1 1 1 1 1
+            0 1 1 1 1 1 1 1
+            0 1 1 1 1 1 1 1
+            0 1 1 1 1 1 1 1
+            0 1 1 1 1 1 1 1
+            0 1 1 1 1 1 1 1",
+        );
+        let bb: BitBoard = not_a_file.into();
+        assert_eq!(bb.0, 18374403900871474942);
+    }
 }

@@ -3,8 +3,6 @@ use std::ops::{
     ShlAssign, Shr, ShrAssign, Sub, SubAssign,
 };
 
-use itertools::Itertools;
-
 use crate::common::Square;
 
 use super::BitBoard;
@@ -84,40 +82,6 @@ impl From<BitBoard> for u64 {
 impl From<u64> for BitBoard {
     fn from(v: u64) -> Self {
         Self(v)
-    }
-}
-
-impl From<&[u64]> for BitBoard {
-    fn from(value: &[u64]) -> Self {
-        let bb = value
-            .chunks(8)
-            .map(|line| {
-                line.iter()
-                    .enumerate()
-                    .fold(0u64, |acc, (f, b)| acc + (b << f))
-            })
-            .rev()
-            .enumerate()
-            .fold(0u64, |acc, (r, b)| acc + (b << (r * 8)));
-        Self(bb)
-    }
-}
-
-impl From<&str> for BitBoard {
-    // Converts a list of 0 and 1s into a BitBoard. Starts with A8, A7, etc.
-    // Dot ('.') is synonymn with 0.
-    // The string may have line breaks, spaces etc, they are just ignored.
-    fn from(value: &str) -> Self {
-        let filtered = value
-            .chars()
-            .filter_map(|c| match c {
-                '0' | '.' => Some(0u64),
-                '1' => Some(1u64),
-                _ => None,
-            })
-            .collect_vec();
-        assert_eq!(filtered.len(), 64);
-        Into::<BitBoard>::into(&*filtered)
     }
 }
 
@@ -245,7 +209,10 @@ impl MulAssign for BitBoard {
 
 #[cfg(test)]
 mod tests {
-    use crate::{bitboard::constants, common::Square};
+    use crate::{
+        bitboard::{self, constants},
+        common::Square,
+    };
 
     use super::*;
 
@@ -259,20 +226,6 @@ mod tests {
             b.set(square as u8);
         }
         assert_eq!(b, black_pawns);
-    }
-
-    #[test]
-    fn test_from_str() {
-        let not_a_file = r"0 1 1 1 1 1 1 1
-            0 1 1 1 1 1 1 1
-            0 1 1 1 1 1 1 1
-            0 1 1 1 1 1 1 1
-            0 1 1 1 1 1 1 1
-            0 1 1 1 1 1 1 1
-            0 1 1 1 1 1 1 1
-            0 1 1 1 1 1 1 1";
-        let bb: BitBoard = not_a_file.into();
-        assert_eq!(bb.0, 18374403900871474942);
     }
 
     #[test]
@@ -296,17 +249,18 @@ mod tests {
 
     #[test]
     fn test_get_index() {
-        let x: BitBoard = SAMPLE_BB.into();
+        let x: BitBoard = bitboard::from_str(SAMPLE_BB);
         assert_eq!(x.get_index(), 18);
     }
 
     #[test]
     fn test_subtraction() {
-        let x: BitBoard = SAMPLE_BB.into();
+        let x: BitBoard = bitboard::from_str(SAMPLE_BB);
         let one: BitBoard = BitBoard::new(1);
         assert_eq!(
             x - one,
-            r"
+            bitboard::from_str(
+                r"
             . . . . . . . .
             . . 1 . 1 . . .
             . 1 . . . 1 . .
@@ -315,16 +269,17 @@ mod tests {
             1 1 . . 1 . . .
             1 1 1 1 1 1 1 1
             1 1 1 1 1 1 1 1"
-                .into()
+            )
         );
     }
 
     #[test]
     fn test_ls1b() {
-        let x: BitBoard = SAMPLE_BB.into();
+        let x: BitBoard = bitboard::from_str(SAMPLE_BB);
         assert_eq!(
             x.get_ls1b(),
-            r"
+            bitboard::from_str(
+                r"
             . . . . . . . .
             . . . . . . . .
             . . . . . . . .
@@ -333,7 +288,7 @@ mod tests {
             . . 1 . . . . .
             . . . . . . . .
             . . . . . . . ."
-                .into()
+            )
         );
     }
 }

@@ -168,7 +168,7 @@ pub fn get_queen_attacks(occ: u64, sq: u8) -> u64 {
 
 #[cfg(test)]
 mod tests {
-    use crate::bitboard::BitBoard;
+    use crate::bitboard::{self, BitBoard};
 
     use super::*;
 
@@ -184,7 +184,8 @@ mod tests {
     #[test]
     fn test_bishop_attacks() {
         const C5: u8 = 34;
-        let occupancy: BitBoard = r"
+        let occupancy: BitBoard = bitboard::from_str(
+            r"
             . . . . . 1 . .
             . . . . 1 . . .
             . 1 . . . . . .
@@ -192,12 +193,13 @@ mod tests {
             . . . . . . . .
             . . . . 1 . 1 .
             1 1 1 1 1 . 1 1
-            . . . . . . 1 ."
-            .into();
+            . . . . . . 1 .",
+        );
         let attacks = get_bishop_attacks(occupancy.into(), C5);
         assert_eq!(
             BitBoard::new(attacks),
-            r"
+            bitboard::from_str(
+                r"
             . . . . . . . .
             . . . . 1 . . .
             . 1 . 1 . . . .
@@ -205,16 +207,16 @@ mod tests {
             . 1 . 1 . . . .
             1 . . . 1 . . .
             . . . . . . . .
-            . . . . . . . .
-            "
-            .into()
+            . . . . . . . ."
+            )
         );
     }
 
     #[test]
     fn test_rook_attacks() {
         const C5: u8 = 34;
-        let occupancy: BitBoard = r"
+        let occupancy: BitBoard = bitboard::from_str(
+            r"
             . . . . . 1 . .
             . . . . 1 . . .
             . 1 . . . . . .
@@ -222,12 +224,13 @@ mod tests {
             . . . . . . . .
             . . . . 1 . 1 .
             1 1 1 1 1 . 1 1
-            . . . . . . 1 ."
-            .into();
+            . . . . . . 1 .",
+        );
         let attacks = get_rook_attacks(occupancy.into(), C5);
         assert_eq!(
             BitBoard::new(attacks),
-            r"
+            bitboard::from_str(
+                r"
             . . 1 . . . . .
             . . 1 . . . . .
             . . 1 . . . . .
@@ -235,9 +238,8 @@ mod tests {
             . . 1 . . . . .
             . . 1 . . . . .
             . . 1 . . . . .
-            . . . . . . . .
-            "
-            .into()
+            . . . . . . . ."
+            )
         );
     }
 }
