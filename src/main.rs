@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use std::env;
+use std::{env, time::Instant};
 
 use board::Board;
 use common::Square;
@@ -17,20 +17,30 @@ fn main() {
     use common::Piece::*;
     use common::Square::*;
 
-    let mut b = Board::initial_board();
-    // let mut b: Board = "".into();
-
+    // Usage: <depth> <startpos|fen> <moves>
     let args: Vec<String> = env::args().collect();
     if args.len() >= 2 {
         let depth: usize = args[1].parse().expect("Invalid depth argument");
-        let moves = args.get(2).map_or("", |v| v.as_str());
+        let pos = args.get(2).map_or("startpos", |v| v.as_str());
+        let moves = args.get(3).map_or("", |v| v.as_str());
+
+        let mut b: Board = if pos == "startpos" {
+            Board::initial_board()
+        } else {
+            pos.into()
+        };
 
         apply_moves(&mut b, moves);
-        divide(&b, depth);
+
+        // For performance measurement use perft. For debugging, use divide.
+        // divide(&b, depth);
+        // perft(&b, depth);
+        println!("{}", b.perft(depth));
 
         return;
     }
 
+    let mut b = Board::initial_board();
     println!("  Kaik Chess Engine");
     println!("         by Vincent");
     println!();
@@ -47,21 +57,27 @@ fn main() {
 }
 
 fn perft(board: &Board, depth: usize) {
+    let now = Instant::now();
     let nodes_count = board.perft(depth);
+    let elapsed = now.elapsed();
+
     println!("Perft results for depth {depth}: {nodes_count} nodes.");
+
+    let nodes_secs = nodes_count as u128 / elapsed.as_micros();
+    println!("Time: {elapsed:.2?} secs. \t{nodes_secs} millions nodes / secs.");
 }
 
 fn divide(board: &Board, depth: usize) {
     // Output format is the same as Stockfish "go perft <depth>" command.
     let nodes = board.divide(depth);
+
+    let total_nodes: usize = nodes.iter().map(|(_, count)| *count).sum();
+
     for (mv, count) in &nodes {
         println!("{}: {count}", mv.pure());
     }
     println!();
-    println!(
-        "Nodes searched: {}",
-        nodes.iter().map(|(_, count)| *count).sum::<usize>()
-    );
+    println!("Nodes searched: {total_nodes}",);
 }
 
 fn print_moves_with_board(board: &Board, moves: &[Move]) {

@@ -10,6 +10,12 @@ impl Board {
 
         let mut nodes = 0;
         let move_list = self.generate_moves();
+
+        // If we had a legal move generator, we could do following optimization:
+        // if depth == 1 {
+        //     return move_list.len();
+        // }
+
         for mv in move_list {
             if let Some(board_copy) = self.copy_with_move(mv) {
                 nodes += board_copy.perft(depth - 1);
