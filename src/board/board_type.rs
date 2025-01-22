@@ -1,7 +1,7 @@
 use itertools::Itertools;
 
 use crate::{
-    bitboard::{constants, from_array, movements, BitBoard},
+    bitboard::{self, constants, from_array, movements, BitBoard},
     common::{Color, Piece},
     fen,
     moves::Move,
@@ -97,7 +97,7 @@ impl Board {
                     let index = rank * 8 + file;
                     let mut piece = None;
                     for (piece_index, bitboard) in self.pieces.iter().enumerate() {
-                        if bitboard.is_set(index) {
+                        if bitboard::is_set(*bitboard, index) {
                             piece = Some(Piece::ALL_PIECES[piece_index]);
                             break;
                         }

@@ -12,7 +12,14 @@ pub fn print(bitboard: BitBoard) {
         for file in 0..8 {
             let index = (7 - rank) * 8 + file;
             // print!(" {}", u8::from(self.is_set(index)));
-            print!(" {}", if bitboard.is_set(index) { '1' } else { '.' });
+            print!(
+                " {}",
+                if bitboard::is_set(bitboard, index) {
+                    '1'
+                } else {
+                    '.'
+                }
+            );
         }
         println!();
     }

@@ -31,7 +31,7 @@ impl Board {
 
                 let mut piece_char = '.';
                 for (piece, bitboard) in self.pieces.iter().enumerate() {
-                    if bitboard.is_set(index) {
+                    if bitboard::is_set(*bitboard, index) {
                         piece_char = UNICODE_PIECES[piece];
                         // piece_char = ASCII_PIECES[piece] as char;
                         break;
@@ -78,7 +78,7 @@ impl Board {
         let index = sq as u8;
         *Piece::ALL_PIECES
             .iter()
-            .find(|&&p| self.pieces[p as usize].is_set(index))
+            .find(|&&p| bitboard::is_set(self.pieces[p as usize], index))
             .unwrap()
     }
 

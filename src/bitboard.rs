@@ -25,5 +25,106 @@ pub fn from_array(value: &[u64]) -> BitBoard {
     BitBoard::new(bb)
 }
 
+pub const fn is_set(bitboard: BitBoard, index: u8) -> bool {
+    bitboard.0 & (1 << index) != 0
+}
+
+pub fn set(bitboard: &mut BitBoard, index: u8) {
+    bitboard.0 |= 1 << index;
+}
+
+pub fn clear(bitboard: &mut BitBoard, index: u8) {
+    bitboard.0 &= !(1 << index);
+}
+
+// Least Significant One
+// <https://www.chessprogramming.org/General_Setwise_Operations#Least_Significant_One>
+pub fn get_ls1b(bitboard: BitBoard) -> BitBoard {
+    bitboard & -bitboard
+}
+
+pub fn reset_ls1b(bitboard: BitBoard) -> BitBoard {
+    const ONE: BitBoard = BitBoard::new(1);
+    bitboard & (bitboard - ONE)
+}
+
 pub use debug::from_str;
 pub use debug::print;
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        bitboard::{self, constants},
+        common::Square,
+    };
+
+    use super::*;
+
+    const SAMPLE_BB: &str = r"
+    . . . . . . . .
+    . . 1 . 1 . . .
+    . 1 . . . 1 . .
+    . . . . . . . .
+    . 1 . . . 1 . .
+    . . 1 . 1 . . .
+    . . . . . . . .
+    . . . . . . . .";
+
+    #[test]
+    fn test_ls1b() {
+        let bb: BitBoard = bitboard::from_str(SAMPLE_BB);
+        assert_eq!(
+            bitboard::get_ls1b(bb),
+            bitboard::from_str(
+                r"
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . 1 . . . . .
+            . . . . . . . .
+            . . . . . . . ."
+            )
+        );
+    }
+
+    #[test]
+    fn test_neg() {
+        let x: BitBoard = bitboard::from_str(SAMPLE_BB);
+        assert_eq!(
+            -x,
+            bitboard::from_str(
+                r"
+                1 1 1 1 1 1 1 1
+                1 1 . 1 . 1 1 1
+                1 . 1 1 1 . 1 1
+                1 1 1 1 1 1 1 1
+                1 . 1 1 1 . 1 1
+                . . 1 1 . 1 1 1
+                . . . . . . . .
+                . . . . . . . ."
+            )
+        );
+    }
+
+    #[test]
+    fn test_subtraction() {
+        let x: BitBoard = bitboard::from_str(SAMPLE_BB);
+        let one: BitBoard = BitBoard::new(1);
+        assert_eq!(
+            x - one,
+            bitboard::from_str(
+                r"
+            . . . . . . . .
+            . . 1 . 1 . . .
+            . 1 . . . 1 . .
+            . . . . . . . .
+            . 1 . . . 1 . .
+            1 1 . . 1 . . .
+            1 1 1 1 1 1 1 1
+            1 1 1 1 1 1 1 1"
+            )
+        );
+    }
+}
