@@ -36,7 +36,7 @@ impl Board {
 
             let pieces_bb = self.pieces[piece as usize];
             for from_bb in pieces_bb.into_iter() {
-                let from_square = from_bb.get_index().into();
+                let from_square = bitboard::get_index(from_bb).into();
 
                 let moves_bb = match piece {
                     Piece::WhiteKing | Piece::BlackKing => {
@@ -64,7 +64,7 @@ impl Board {
 
                 // Generate moves.
                 for to_bb in moves_bb.into_iter() {
-                    let to_square: Square = to_bb.get_index().into();
+                    let to_square: Square = bitboard::get_index(to_bb).into();
                     let is_capture = opposite_bb.intersects(to_bb);
 
                     // Promotions
@@ -100,11 +100,9 @@ impl Board {
                         _ => constants::EMPTY,
                     };
 
-                    moves_list.extend(
-                        ep_attacks_bb.into_iter().map(|to_bb| {
-                            Move::capture(from_square, to_bb.get_index().into(), piece)
-                        }),
-                    );
+                    moves_list.extend(ep_attacks_bb.into_iter().map(|to_bb| {
+                        Move::capture(from_square, bitboard::get_index(to_bb).into(), piece)
+                    }));
                 }
             }
         }

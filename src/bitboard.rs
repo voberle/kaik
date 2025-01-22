@@ -41,6 +41,13 @@ pub fn clear(bitboard: &mut BitBoard, index: u8) {
     bitboard.0 &= !(1 << index);
 }
 
+// Returns the index of lowest bit in the bitboard.
+#[allow(clippy::cast_possible_truncation)]
+pub const fn get_index(bitboard: BitBoard) -> u8 {
+    // Should be one CPU instruction.
+    bitboard.0.trailing_zeros() as u8
+}
+
 // Least Significant One
 // <https://www.chessprogramming.org/General_Setwise_Operations#Least_Significant_One>
 pub fn get_ls1b(bitboard: BitBoard) -> BitBoard {
@@ -84,6 +91,12 @@ mod tests {
         . . 1 . 1 . . .
         . . . . . . . .
         . . . . . . . .";
+
+    #[test]
+    fn test_get_index() {
+        let bb: BitBoard = bitboard::from_str(SAMPLE_BB);
+        assert_eq!(bitboard::get_index(bb), 18);
+    }
 
     #[test]
     fn test_ls1b() {

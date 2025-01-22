@@ -20,13 +20,6 @@ impl BitBoard {
         self.0 == 0
     }
 
-    // Returns the index of lowest bit in the bitboard.
-    #[allow(clippy::cast_possible_truncation)]
-    pub const fn get_index(self) -> u8 {
-        // Should be one CPU instruction.
-        self.0.trailing_zeros() as u8
-    }
-
     // Creates an iterator that yields each set bit as a separate bitboard.
     pub fn into_iter(self) -> BitBoardIterator {
         BitBoardIterator(self.0)
@@ -175,31 +168,5 @@ impl Mul for BitBoard {
 impl MulAssign for BitBoard {
     fn mul_assign(&mut self, rhs: Self) {
         self.0 *= rhs.0;
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::{
-        bitboard::{self, constants},
-        common::Square,
-    };
-
-    use super::*;
-
-    const SAMPLE_BB: &str = r"
-        . . . . . . . .
-        . . 1 . 1 . . .
-        . 1 . . . 1 . .
-        . . . . . . . .
-        . 1 . . . 1 . .
-        . . 1 . 1 . . .
-        . . . . . . . .
-        . . . . . . . .";
-
-    #[test]
-    fn test_get_index() {
-        let x: BitBoard = bitboard::from_str(SAMPLE_BB);
-        assert_eq!(x.get_index(), 18);
     }
 }

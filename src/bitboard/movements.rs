@@ -1,3 +1,4 @@
+use crate::bitboard;
 use crate::bitboard::BitBoard;
 
 use super::{
@@ -125,14 +126,14 @@ pub fn get_black_pawn_moves(
 pub fn get_bishop_attacks(bishops_pos: BitBoard, all_pieces: BitBoard) -> BitBoard {
     BitBoard::new(sliding_pieces_with_hq::get_bishop_attacks(
         all_pieces.into(),
-        bishops_pos.get_index(),
+        bitboard::get_index(bishops_pos),
     ))
 }
 
 pub fn get_rook_attacks(rooks_pos: BitBoard, all_pieces: BitBoard) -> BitBoard {
     BitBoard::new(sliding_pieces_with_hq::get_rook_attacks(
         all_pieces.into(),
-        rooks_pos.get_index(),
+        bitboard::get_index(rooks_pos),
     ))
 }
 
@@ -142,16 +143,18 @@ pub fn get_bishop_moves(
     own_pieces: BitBoard,
 ) -> BitBoard {
     let own: u64 = own_pieces.into();
-    let val =
-        sliding_pieces_with_hq::get_bishop_attacks(all_pieces.into(), bishops_pos.get_index())
-            & !own;
+    let val = sliding_pieces_with_hq::get_bishop_attacks(
+        all_pieces.into(),
+        bitboard::get_index(bishops_pos),
+    ) & !own;
     BitBoard::new(val)
 }
 
 pub fn get_rook_moves(rooks_pos: BitBoard, all_pieces: BitBoard, own_pieces: BitBoard) -> BitBoard {
     let own: u64 = own_pieces.into();
     let val =
-        sliding_pieces_with_hq::get_rook_attacks(all_pieces.into(), rooks_pos.get_index()) & !own;
+        sliding_pieces_with_hq::get_rook_attacks(all_pieces.into(), bitboard::get_index(rooks_pos))
+            & !own;
     BitBoard::new(val)
 }
 
@@ -161,8 +164,10 @@ pub fn get_queen_moves(
     own_pieces: BitBoard,
 ) -> BitBoard {
     let own: u64 = own_pieces.into();
-    let val =
-        sliding_pieces_with_hq::get_queen_attacks(all_pieces.into(), queens_pos.get_index()) & !own;
+    let val = sliding_pieces_with_hq::get_queen_attacks(
+        all_pieces.into(),
+        bitboard::get_index(queens_pos),
+    ) & !own;
     BitBoard::new(val)
 }
 
