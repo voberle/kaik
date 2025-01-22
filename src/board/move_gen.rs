@@ -11,14 +11,14 @@ impl Board {
         let side_to_move = self.get_side_to_move();
         let castling_mask = constants::CASTLING_KING_SIDE_MASKS[side_to_move as usize];
         self.castling_ability.can_castle_king_side(side_to_move)
-            && !self.occupied.intersects(castling_mask)
+            && (self.occupied & castling_mask == 0)
     }
 
     fn can_castle_queen_side(&self) -> bool {
         let side_to_move = self.get_side_to_move();
         let castling_mask = constants::CASTLING_QUEEN_SIDE_MASKS[side_to_move as usize];
         self.castling_ability.can_castle_queen_side(side_to_move)
-            && !self.occupied.intersects(castling_mask)
+            && (self.occupied & castling_mask == 0)
     }
 
     // Generate all possible moves from this board.
@@ -65,7 +65,7 @@ impl Board {
                 // Generate moves.
                 for to_bb in bitboard::into_iter(moves_bb) {
                     let to_square: Square = bitboard::get_index(to_bb).into();
-                    let is_capture = opposite_bb.intersects(to_bb);
+                    let is_capture = opposite_bb & to_bb != 0;
 
                     // Promotions
                     if piece.is_pawn() && to_square.is_promotion_rank_for(self.get_side_to_move()) {

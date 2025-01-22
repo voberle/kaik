@@ -168,7 +168,7 @@ pub fn get_queen_attacks(occ: u64, sq: u8) -> u64 {
 
 #[cfg(test)]
 mod tests {
-    use crate::bitboard::{self, BitBoard};
+    use crate::bitboard;
 
     use super::*;
 
@@ -184,7 +184,7 @@ mod tests {
     #[test]
     fn test_bishop_attacks() {
         const C5: u8 = 34;
-        let occupancy: BitBoard = bitboard::from_str(
+        let occupancy = bitboard::from_str(
             r"
             . . . . . 1 . .
             . . . . 1 . . .
@@ -197,7 +197,7 @@ mod tests {
         );
         let attacks = get_bishop_attacks(occupancy.into(), C5);
         assert_eq!(
-            BitBoard::new(attacks),
+            attacks,
             bitboard::from_str(
                 r"
             . . . . . . . .
@@ -215,7 +215,7 @@ mod tests {
     #[test]
     fn test_rook_attacks() {
         const C5: u8 = 34;
-        let occupancy: BitBoard = bitboard::from_str(
+        let occupancy = bitboard::from_str(
             r"
             . . . . . 1 . .
             . . . . 1 . . .
@@ -228,7 +228,7 @@ mod tests {
         );
         let attacks = get_rook_attacks(occupancy.into(), C5);
         assert_eq!(
-            BitBoard::new(attacks),
+            attacks,
             bitboard::from_str(
                 r"
             . . 1 . . . . .

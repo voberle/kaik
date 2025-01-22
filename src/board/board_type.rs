@@ -148,7 +148,7 @@ impl Board {
                 .skip(color.opposite() as usize)
                 .step_by(2)
             {
-                if bb.intersects(to_bb) {
+                if *bb & to_bb != 0 {
                     *bb ^= to_bb;
                     self.all[color.opposite() as usize] ^= to_bb;
                     self.occupied ^= to_bb;

@@ -15,7 +15,7 @@ impl Board {
             board_copy.update_by_move(mv);
             // Drop the move if the king is left in check
             let king_color = mv.get_piece().get_color(); // Color that just moved.
-            if !board_copy.attacks_king(king_color).is_null() {
+            if board_copy.attacks_king(king_color) != 0 {
                 continue;
             }
             nodes += board_copy.perft(depth - 1);
@@ -33,7 +33,7 @@ impl Board {
             board_copy.update_by_move(mv);
             // Drop the move if the king is left in check
             let king_color = mv.get_piece().get_color(); // Color that just moved.
-            if !board_copy.attacks_king(king_color).is_null() {
+            if board_copy.attacks_king(king_color) != 0 {
                 continue;
             }
             nodes.push((mv, board_copy.perft(depth - 1)));

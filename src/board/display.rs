@@ -88,7 +88,7 @@ impl Board {
     pub fn new_move(&self, from: Square, to: Square) -> Move {
         let piece = self.find_piece_on(from);
         let to_bb: BitBoard = bitboard::from_square(to);
-        let is_capture = self.occupied.intersects(to_bb);
+        let is_capture = self.occupied & to_bb != 0;
         let promotion = if to.is_promotion_rank_for(piece.get_color()) {
             Some(Piece::get_queen_of(piece.get_color()))
         } else {

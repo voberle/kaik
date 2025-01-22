@@ -24,7 +24,7 @@ pub fn print(bitboard: BitBoard) {
         println!();
     }
     println!("     a b c d e f g h");
-    println!("{} = {:064b}", bitboard.0, bitboard.0);
+    println!("{bitboard} = {bitboard:064b}");
 }
 
 // Converts a list of 0 and 1s into a BitBoard. Starts with A8, A7, etc.
@@ -45,10 +45,7 @@ pub fn from_str(value: &str) -> BitBoard {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        bitboard::{self, constants},
-        common::Square,
-    };
+    use crate::{bitboard::constants, common::Square};
 
     use super::*;
 
@@ -64,7 +61,6 @@ mod tests {
             0 1 1 1 1 1 1 1
             0 1 1 1 1 1 1 1",
         );
-        let bb: BitBoard = not_a_file.into();
-        assert_eq!(bb.0, 18374403900871474942);
+        assert_eq!(not_a_file, 18374403900871474942);
     }
 }
