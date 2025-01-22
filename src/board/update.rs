@@ -89,7 +89,7 @@ impl Board {
             return None;
         }
 
-        if let Some(_rook_mv) = mv.get_castling() {
+        if let Some(rook_mv) = mv.get_castling() {
             // We are not allowed to be in check before the castling.
             if self.attacks_king(king_color) != 0 {
                 return None;
@@ -97,7 +97,9 @@ impl Board {
 
             // We need to check that the king doesn't pass over an attacked square.
             // That square is where the rook moves.
-            // TODO
+            if self.attacks_to(rook_mv.get_to()) & self.all[king_color.opposite() as usize] != 0 {
+                return None;
+            }
         }
 
         Some(board_copy)
@@ -193,9 +195,7 @@ mod tests {
     fn test_update_by_move_en_passant_capture() {
         let mut board: Board = "rnbqkbnr/2pppppp/p7/Pp6/8/8/1PPPPPPP/RNBQKBNR w KQkq b6 0 3".into();
         let mv = Move::capture(A5, B6, WhitePawn);
-        board.print();
         board.update_by_move(mv);
-        board.print();
         assert_eq!(
             board,
             "rnbqkbnr/2pppppp/pP6/8/8/8/1PPPPPPP/RNBQKBNR b KQkq - 0 3".into()
@@ -206,17 +206,32 @@ mod tests {
     fn test_copy_with_move_in_check_castling() {
         let board: Board =
             "r3k2r/p1pp1pb1/bn2Qnp1/2qPN3/1p2P3/2N5/PPPBBPPP/R3K2R b KQkq - 3 2".into();
-        let mv = Move::quiet(E8, G8, BlackKing); // Castling move
-        board.print();
+        let castling_mv = Move::quiet(E8, G8, BlackKing);
         // Not allowed to castle if in check.
-        assert_eq!(board.copy_with_move(mv), None);
+        assert_eq!(board.copy_with_move(castling_mv), None);
+    }
+
+    #[test]
+    fn test_copy_with_move_castling_over_attacked_square() {
+        let board: Board = "r3k2r/1b4bq/8/8/8/8/7B/3RK2R b Kkq - 1 1".into();
+        let castling_mv = Move::quiet(E8, C8, BlackKing);
+        // Not allowed to castle over attacked square
+        assert_eq!(board.copy_with_move(castling_mv), None);
+    }
+
+    #[test]
+    fn test_copy_with_move_castling_rook_attacked() {
+        let board: Board = "rnb2k1r/pp1Pbppp/2p5/q7/2B5/8/PPPQNnPP/RNB1K2R w KQ - 3 9".into();
+        board.print();
+        let castling_mv = Move::quiet(E1, G1, WhiteKing);
+        // Rook is attacked, but castling is still allowed then.
+        assert!(board.copy_with_move(castling_mv).is_some());
     }
 
     #[test]
     fn test_copy_with_move_king_moves_next_to_king() {
         let board: Board = "8/2kp4/8/K1P4r/8/8/8/8 w - - 1 2".into();
         let mv = Move::quiet(A5, B6, WhiteKing);
-        board.print();
         // Not allowed to move next to opponent king.
         assert_eq!(board.copy_with_move(mv), None);
     }
@@ -224,7 +239,6 @@ mod tests {
     #[test]
     fn test_copy_with_move_en_passant() {
         let board: Board = "8/8/8/3k4/2pP4/1B6/6K1/8 b - d3 0 2".into();
-        board.print();
         // Push or en passant taking is not allowed, as it leaves the king in check.
         let mv = Move::quiet(C4, C3, BlackPawn);
         assert_eq!(board.copy_with_move(mv), None);
