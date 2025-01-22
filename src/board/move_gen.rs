@@ -35,7 +35,7 @@ impl Board {
             let opposite_bb = self.all[self.opposite_side() as usize];
 
             let pieces_bb = self.pieces[piece as usize];
-            for from_bb in pieces_bb.into_iter() {
+            for from_bb in bitboard::into_iter(pieces_bb) {
                 let from_square = bitboard::get_index(from_bb).into();
 
                 let moves_bb = match piece {
@@ -63,7 +63,7 @@ impl Board {
                 };
 
                 // Generate moves.
-                for to_bb in moves_bb.into_iter() {
+                for to_bb in bitboard::into_iter(moves_bb) {
                     let to_square: Square = bitboard::get_index(to_bb).into();
                     let is_capture = opposite_bb.intersects(to_bb);
 
@@ -100,7 +100,7 @@ impl Board {
                         _ => constants::EMPTY,
                     };
 
-                    moves_list.extend(ep_attacks_bb.into_iter().map(|to_bb| {
+                    moves_list.extend(bitboard::into_iter(ep_attacks_bb).map(|to_bb| {
                         Move::capture(from_square, bitboard::get_index(to_bb).into(), piece)
                     }));
                 }

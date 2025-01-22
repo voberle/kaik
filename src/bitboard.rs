@@ -8,6 +8,8 @@ mod sliding_pieces_with_hq;
 
 pub mod movements;
 
+use crate::common::Square;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct BitBoard(u64);
 
@@ -59,10 +61,30 @@ pub fn reset_ls1b(bitboard: BitBoard) -> BitBoard {
     bitboard & (bitboard - ONE)
 }
 
+// Creates an iterator that yields each set bit as a separate bitboard.
+pub fn into_iter(bitboard: BitBoard) -> BitBoardIterator {
+    BitBoardIterator(bitboard.0)
+}
+
+pub struct BitBoardIterator(u64);
+
+impl Iterator for BitBoardIterator {
+    type Item = BitBoard;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.0 == 0 {
+            return None;
+        }
+
+        let ls1b = self.0 & (!self.0 + 1); // Isolate least significant bit
+        self.0 &= self.0 - 1; // Reset least significant bit
+
+        Some(BitBoard(ls1b))
+    }
+}
+
 pub use debug::from_str;
 pub use debug::print;
-
-use crate::common::Square;
 
 #[cfg(test)]
 mod tests {
