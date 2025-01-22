@@ -3,6 +3,7 @@ use crate::{
     common::{Color, Square},
 };
 
+mod attacks;
 mod board_type;
 mod castling;
 mod display;
