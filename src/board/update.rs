@@ -26,7 +26,10 @@ impl Board {
         self.occupied ^= from_to_bb;
 
         if mv.is_capture() {
-            let to_bb = if self.en_passant_target_square.is_some() && mv.get_piece().is_pawn() {
+            // If we are trying to move into the en-passant square, we need to correct the square we will clear.
+            let to_bb_capture = if mv.get_piece().is_pawn()
+                && matches!(self.en_passant_target_square, Some(sq) if sq == mv.get_to())
+            {
                 if color == Color::White {
                     to_bb >> 8
                 } else {
@@ -43,10 +46,10 @@ impl Board {
                 .skip(color.opposite() as usize)
                 .step_by(2)
             {
-                if *bb & to_bb != 0 {
-                    *bb ^= to_bb;
-                    self.all[color.opposite() as usize] ^= to_bb;
-                    self.occupied ^= to_bb;
+                if *bb & to_bb_capture != 0 {
+                    *bb ^= to_bb_capture;
+                    self.all[color.opposite() as usize] ^= to_bb_capture;
+                    self.occupied ^= to_bb_capture;
                     break;
                 }
             }
@@ -103,7 +106,10 @@ impl Board {
 
 #[cfg(test)]
 mod tests {
-    use crate::{common::Piece::*, common::Square::*};
+    use crate::common::{
+        Piece::{self, *},
+        Square::*,
+    };
 
     use super::*;
 
@@ -133,6 +139,15 @@ mod tests {
             board.to_string(),
             "rnbqkbnr/ppp1pppp/8/3N4/8/8/PPPPPPPP/R1BQKBNR b KQkq - 0 1"
         );
+    }
+
+    #[test]
+    fn test_update_by_move_capture_2() {
+        let mut board: Board = "8/8/8/3k4/2pP4/1B6/6K1/8 b - - 0 1".into();
+        let mv = Move::capture(C4, B3, BlackPawn);
+        board.update_by_move(mv);
+        assert_eq!(board.to_string(), "8/8/8/3k4/3P4/1p6/6K1/8 w - - 0 1");
+        assert_eq!(board.pieces[Piece::WhiteBishop as usize], 0);
     }
 
     #[test]
@@ -204,5 +219,20 @@ mod tests {
         board.print();
         // Not allowed to move next to opponent king.
         assert_eq!(board.copy_with_move(mv), None);
+    }
+
+    #[test]
+    fn test_copy_with_move_en_passant() {
+        let board: Board = "8/8/8/3k4/2pP4/1B6/6K1/8 b - d3 0 2".into();
+        board.print();
+        // Push or en passant taking is not allowed, as it leaves the king in check.
+        let mv = Move::quiet(C4, C3, BlackPawn);
+        assert_eq!(board.copy_with_move(mv), None);
+        let mv = Move::capture(C4, D3, BlackPawn);
+        assert_eq!(board.copy_with_move(mv), None);
+
+        // But taking the attacker is.
+        let mv = Move::capture(C4, B3, BlackPawn);
+        assert!(board.copy_with_move(mv).is_some());
     }
 }

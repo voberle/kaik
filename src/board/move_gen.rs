@@ -229,7 +229,7 @@ mod tests {
     }
 
     #[test]
-    fn test_generate_en_passant_attacks() {
+    fn test_en_passant_attacks_1() {
         // Two black pawns can take the same en passant white pawn.
         // Example from <https://www.chessprogramming.org/En_passant#En_passant_bugs>
         let board: Board = "2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 0 23".into();
@@ -245,6 +245,20 @@ mod tests {
                 Move::quiet(G7, G6, BlackPawn),
                 Move::quiet(H7, H5, BlackPawn),
                 Move::quiet(H7, H6, BlackPawn),
+            ]
+        );
+    }
+
+    #[test]
+    fn test_en_passant_attacks_2() {
+        let board: Board = "8/8/8/3k4/2pP4/1B6/6K1/8 b - d3 0 2".into();
+        let moves = board.generate_moves_for(&[BlackPawn]);
+        assert_eq!(
+            moves,
+            &[
+                Move::capture(C4, B3, BlackPawn),
+                Move::quiet(C4, C3, BlackPawn), // Push, leaves the king in check.
+                Move::capture(C4, D3, BlackPawn), // En passant, leaves the king in check.
             ]
         );
     }

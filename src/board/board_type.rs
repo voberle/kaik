@@ -124,6 +124,7 @@ impl Board {
         // From <https://www.chessprogramming.org/Checks_and_Pinned_Pieces_(Bitboards)>
         // Note that the example there doesn't check king creating checks.
 
+        let king_bb = self.pieces[Piece::get_king_of(king_color) as usize];
         let opp_king_color = king_color.opposite();
 
         // Could be optimized a bit with things like:
@@ -137,7 +138,6 @@ impl Board {
         let opposite_bishops_queens = self.pieces[Piece::get_queen_of(opp_king_color) as usize]
             | self.pieces[Piece::get_bishop_of(opp_king_color) as usize];
 
-        let king_bb = self.pieces[Piece::get_king_of(king_color) as usize];
         let pawn_attacks = if king_color == Color::White {
             movements::get_white_pawn_attacks(king_bb)
         } else {
