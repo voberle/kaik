@@ -224,9 +224,7 @@ mod tests {
             1 1 1 1 1 . 1 1
             . . . . . . 1 ."
             .into();
-        occupancy.print();
         let attacks = get_rook_attacks(occupancy.into(), C5);
-        BitBoard::new(attacks).print();
         assert_eq!(
             BitBoard::new(attacks),
             r"

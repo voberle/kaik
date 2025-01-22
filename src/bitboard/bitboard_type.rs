@@ -56,20 +56,6 @@ impl BitBoard {
     pub fn into_iter(self) -> BitBoardIterator {
         BitBoardIterator(self.0)
     }
-
-    pub fn print(self) {
-        for rank in 0..8 {
-            print!("  {} ", 8 - rank); // display starts at 1
-            for file in 0..8 {
-                let index = (7 - rank) * 8 + file;
-                // print!(" {}", u8::from(self.is_set(index)));
-                print!(" {}", if self.is_set(index) { '1' } else { '.' });
-            }
-            println!();
-        }
-        println!("     a b c d e f g h");
-        println!("{} = {:064b}", self.0, self.0);
-    }
 }
 
 pub struct BitBoardIterator(u64);
@@ -272,10 +258,6 @@ mod tests {
         for square in [A7, B7, C7, D7, E7, F7, G7, H7] {
             b.set(square as u8);
         }
-        // black_pawns.print();
-        b.print();
-
-        // assert!(false);
         assert_eq!(b, black_pawns);
     }
 

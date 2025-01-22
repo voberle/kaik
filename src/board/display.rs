@@ -3,7 +3,7 @@
 use std::fmt::Display;
 
 use crate::{
-    bitboard::BitBoard,
+    bitboard::{self, BitBoard},
     common::{Color, Piece, Square},
     moves::Move,
 };
@@ -64,14 +64,14 @@ impl Board {
     pub fn print_bitboards(&self) {
         for piece in Piece::ALL_PIECES {
             println!("Bitboard for {piece}");
-            self.pieces[piece as usize].print();
+            bitboard::print(self.pieces[piece as usize]);
         }
         println!("Bitboard for occupied white");
-        self.all[Color::White as usize].print();
+        bitboard::print(self.all[Color::White as usize]);
         println!("Bitboard for occupied black");
-        self.all[Color::Black as usize].print();
+        bitboard::print(self.all[Color::Black as usize]);
         println!("Bitboard for occupied");
-        self.occupied.print();
+        bitboard::print(self.occupied);
     }
 
     fn find_piece_on(&self, sq: Square) -> Piece {
