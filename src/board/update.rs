@@ -1,7 +1,9 @@
 //! Board update by move.
 
 use crate::{
-    bitboard::{self, BitBoard}, common::Color, moves::Move
+    bitboard::{self, BitBoard},
+    common::Color,
+    moves::Move,
 };
 
 use super::Board;
@@ -24,6 +26,16 @@ impl Board {
         self.occupied ^= from_to_bb;
 
         if mv.is_capture() {
+            let to_bb = if self.en_passant_target_square.is_some() && mv.get_piece().is_pawn() {
+                if color == Color::White {
+                    to_bb >> 8
+                } else {
+                    to_bb << 8
+                }
+            } else {
+                to_bb
+            };
+
             // Loop over bitboards opposite color.
             for bb in self
                 .pieces
@@ -136,5 +148,18 @@ mod tests {
         let mv = Move::new(B7, B8, Some(WhiteQueen), WhitePawn, false);
         board.update_by_move(mv);
         assert_eq!(board, "1Q2k3/8/8/8/8/8/8/4K3 b - - 0 1".into());
+    }
+
+    #[test]
+    fn test_update_by_move_en_passant_capture() {
+        let mut board: Board = "rnbqkbnr/2pppppp/p7/Pp6/8/8/1PPPPPPP/RNBQKBNR w KQkq b6 0 3".into();
+        let mv = Move::capture(A5, B6, WhitePawn);
+        board.print();
+        board.update_by_move(mv);
+        board.print();
+        assert_eq!(
+            board,
+            "rnbqkbnr/2pppppp/pP6/8/8/8/1PPPPPPP/RNBQKBNR b KQkq - 0 3".into()
+        );
     }
 }

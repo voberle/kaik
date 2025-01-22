@@ -73,8 +73,8 @@ mod tests {
         let b: Board = "r6r/1b2k1bq/8/8/7B/8/8/R3K2R b KQ - 3 2".into();
         assert_eq!(b.perft(1), 8);
 
-        // let b: Board = "8/8/8/2k5/2pP4/8/B7/4K3 b - d3 0 3".into();
-        // assert_eq!(b.perft(1), 8);
+        let b: Board = "8/8/8/2k5/2pP4/8/B7/4K3 b - d3 0 3".into();
+        assert_eq!(b.perft(1), 8);
 
         let b: Board = "r1bqkbnr/pppppppp/n7/8/8/P7/1PPPPPPP/RNBQKBNR w KQkq - 2 2".into();
         assert_eq!(b.perft(1), 19);
