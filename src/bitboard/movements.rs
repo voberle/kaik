@@ -1,6 +1,9 @@
 use crate::bitboard::BitBoard;
 
-use super::sliding_pieces_with_hq;
+use super::{
+    constants::{MASK_RANK_3, MASK_RANK_6, NOT_AB_FILE, NOT_A_FILE, NOT_HG_FILE, NOT_H_FILE},
+    sliding_pieces_with_hq,
+};
 
 pub fn get_king_attacks(king_pos: BitBoard) -> BitBoard {
     // See Peter Keller https://pages.cs.wisc.edu/~psilord/blog/data/chess-pages/index.html
@@ -10,8 +13,8 @@ pub fn get_king_attacks(king_pos: BitBoard) -> BitBoard {
     // 7 6 5    -9 -8 -7
 
     // Ignore the rank clipping since the overflow/underflow simply vanishes. We only care about the file overflow/underflow.
-    let king_clip_file_h = king_pos & BitBoard::NOT_H_FILE;
-    let king_clip_file_a = king_pos & BitBoard::NOT_A_FILE;
+    let king_clip_file_h = king_pos & NOT_H_FILE;
+    let king_clip_file_a = king_pos & NOT_A_FILE;
 
     let spot_1 = king_clip_file_a << 7;
     let spot_2 = king_pos << 8;
@@ -36,10 +39,10 @@ pub fn get_knight_attacks(knights_pos: BitBoard) -> BitBoard {
     //   N
     // 8   5
     //  7 6
-    let knight_clip_file_ab = knights_pos & BitBoard::NOT_AB_FILE;
-    let knight_clip_file_a = knights_pos & BitBoard::NOT_A_FILE;
-    let knight_clip_file_h = knights_pos & BitBoard::NOT_H_FILE;
-    let knight_clip_file_hg = knights_pos & BitBoard::NOT_HG_FILE;
+    let knight_clip_file_ab = knights_pos & NOT_AB_FILE;
+    let knight_clip_file_a = knights_pos & NOT_A_FILE;
+    let knight_clip_file_h = knights_pos & NOT_H_FILE;
+    let knight_clip_file_hg = knights_pos & NOT_HG_FILE;
 
     let spot_1 = knight_clip_file_ab << 6;
     let spot_2 = knight_clip_file_a << 15;
@@ -60,9 +63,9 @@ pub fn get_knight_moves(knights_pos: BitBoard, own_pieces: BitBoard) -> BitBoard
 
 pub fn get_white_pawn_attacks(pawns_pos: BitBoard) -> BitBoard {
     // Left side of the pawn, minding the underflow File A.
-    let pawn_left_attack = (pawns_pos & BitBoard::NOT_A_FILE) << 7;
+    let pawn_left_attack = (pawns_pos & NOT_A_FILE) << 7;
     // Right side
-    let pawn_right_attack = (pawns_pos & BitBoard::NOT_H_FILE) << 9;
+    let pawn_right_attack = (pawns_pos & NOT_H_FILE) << 9;
     pawn_left_attack | pawn_right_attack
 }
 
@@ -84,7 +87,7 @@ pub fn get_white_pawn_moves(
 
     // For all moves that came from rank 2 (home row) and passed the above filter,
     // thereby being on rank 3, check and see if I can move forward one more.
-    let pawn_two_steps = ((pawn_one_step & BitBoard::MASK_RANK_3) << 8) & !all_pieces;
+    let pawn_two_steps = ((pawn_one_step & MASK_RANK_3) << 8) & !all_pieces;
 
     // The union of the movements dictate the possible moves forward available.
     let pawn_valid_moves = pawn_one_step | pawn_two_steps;
@@ -96,8 +99,8 @@ pub fn get_white_pawn_moves(
 }
 
 pub fn get_black_pawn_attacks(pawns_pos: BitBoard) -> BitBoard {
-    let pawn_left_attack = (pawns_pos & BitBoard::NOT_A_FILE) >> 9;
-    let pawn_right_attack = (pawns_pos & BitBoard::NOT_H_FILE) >> 7;
+    let pawn_left_attack = (pawns_pos & NOT_A_FILE) >> 9;
+    let pawn_right_attack = (pawns_pos & NOT_H_FILE) >> 7;
     pawn_left_attack | pawn_right_attack
 }
 
@@ -112,7 +115,7 @@ pub fn get_black_pawn_moves(
 ) -> BitBoard {
     let pawn_one_step = (pawns_pos >> 8) & !all_pieces;
     // For all moves that came from rank 7 (home row) and passed the above filter.
-    let pawn_two_steps = ((pawn_one_step & BitBoard::MASK_RANK_6) >> 8) & !all_pieces;
+    let pawn_two_steps = ((pawn_one_step & MASK_RANK_6) >> 8) & !all_pieces;
     let pawn_valid_moves = pawn_one_step | pawn_two_steps;
 
     let pawn_valid_attacks = get_valid_black_pawn_attacks(pawns_pos, all_other_pieces);
@@ -165,14 +168,14 @@ pub fn get_queen_moves(
 
 #[cfg(test)]
 mod tests {
-    use crate::common::Square::*;
+    use crate::{bitboard::constants::EMPTY, common::Square::*};
 
     use super::*;
 
     #[test]
     fn test_king_moves_empty_board() {
         let king: BitBoard = E1.into();
-        let moves = get_king_moves(king, BitBoard::EMPTY);
+        let moves = get_king_moves(king, EMPTY);
         assert_eq!(
             moves,
             r"
@@ -188,7 +191,7 @@ mod tests {
         );
 
         let king: BitBoard = H4.into();
-        let moves = get_king_moves(king, BitBoard::EMPTY);
+        let moves = get_king_moves(king, EMPTY);
         assert_eq!(
             moves,
             r"
@@ -204,7 +207,7 @@ mod tests {
         );
 
         let king: BitBoard = A8.into();
-        let moves = get_king_moves(king, BitBoard::EMPTY);
+        let moves = get_king_moves(king, EMPTY);
         assert_eq!(
             moves,
             r"

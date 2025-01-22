@@ -1,7 +1,7 @@
 //! Bit Board type and manipulation.
 
 mod bitboard_type;
-mod constants;
+pub mod constants; // TODO make private.
 mod sliding_pieces_with_hq;
 
 pub mod movements;

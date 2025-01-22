@@ -1,7 +1,7 @@
 use super::Board;
 
 use crate::{
-    bitboard::{movements, BitBoard},
+    bitboard::{constants, movements},
     common::{Piece, Square},
     moves::Move,
 };
@@ -9,14 +9,14 @@ use crate::{
 impl Board {
     fn can_castle_king_side(&self) -> bool {
         let side_to_move = self.get_side_to_move();
-        let castling_mask = BitBoard::CASTLING_KING_SIDE_MASKS[side_to_move as usize];
+        let castling_mask = constants::CASTLING_KING_SIDE_MASKS[side_to_move as usize];
         self.castling_ability.can_castle_king_side(side_to_move)
             && !self.occupied.intersects(castling_mask)
     }
 
     fn can_castle_queen_side(&self) -> bool {
         let side_to_move = self.get_side_to_move();
-        let castling_mask = BitBoard::CASTLING_QUEEN_SIDE_MASKS[side_to_move as usize];
+        let castling_mask = constants::CASTLING_QUEEN_SIDE_MASKS[side_to_move as usize];
         self.castling_ability.can_castle_queen_side(side_to_move)
             && !self.occupied.intersects(castling_mask)
     }
@@ -97,7 +97,7 @@ impl Board {
                         Piece::BlackPawn => {
                             movements::get_valid_black_pawn_attacks(from_bb, target_bb)
                         }
-                        _ => BitBoard::EMPTY,
+                        _ => constants::EMPTY,
                     };
 
                     moves_list.extend(

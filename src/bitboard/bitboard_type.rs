@@ -259,7 +259,7 @@ impl MulAssign for BitBoard {
 
 #[cfg(test)]
 mod tests {
-    use crate::common::Square;
+    use crate::{bitboard::constants, common::Square};
 
     use super::*;
 
@@ -268,7 +268,7 @@ mod tests {
         use Square::*;
         let black_pawns: BitBoard = 71776119061217280.into();
 
-        let mut b = BitBoard::EMPTY;
+        let mut b = constants::EMPTY;
         for square in [A7, B7, C7, D7, E7, F7, G7, H7] {
             b.set(square as u8);
         }
