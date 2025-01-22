@@ -254,6 +254,25 @@ mod tests {
     }
 
     #[test]
+    fn test_neg() {
+        let x: BitBoard = bitboard::from_str(SAMPLE_BB);
+        assert_eq!(
+            -x,
+            bitboard::from_str(
+                r"
+                1 1 1 1 1 1 1 1
+                1 1 . 1 . 1 1 1
+                1 . 1 1 1 . 1 1
+                1 1 1 1 1 1 1 1
+                1 . 1 1 1 . 1 1
+                . . 1 1 . 1 1 1
+                . . . . . . . .
+                . . . . . . . ."
+            )
+        );
+    }
+
+    #[test]
     fn test_subtraction() {
         let x: BitBoard = bitboard::from_str(SAMPLE_BB);
         let one: BitBoard = BitBoard::new(1);
