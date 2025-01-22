@@ -132,8 +132,8 @@ impl Board {
     // Update by Move explained at <https://www.chessprogramming.org/General_Setwise_Operations#UpdateByMove>
     fn update_bitboards_by_move(&mut self, mv: Move) {
         let color = mv.get_piece().get_color();
-        let from_bb: BitBoard = mv.get_from().into();
-        let to_bb: BitBoard = mv.get_to().into();
+        let from_bb: BitBoard = bitboard::from_square(mv.get_from());
+        let to_bb: BitBoard = bitboard::from_square(mv.get_to());
         let from_to_bb = from_bb ^ to_bb;
 
         self.pieces[mv.get_piece() as usize] ^= from_to_bb;
@@ -167,7 +167,7 @@ impl Board {
 
         if let Some(promote_to) = mv.get_promotion() {
             // Pawn was moved. We now need to switch it to the new piece.
-            let to_bb: BitBoard = mv.get_to().into();
+            let to_bb: BitBoard = bitboard::from_square(mv.get_to());
             self.pieces[mv.get_piece() as usize] &= !to_bb;
             self.pieces[promote_to as usize] |= to_bb;
         }

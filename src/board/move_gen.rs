@@ -1,7 +1,7 @@
 use super::Board;
 
 use crate::{
-    bitboard::{constants, movements},
+    bitboard::{self, constants, movements},
     common::{Piece, Square},
     moves::Move,
 };
@@ -89,7 +89,7 @@ impl Board {
 
                 // En passant.
                 if let Some(en_passant) = self.en_passant_target_square {
-                    let target_bb = en_passant.into();
+                    let target_bb = bitboard::from_square(en_passant);
                     let ep_attacks_bb = match piece {
                         Piece::WhitePawn => {
                             movements::get_valid_white_pawn_attacks(from_bb, target_bb)

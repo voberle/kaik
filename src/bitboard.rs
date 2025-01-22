@@ -25,6 +25,10 @@ pub fn from_array(value: &[u64]) -> BitBoard {
     BitBoard::new(bb)
 }
 
+pub fn from_square(square: Square) -> BitBoard {
+    BitBoard(1 << square as u8)
+}
+
 pub const fn is_set(bitboard: BitBoard, index: u8) -> bool {
     bitboard.0 & (1 << index) != 0
 }
@@ -51,6 +55,8 @@ pub fn reset_ls1b(bitboard: BitBoard) -> BitBoard {
 pub use debug::from_str;
 pub use debug::print;
 
+use crate::common::Square;
+
 #[cfg(test)]
 mod tests {
     use crate::{
@@ -60,15 +66,24 @@ mod tests {
 
     use super::*;
 
+    #[test]
+    fn test_from_square() {
+        let bb: BitBoard = bitboard::from_square(Square::C3);
+        assert_eq!(
+            bb.0,
+            0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0100_0000_0000_0000_0000
+        );
+    }
+
     const SAMPLE_BB: &str = r"
-    . . . . . . . .
-    . . 1 . 1 . . .
-    . 1 . . . 1 . .
-    . . . . . . . .
-    . 1 . . . 1 . .
-    . . 1 . 1 . . .
-    . . . . . . . .
-    . . . . . . . .";
+        . . . . . . . .
+        . . 1 . 1 . . .
+        . 1 . . . 1 . .
+        . . . . . . . .
+        . 1 . . . 1 . .
+        . . 1 . 1 . . .
+        . . . . . . . .
+        . . . . . . . .";
 
     #[test]
     fn test_ls1b() {

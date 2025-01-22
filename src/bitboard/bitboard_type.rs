@@ -62,12 +62,6 @@ impl From<u64> for BitBoard {
     }
 }
 
-impl From<Square> for BitBoard {
-    fn from(square: Square) -> Self {
-        Self(1 << square as u8)
-    }
-}
-
 impl Not for BitBoard {
     type Output = Self;
 
@@ -192,15 +186,6 @@ mod tests {
     };
 
     use super::*;
-
-    #[test]
-    fn test_from_square() {
-        let bb: BitBoard = Square::C3.into();
-        assert_eq!(
-            bb.0,
-            0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0100_0000_0000_0000_0000
-        );
-    }
 
     const SAMPLE_BB: &str = r"
         . . . . . . . .

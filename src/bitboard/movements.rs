@@ -177,7 +177,7 @@ mod tests {
 
     #[test]
     fn test_king_moves_empty_board() {
-        let king: BitBoard = E1.into();
+        let king: BitBoard = bitboard::from_square(E1);
         let moves = get_king_moves(king, EMPTY);
         assert_eq!(
             moves,
@@ -194,7 +194,7 @@ mod tests {
             )
         );
 
-        let king: BitBoard = H4.into();
+        let king: BitBoard = bitboard::from_square(H4);
         let moves = get_king_moves(king, EMPTY);
         assert_eq!(
             moves,
@@ -211,7 +211,7 @@ mod tests {
             )
         );
 
-        let king: BitBoard = A8.into();
+        let king: BitBoard = bitboard::from_square(A8);
         let moves = get_king_moves(king, EMPTY);
         assert_eq!(
             moves,
@@ -231,8 +231,8 @@ mod tests {
 
     #[test]
     fn test_king_moves_not_empty_board() {
-        let king: BitBoard = E1.into();
-        let own_pieces: BitBoard = Into::<BitBoard>::into(D2) | F1.into();
+        let king: BitBoard = bitboard::from_square(E1);
+        let own_pieces: BitBoard = bitboard::from_square(D2) | bitboard::from_square(F1);
         let moves = get_king_moves(king, own_pieces);
         assert_eq!(
             moves,
@@ -252,8 +252,9 @@ mod tests {
 
     #[test]
     fn test_knight_moves() {
-        let knight: BitBoard = B4.into();
-        let own_pieces: BitBoard = Into::<BitBoard>::into(D4) | A2.into() | D1.into();
+        let knight: BitBoard = bitboard::from_square(B4);
+        let own_pieces: BitBoard =
+            bitboard::from_square(D4) | bitboard::from_square(A2) | bitboard::from_square(D1);
         let moves = get_knight_moves(knight, own_pieces);
         assert_eq!(
             moves,
