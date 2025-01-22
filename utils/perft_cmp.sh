@@ -11,8 +11,12 @@ fi
 depth=$1
 moves=$2
 
+# Position, either initial board or a FEN string.
+pos="startpos"
+# pos="fen <FEN>"
+
 # Construct the Stockfish command string
-command="position startpos moves $moves
+command="position $pos moves $moves
 go perft $depth"
 
 # Run Stockfish, filter the output, sort it and store it in a variable

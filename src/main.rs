@@ -12,17 +12,18 @@ mod common;
 mod fen;
 mod moves;
 
-#[allow(unused_variables, unused_imports)]
+#[allow(unused_variables, unused_imports, unused_mut)]
 fn main() {
     use common::Piece::*;
     use common::Square::*;
 
-    let args: Vec<String> = env::args().collect();
-    if args.len() == 3 {
-        let depth: usize = args[1].parse().expect("Invalid depth argument");
-        let moves = &args[2];
+    let mut b = Board::initial_board();
 
-        let mut b = Board::initial_board();
+    let args: Vec<String> = env::args().collect();
+    if args.len() >= 2 {
+        let depth: usize = args[1].parse().expect("Invalid depth argument");
+        let moves = args.get(2).map_or("", |v| v.as_str());
+
         apply_moves(&mut b, moves);
         // b.print();
         divide(&b, depth);
@@ -33,8 +34,6 @@ fn main() {
     println!("  Kaik Chess Engine");
     println!("         by Vincent");
     println!();
-
-    let mut b = Board::initial_board();
     b.print();
     println!();
 
@@ -64,8 +63,8 @@ fn main() {
     // let b: Board = "4k3/1P6/8/8/8/8/8/4K3 w - - 0 1".into(); // Promotion
     // let moves = b.generate_moves_for(&[Piece::WhitePawn]);
 
-    apply_moves(&mut b, "a2a4 a7a6 a4a5 b7b5 a5b6");
-    b.print();
+    // apply_moves(&mut b, "a2a4 a7a6 a4a5 b7b5 a5b6");
+    // b.print();
 
     let moves = b.generate_moves();
     print_moves_with_board(&b, &moves);
