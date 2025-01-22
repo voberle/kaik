@@ -1,7 +1,7 @@
 //! Bit Board type and manipulation.
 #![allow(unused_imports)]
 
-pub mod constants; // TODO make private.
+mod constants;
 mod debug;
 mod sliding_pieces_with_hq;
 
@@ -84,6 +84,7 @@ impl Iterator for BitBoardIterator {
     }
 }
 
+pub use constants::INITIAL_BOARD;
 pub use debug::from_str;
 pub use debug::print;
 

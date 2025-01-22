@@ -1,7 +1,7 @@
 use itertools::Itertools;
 
 use crate::{
-    bitboard::{self, constants, from_array, movements, BitBoard},
+    bitboard::{self, from_array, movements, BitBoard},
     common::{Color, Piece},
     fen,
     moves::Move,
@@ -10,13 +10,10 @@ use crate::{
 use super::{Board, CastlingAbility};
 
 fn get_all_bitboards(pieces: &[BitBoard]) -> [BitBoard; 2] {
-    pieces
-        .iter()
-        .enumerate()
-        .fold([constants::EMPTY, constants::EMPTY], |mut acc, (i, bb)| {
-            acc[i % 2] |= *bb;
-            acc
-        })
+    pieces.iter().enumerate().fold([0, 0], |mut acc, (i, bb)| {
+        acc[i % 2] |= *bb;
+        acc
+    })
 }
 
 fn get_occupied_bitboard(all: &[BitBoard]) -> BitBoard {
@@ -26,9 +23,9 @@ fn get_occupied_bitboard(all: &[BitBoard]) -> BitBoard {
 impl Board {
     pub fn empty() -> Self {
         Self {
-            pieces: [constants::EMPTY; 12],
-            all: [constants::EMPTY; 2],
-            occupied: constants::EMPTY,
+            pieces: [0; 12],
+            all: [0; 2],
+            occupied: 0,
             side_to_move: Color::White,
             en_passant_target_square: None,
             castling_ability: CastlingAbility::NONE,
@@ -36,7 +33,7 @@ impl Board {
     }
 
     pub fn initial_board() -> Self {
-        let pieces = constants::INITIAL_BOARD;
+        let pieces = bitboard::INITIAL_BOARD;
         let all = get_all_bitboards(&pieces);
         let occupied = get_occupied_bitboard(&all);
         Self {
@@ -233,9 +230,9 @@ mod tests {
     #[test]
     fn test_empty_board() {
         let board = Board::empty();
-        assert_eq!(board.pieces, [constants::EMPTY; 12]);
-        assert_eq!(board.all, [constants::EMPTY; 2]);
-        assert_eq!(board.occupied, constants::EMPTY);
+        assert_eq!(board.pieces, [0; 12]);
+        assert_eq!(board.all, [0; 2]);
+        assert_eq!(board.occupied, 0);
         assert_eq!(board.side_to_move, Color::White);
         assert_eq!(board.en_passant_target_square, None);
     }

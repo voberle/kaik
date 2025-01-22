@@ -1,6 +1,7 @@
-use crate::bitboard;
 use crate::bitboard::BitBoard;
+use crate::{bitboard, common::Color};
 
+use super::constants::{self, CASTLING_KING_SIDE_MASKS, CASTLING_QUEEN_SIDE_MASKS};
 use super::{
     constants::{MASK_RANK_3, MASK_RANK_6, NOT_AB_FILE, NOT_A_FILE, NOT_HG_FILE, NOT_H_FILE},
     sliding_pieces_with_hq,
@@ -152,6 +153,16 @@ pub fn get_queen_moves(
 ) -> BitBoard {
     sliding_pieces_with_hq::get_queen_attacks(all_pieces, bitboard::get_index(queens_pos))
         & !own_pieces
+}
+
+pub fn can_castle_king_side(occupied: BitBoard, side_to_move: Color) -> bool {
+    let castling_mask = CASTLING_KING_SIDE_MASKS[side_to_move as usize];
+    occupied & castling_mask == 0
+}
+
+pub fn can_castle_queen_side(occupied: BitBoard, side_to_move: Color) -> bool {
+    let castling_mask = CASTLING_QUEEN_SIDE_MASKS[side_to_move as usize];
+    occupied & castling_mask == 0
 }
 
 #[cfg(test)]

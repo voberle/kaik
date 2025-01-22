@@ -1,7 +1,7 @@
 use super::Board;
 
 use crate::{
-    bitboard::{self, constants, movements},
+    bitboard::{self, movements},
     common::{Piece, Square},
     moves::Move,
 };
@@ -9,16 +9,14 @@ use crate::{
 impl Board {
     fn can_castle_king_side(&self) -> bool {
         let side_to_move = self.get_side_to_move();
-        let castling_mask = constants::CASTLING_KING_SIDE_MASKS[side_to_move as usize];
         self.castling_ability.can_castle_king_side(side_to_move)
-            && (self.occupied & castling_mask == 0)
+            && movements::can_castle_king_side(self.occupied, side_to_move)
     }
 
     fn can_castle_queen_side(&self) -> bool {
         let side_to_move = self.get_side_to_move();
-        let castling_mask = constants::CASTLING_QUEEN_SIDE_MASKS[side_to_move as usize];
         self.castling_ability.can_castle_queen_side(side_to_move)
-            && (self.occupied & castling_mask == 0)
+            && movements::can_castle_queen_side(self.occupied, side_to_move)
     }
 
     // Generate all possible moves from this board.
@@ -97,7 +95,7 @@ impl Board {
                         Piece::BlackPawn => {
                             movements::get_valid_black_pawn_attacks(from_bb, target_bb)
                         }
-                        _ => constants::EMPTY,
+                        _ => 0,
                     };
 
                     moves_list.extend(bitboard::into_iter(ep_attacks_bb).map(|to_bb| {
