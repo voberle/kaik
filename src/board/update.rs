@@ -83,10 +83,21 @@ impl Board {
         // Drop the move if the king is left in check
         let king_color = mv.get_piece().get_color(); // Color that just moved.
         if board_copy.attacks_king(king_color) != 0 {
-            None
-        } else {
-            Some(board_copy)
+            return None;
         }
+
+        if let Some(_rook_mv) = mv.get_castling() {
+            // We are not allowed to be in check before the castling.
+            if self.attacks_king(king_color) != 0 {
+                return None;
+            }
+
+            // We need to check that the king doesn't pass over an attacked square.
+            // That square is where the rook moves.
+            // TODO
+        }
+
+        Some(board_copy)
     }
 }
 
@@ -174,5 +185,15 @@ mod tests {
             board,
             "rnbqkbnr/2pppppp/pP6/8/8/8/1PPPPPPP/RNBQKBNR b KQkq - 0 3".into()
         );
+    }
+
+    #[test]
+    fn test_copy_with_move_in_check_castling() {
+        let board: Board =
+            "r3k2r/p1pp1pb1/bn2Qnp1/2qPN3/1p2P3/2N5/PPPBBPPP/R3K2R b KQkq - 3 2".into();
+        let mv = Move::quiet(E8, G8, BlackKing); // Castling move
+        board.print();
+        // Not allowed to castle if in check.
+        assert_eq!(board.copy_with_move(mv), None);
     }
 }
