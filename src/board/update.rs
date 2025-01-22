@@ -75,6 +75,19 @@ impl Board {
 
         self.toggle_side();
     }
+
+    pub fn copy_with_move(&self, mv: Move) -> Option<Self> {
+        let mut board_copy = *self;
+        board_copy.update_by_move(mv);
+
+        // Drop the move if the king is left in check
+        let king_color = mv.get_piece().get_color(); // Color that just moved.
+        if board_copy.attacks_king(king_color) != 0 {
+            None
+        } else {
+            Some(board_copy)
+        }
+    }
 }
 
 #[cfg(test)]

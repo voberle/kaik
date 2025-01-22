@@ -11,14 +11,9 @@ impl Board {
         let mut nodes = 0;
         let move_list = self.generate_moves();
         for mv in move_list {
-            let mut board_copy = *self;
-            board_copy.update_by_move(mv);
-            // Drop the move if the king is left in check
-            let king_color = mv.get_piece().get_color(); // Color that just moved.
-            if board_copy.attacks_king(king_color) != 0 {
-                continue;
+            if let Some(board_copy) = self.copy_with_move(mv) {
+                nodes += board_copy.perft(depth - 1);
             }
-            nodes += board_copy.perft(depth - 1);
         }
         nodes
     }
@@ -29,14 +24,9 @@ impl Board {
         let mut nodes = Vec::new();
         let move_list = self.generate_moves();
         for mv in move_list {
-            let mut board_copy = *self;
-            board_copy.update_by_move(mv);
-            // Drop the move if the king is left in check
-            let king_color = mv.get_piece().get_color(); // Color that just moved.
-            if board_copy.attacks_king(king_color) != 0 {
-                continue;
+            if let Some(board_copy) = self.copy_with_move(mv) {
+                nodes.push((mv, board_copy.perft(depth - 1)));
             }
-            nodes.push((mv, board_copy.perft(depth - 1)));
         }
         nodes
     }
