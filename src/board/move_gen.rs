@@ -1,3 +1,5 @@
+//! Move generation.
+
 use super::Board;
 
 use crate::{
