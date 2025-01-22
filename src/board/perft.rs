@@ -90,8 +90,8 @@ mod tests {
             "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10".into();
         assert_eq!(b.perft(3), 89890);
 
-        // let b: Board = "3k4/3p4/8/K1P4r/8/8/8/8 b - - 0 1".into();
-        // assert_eq!(b.perft(6), 1134888);
+        let b: Board = "3k4/3p4/8/K1P4r/8/8/8/8 b - - 0 1".into();
+        assert_eq!(b.perft(6), 1134888);
 
         // let b: Board = "8/8/4k3/8/2p5/8/B2P2K1/8 w - - 0 1".into();
         // assert_eq!(b.perft(6), 1015133);

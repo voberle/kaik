@@ -196,4 +196,13 @@ mod tests {
         // Not allowed to castle if in check.
         assert_eq!(board.copy_with_move(mv), None);
     }
+
+    #[test]
+    fn test_copy_with_move_king_moves_next_to_king() {
+        let board: Board = "8/2kp4/8/K1P4r/8/8/8/8 w - - 1 2".into();
+        let mv = Move::quiet(A5, B6, WhiteKing);
+        board.print();
+        // Not allowed to move next to opponent king.
+        assert_eq!(board.copy_with_move(mv), None);
+    }
 }
