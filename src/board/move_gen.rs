@@ -248,4 +248,19 @@ mod tests {
             ]
         );
     }
+
+    #[test]
+    fn test_generate_castling() {
+        let board: Board = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8".into();
+        let moves = board.generate_moves_for(&[WhiteKing]);
+        assert_eq!(
+            moves,
+            &[
+                Move::quiet(E1, F1, WhiteKing),
+                Move::quiet(E1, D2, WhiteKing),
+                Move::capture(E1, F2, WhiteKing),
+                Move::quiet(E1, G1, WhiteKing),
+            ]
+        );
+    }
 }
