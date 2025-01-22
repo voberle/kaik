@@ -109,28 +109,28 @@ mod tests {
         let b: Board = "r3k2r/1b4bq/8/8/8/8/7B/R3K2R w KQkq - 0 1".into();
         assert_eq!(b.perft(4), 1274206);
 
-        // let b: Board = "r3k2r/8/3Q4/8/8/5q2/8/R3K2R b KQkq - 0 1".into();
-        // assert_eq!(b.perft(4), 1720476);
+        let b: Board = "r3k2r/8/3Q4/8/8/5q2/8/R3K2R b KQkq - 0 1".into();
+        assert_eq!(b.perft(4), 1720476);
 
-        // let b: Board = "2K2r2/4P3/8/8/8/8/8/3k4 w - - 0 1".into();
-        // assert_eq!(b.perft(6), 3821001);
+        let b: Board = "2K2r2/4P3/8/8/8/8/8/3k4 w - - 0 1".into();
+        assert_eq!(b.perft(6), 3821001);
 
-        // let b: Board = "8/8/1P2K3/8/2n5/1q6/8/5k2 b - - 0 1".into();
-        // assert_eq!(b.perft(5), 1004658);
+        let b: Board = "8/8/1P2K3/8/2n5/1q6/8/5k2 b - - 0 1".into();
+        assert_eq!(b.perft(5), 1004658);
 
-        // let b: Board = "4k3/1P6/8/8/8/8/K7/8 w - - 0 1".into();
-        // assert_eq!(b.perft(6), 217342);
+        let b: Board = "4k3/1P6/8/8/8/8/K7/8 w - - 0 1".into();
+        assert_eq!(b.perft(6), 217342);
 
-        // let b: Board = "8/P1k5/K7/8/8/8/8/8 w - - 0 1".into();
-        // assert_eq!(b.perft(6), 92683);
+        let b: Board = "8/P1k5/K7/8/8/8/8/8 w - - 0 1".into();
+        assert_eq!(b.perft(6), 92683);
 
-        // let b: Board = "K1k5/8/P7/8/8/8/8/8 w - - 0 1".into();
-        // assert_eq!(b.perft(6), 2217);
+        let b: Board = "K1k5/8/P7/8/8/8/8/8 w - - 0 1".into();
+        assert_eq!(b.perft(6), 2217);
 
-        // let b: Board = "8/k1P5/8/1K6/8/8/8/8 w - - 0 1".into();
-        // assert_eq!(b.perft(7), 567584);
+        let b: Board = "8/k1P5/8/1K6/8/8/8/8 w - - 0 1".into();
+        assert_eq!(b.perft(7), 567584);
 
-        // let b: Board = "8/8/2k5/5q2/5n2/8/5K2/8 b - - 0 1".into();
-        // assert_eq!(b.perft(4), 23527);
+        let b: Board = "8/8/2k5/5q2/5n2/8/5K2/8 b - - 0 1".into();
+        assert_eq!(b.perft(4), 23527);
     }
 }
