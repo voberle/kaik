@@ -12,6 +12,8 @@ Some of the other initial decisions I had to make:
 
 Should I use a type for the bitboard value, or even wrap in a struct? I decided to wrap it in a struct, as this allows for a more object-oriented approach, with more encapsulation of the functionalities. I'm trusting the compiler to optimize it to the same level as if there would be no struct.
 
+```rust
 pub struct BitBoard(u64);
+```
 
 How to define the board? As individual fields, or as an array? This is [discussed on CPW](https://www.chessprogramming.org/Bitboard_Board-Definition), and for now I went with an array, but it's likely to still evolve.  

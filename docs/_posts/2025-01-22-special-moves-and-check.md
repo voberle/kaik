@@ -26,12 +26,16 @@ I also developed a small perft\_cmp.sh script that makes it easy to compare my p
 
 Initially I had decided to wrap the u64 of the BitBoard in a struct
 
+```rust
 pub struct BitBoard(u64);
+```
 
 In practice however this proved annoying to use for limited benefits. I had to overload all the bit manipulation operators, and even then some constructions looked awkward, such as doing an AND on two BitBoard and checking if the result was null.
 
 So I went back to a simple type definition.
 
-pub type BitBoard \= u64;
+```rust
+pub type BitBoard = u64;
+```
 
 NB: Performance wise I believe the struct would have been fine, since Rust aims for zero-cost abstractions, meaning that high-level features should compile down to efficient code without runtime overhead. Additionally the compiler should see that BitBoard has the same memory layout as a u64, so it can eliminate any unnecessary indirection.  
