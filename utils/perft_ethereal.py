@@ -39,7 +39,7 @@ def run_cargo(depth, fen):
   """
   try:
     result = subprocess.run(
-        ['cargo', 'r', '--release', str(depth), fen],
+        ['cargo', 'r', '--release', 'perft', str(depth), fen],
         capture_output=True,
         text=True,
         check=True

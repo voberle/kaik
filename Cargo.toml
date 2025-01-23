@@ -10,3 +10,6 @@ pedantic = "deny"
 
 [dependencies]
 itertools = "0.14.0"
+
+[features]
+perft = []

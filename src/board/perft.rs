@@ -64,7 +64,7 @@ mod tests {
     }
 
     #[test]
-    fn test_peterellisjones() {
+    fn test_peterellisjones_fast() {
         // Test cases from <https://gist.github.com/peterellisjones/8c46c28141c162d1d8a0f0badbc9cff9>
         let b: Board = "r6r/1b2k1bq/8/8/7B/8/8/R3K2R b KQ - 3 2".into();
         assert_eq!(b.perft(1), 8);
@@ -88,7 +88,12 @@ mod tests {
 
         let b: Board = "2r5/3pk3/8/2P5/8/2K5/8/8 w - - 5 4".into();
         assert_eq!(b.perft(1), 9);
+    }
 
+    #[test]
+    #[cfg_attr(not(feature = "perft"), ignore)]
+    fn test_peterellisjones_slow() {
+        // Slower tests, not enabled by default.
         let b: Board = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8".into();
         assert_eq!(b.perft(3), 62379);
 

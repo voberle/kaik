@@ -17,12 +17,13 @@ fn main() {
     use common::Piece::*;
     use common::Square::*;
 
-    // Usage: <depth> <startpos|fen> <moves>
+    // Usage: <perft|divide> <depth> <startpos|fen> <moves>
     let args: Vec<String> = env::args().collect();
     if args.len() >= 2 {
-        let depth: usize = args[1].parse().expect("Invalid depth argument");
-        let pos = args.get(2).map_or("startpos", |v| v.as_str());
-        let moves = args.get(3).map_or("", |v| v.as_str());
+        let cmd = args[1].to_string();
+        let depth: usize = args[2].parse().expect("Invalid depth argument");
+        let pos = args.get(3).map_or("startpos", |v| v.as_str());
+        let moves = args.get(4).map_or("", |v| v.as_str());
 
         let mut b: Board = if pos == "startpos" {
             Board::initial_board()
@@ -33,9 +34,12 @@ fn main() {
         apply_moves(&mut b, moves);
 
         // For performance measurement use perft. For debugging, use divide.
-        // divide(&b, depth);
-        // perft(&b, depth);
-        println!("{}", b.perft(depth));
+        match cmd.as_str() {
+            "perft" => println!("{}", b.perft(depth)),
+            "perft_time" => perft(&b, depth),
+            "divide" => divide(&b, depth),
+            _ => panic!("Unsupported command"),
+        }
 
         return;
     }
