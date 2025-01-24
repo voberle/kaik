@@ -3,6 +3,7 @@
 
 use std::{
     collections::VecDeque,
+    fmt::Display,
     io::{BufRead, Write},
 };
 
@@ -11,13 +12,18 @@ use itertools::Itertools;
 use crate::{
     common::{ENGINE_AUTHOR, ENGINE_NAME},
     game::Game,
+    moves::Move,
 };
 
-pub struct Uci<R, W> {
+pub struct Uci<R, W>
+where
+    W: std::io::Write,
+{
     reader: R,
     writer: W,
     echo: bool,
     game: Game,
+    debug: bool,
 }
 
 // We use a writer for the UCI output instead of just println!, as this
@@ -41,7 +47,8 @@ where
             reader,
             writer,
             echo,
-            game: Game::startpos(),
+            game: Game::new(),
+            debug: false,
         }
     }
 
@@ -96,11 +103,12 @@ where
 
     fn handle_debug_cmd(&mut self, tokens: &mut VecDeque<&str>) {
         let val = *tokens.front().expect("No debug value provided");
-        let _debug = match val {
+        let debug = match val {
             "on" => true,
             "off" => false,
             _ => panic!("Invalid debug value"),
         };
+        self.debug = debug;
     }
 
     fn handle_isready_cmd(&mut self) {
@@ -112,20 +120,20 @@ where
 
     fn handle_ucinewgame_cmd(&mut self) {
         // Not mandatory to be sent by UIs, but most should support it.
-        self.game = Game::startpos();
+        self.game.new_game();
     }
 
     fn handle_position_cmd(&mut self, tokens: &mut VecDeque<&str>) {
         let pos = *tokens.front().expect("No position provided");
         if pos == "startpos" {
             tokens.pop_front().unwrap();
-            self.game = Game::startpos();
+            self.game.set_to_startpos();
         } else if pos == "fen" {
             tokens.pop_front().unwrap();
             // FEN string is always 6 tokens.
             // Not great to split the string to join it again..
             let fen = tokens.drain(0..6).join(" ");
-            self.game = Game::from_fen(&fen);
+            self.game.set_to_fen(&fen);
         }
 
         if matches!(tokens.pop_front(), Some("moves")) {
@@ -138,8 +146,43 @@ where
     fn handle_stop_cmd(&mut self) {}
 
     fn handle_d_cmd(&mut self) {
-        let _ = self.game.write(&mut self.writer);
+        self.game.display_board(&mut self.writer);
         // self.writer.flush();
+    }
+
+    pub fn send_best_move(&mut self, mv: Move, ponder: Option<Move>) {
+        if let Some(ponder_move) = ponder {
+            outputln!(
+                &mut self.writer,
+                "bestmove {} ponder {}",
+                mv.pure(),
+                ponder_move.pure()
+            );
+        } else {
+            outputln!(&mut self.writer, "bestmove {}", mv.pure());
+        }
+    }
+
+    // As it is currently, the info feature is not very useful,
+    // since you need an instance of Uci to call it.
+    // Some more practical options could be to implement a custom logger
+    // <https://docs.rs/log/latest/log/>
+    // Also it depends from where we have to send logs, and how it's controlled.
+    // Do we want to have it all over the engine?
+    pub fn send_info(&mut self, info: &Info) {
+        outputln!(&mut self.writer, "info {}", info);
+    }
+}
+
+// Whatever the engine wants to send in the UCI info command.
+pub struct Info {
+    // For now, only string is supported.
+    string: String,
+}
+
+impl Display for Info {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "string {}", self.string)
     }
 }
 
