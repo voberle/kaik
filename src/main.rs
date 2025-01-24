@@ -1,22 +1,21 @@
 #![allow(dead_code)]
 
-use std::{env, time::Instant};
+use std::{env, io, time::Instant};
 
 use board::Board;
 use common::Square;
 use moves::Move;
+use uci::Uci;
 
 mod bitboard;
 mod board;
 mod common;
 mod fen;
+mod game;
 mod moves;
+mod uci;
 
-#[allow(unused_variables, unused_imports, unused_mut)]
 fn main() {
-    use common::Piece::*;
-    use common::Square::*;
-
     // Usage: <perft|divide> <depth> <startpos|fen> <moves>
     let args: Vec<String> = env::args().collect();
     if args.len() >= 2 {
@@ -44,6 +43,13 @@ fn main() {
         return;
     }
 
+    start_uci_loop();
+
+    // hacks();
+}
+
+#[allow(unused_variables, unused_imports, unused_mut)]
+fn hacks() {
     let mut b = Board::initial_board();
     println!("  Kaik Chess Engine");
     println!("         by Vincent");
@@ -58,6 +64,17 @@ fn main() {
     for mv in &moves {
         println!("{}", mv.pure());
     }
+}
+
+fn start_uci_loop() {
+    let stdio = io::stdin();
+    let input = stdio.lock();
+
+    let output = io::stdout();
+
+    let mut uci = Uci::new(input, output, true);
+
+    uci.uci_loop();
 }
 
 fn perft(board: &Board, depth: usize) {

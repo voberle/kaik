@@ -2,8 +2,9 @@ use itertools::Itertools;
 
 use crate::{
     bitboard::{self, from_array, BitBoard},
-    common::{Color, Piece},
+    common::{Color, Piece, Square},
     fen,
+    moves::Move,
 };
 
 use super::{Board, CastlingAbility};
@@ -118,6 +119,39 @@ impl Board {
 
     pub fn opposite_side(&self) -> Color {
         self.side_to_move.opposite()
+    }
+
+    pub fn find_piece_on(&self, sq: Square) -> Piece {
+        let index = sq as u8;
+        *Piece::ALL_PIECES
+            .iter()
+            .find(|&&p| bitboard::is_set(self.pieces[p as usize], index))
+            .unwrap()
+    }
+
+    // Creates a valid move based on this board.
+    // If there are no pieces on the from position, the code will crash.
+    pub fn new_move_from_pure(&self, s: &str) -> Move {
+        assert!(s.len() >= 4 && s.len() <= 5);
+        let from: Square = s[0..2].try_into().unwrap();
+        let to: Square = s[2..4].try_into().unwrap();
+
+        let piece = self.find_piece_on(from);
+        let to_bb: BitBoard = bitboard::from_square(to);
+        let is_capture = self.occupied & to_bb != 0;
+        let promotion = if to.is_promotion_rank_for(piece.get_color()) {
+            let promotion_piece = match &s[4..5] {
+                "q" => Piece::get_queen_of(piece.get_color()),
+                "r" => Piece::get_rook_of(piece.get_color()),
+                "b" => Piece::get_bishop_of(piece.get_color()),
+                "n" => Piece::get_knight_of(piece.get_color()),
+                _ => panic!("Invalid promotion flag"),
+            };
+            Some(promotion_piece)
+        } else {
+            None
+        };
+        Move::new(from, to, promotion, piece, is_capture)
     }
 }
 

@@ -1,6 +1,6 @@
 //! Visualization of a Board
 
-use std::fmt::Display;
+use std::{fmt::Display, io::Write};
 
 use crate::{
     bitboard::{self, BitBoard},
@@ -11,14 +11,16 @@ use crate::{
 use super::Board;
 
 impl Board {
+    const ASCII_PIECES: [char; 12] = ['P', 'p', 'N', 'n', 'B', 'b', 'R', 'r', 'Q', 'q', 'K', 'k'];
+    const UNICODE_PIECES: [char; 12] = ['♙', '♟', '♘', '♞', '♗', '♝', '♖', '♜', '♕', '♛', '♔', '♚'];
+
     pub fn print(&self) {
         self.print_with_move(None);
     }
 
     pub fn print_with_move(&self, mv: Option<Move>) {
-        const ASCII_PIECES: &[u8; 12] = b"PpNnBbRrQqKk";
-        const UNICODE_PIECES: [char; 12] =
-            ['♙', '♟', '♘', '♞', '♗', '♝', '♖', '♜', '♕', '♛', '♔', '♚'];
+        // We don't use write() here because we want the print functions to be captured
+        // in tests, and stdout doesn't capture in tests <https://github.com/rust-lang/rust/issues/90785>
         const RED: &str = "\x1b[31m";
         const GREEN: &str = "\x1b[32m";
         const RESET: &str = "\x1b[0m";
@@ -32,8 +34,7 @@ impl Board {
                 let mut piece_char = '.';
                 for (piece, bitboard) in self.pieces.iter().enumerate() {
                     if bitboard::is_set(*bitboard, index) {
-                        piece_char = UNICODE_PIECES[piece];
-                        // piece_char = ASCII_PIECES[piece] as char;
+                        piece_char = Self::UNICODE_PIECES[piece];
                         break;
                     }
                 }
@@ -59,6 +60,38 @@ impl Board {
                 "  "
             }
         );
+        // println!();
+        // println!("FEN: {}", self.as_fen());
+    }
+
+    pub fn write<W: Write>(&self, writer: &mut W) -> Result<(), Box<dyn std::error::Error>> {
+        for rank in (0..8).rev() {
+            write!(writer, "  {} ", rank + 1)?;
+            for file in 0..8 {
+                let index = rank * 8 + file;
+                let mut piece_char = '.';
+                for (piece, bitboard) in self.pieces.iter().enumerate() {
+                    if bitboard::is_set(*bitboard, index) {
+                        piece_char = Self::ASCII_PIECES[piece];
+                        break;
+                    }
+                }
+                write!(writer, " {piece_char}")?;
+            }
+            writeln!(writer)?;
+        }
+        writeln!(
+            writer,
+            " {}  a b c d e f g h",
+            if self.get_side_to_move() == Color::White {
+                "=>"
+            } else {
+                "  "
+            }
+        )?;
+        writeln!(writer)?;
+        writeln!(writer, "FEN: {}", self.as_fen())?;
+        Ok(())
     }
 
     pub fn print_bitboards(&self) {
@@ -74,17 +107,9 @@ impl Board {
         bitboard::print(self.occupied);
     }
 
-    fn find_piece_on(&self, sq: Square) -> Piece {
-        let index = sq as u8;
-        *Piece::ALL_PIECES
-            .iter()
-            .find(|&&p| bitboard::is_set(self.pieces[p as usize], index))
-            .unwrap()
-    }
-
     // Creates a valid move based on this board.
     // In case of promotion, we promote to a queen.
-    // If there are no pieces on the from position, the code wull crash.
+    // If there are no pieces on the from position, the code will crash.
     pub fn new_move(&self, from: Square, to: Square) -> Move {
         let piece = self.find_piece_on(from);
         let to_bb: BitBoard = bitboard::from_square(to);

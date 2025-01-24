@@ -10,3 +10,6 @@ pub use colors::Color;
 pub use pieces::Piece;
 pub use pieces::PieceListBoard;
 pub use squares::Square;
+
+pub const ENGINE_NAME: &str = "Kaik";
+pub const ENGINE_AUTHOR: &str = "Vincent Oberle";
