@@ -1,6 +1,16 @@
 #![allow(dead_code)]
 
-use std::{env, io, time::Instant};
+#[macro_use]
+extern crate log;
+extern crate simplelog;
+
+use clap::{Parser, Subcommand};
+use simplelog::{
+    ColorChoice, CombinedLogger, Config, LevelFilter, TermLogger, TerminalMode, WriteLogger,
+};
+use std::fs::File;
+use std::path::PathBuf;
+use std::{io, time::Instant};
 
 use board::Board;
 use common::Square;
@@ -15,33 +25,109 @@ mod game;
 mod moves;
 mod uci;
 
-fn main() {
-    // Usage: <perft|divide> <depth> <startpos|fen> <moves>
-    let args: Vec<String> = env::args().collect();
-    if args.len() >= 2 {
-        let cmd = args[1].to_string();
-        let depth: usize = args[2].parse().expect("Invalid depth argument");
-        let pos = args.get(3).map_or("startpos", |v| v.as_str());
-        let moves = args.get(4).map_or("", |v| v.as_str());
+#[derive(Parser)]
+#[command(version, about, long_about = None)]
+struct Arguments {
+    /// Sets a log file
+    #[arg(short, long, value_name = "FILE")]
+    log: Option<PathBuf>,
 
-        let mut b: Board = if pos == "startpos" {
-            Board::initial_board()
-        } else {
-            pos.into()
-        };
+    #[command(subcommand)]
+    command: Option<Commands>,
+}
 
-        apply_moves(&mut b, moves);
+#[derive(Subcommand)]
+enum Commands {
+    /// Runs divide command.
+    Divide {
+        depth: usize,
+        position: String,
+        moves: Option<String>,
+    },
+    /// Runs Perft command with result only.
+    Perft {
+        depth: usize,
+        position: String,
+        moves: Option<String>,
+    },
+    /// Runs Perft command with timing information.
+    PerftTime {
+        depth: usize,
+        position: String,
+        moves: Option<String>,
+    },
+}
 
-        // For performance measurement use perft. For debugging, use divide.
-        match cmd.as_str() {
-            "perft" => println!("{}", b.perft(depth)),
-            "perft_time" => perft(&b, depth),
-            "divide" => divide(&b, depth),
-            _ => panic!("Unsupported command"),
-        }
-
-        return;
+fn create_board(position: &String, moves: &Option<String>) -> Board {
+    let mut b: Board = if position == "startpos" {
+        Board::initial_board()
+    } else {
+        position.as_str().into()
+    };
+    if let Some(m) = moves {
+        apply_moves(&mut b, m);
     }
+    b
+}
+
+fn main() {
+    let args = Arguments::parse();
+
+    if let Some(log_file) = args.log.as_deref() {
+        CombinedLogger::init(vec![
+            TermLogger::new(
+                LevelFilter::Info,
+                Config::default(),
+                TerminalMode::Mixed,
+                ColorChoice::Auto,
+            ),
+            WriteLogger::new(
+                LevelFilter::Info,
+                Config::default(),
+                File::create(log_file).unwrap(),
+            ),
+        ])
+        .unwrap();
+    } else {
+        CombinedLogger::init(vec![TermLogger::new(
+            LevelFilter::Info,
+            Config::default(),
+            TerminalMode::Mixed,
+            ColorChoice::Auto,
+        )])
+        .unwrap();
+    }
+
+    match &args.command {
+        Some(Commands::Divide {
+            depth,
+            position,
+            moves,
+        }) => {
+            divide(&create_board(position, moves), *depth);
+            return;
+        }
+        Some(Commands::Perft {
+            depth,
+            position,
+            moves,
+        }) => {
+            let nodes_cnt = create_board(position, moves).perft(*depth);
+            println!("{nodes_cnt}");
+            return;
+        }
+        Some(Commands::PerftTime {
+            depth,
+            position,
+            moves,
+        }) => {
+            perft(&create_board(position, moves), *depth);
+            return;
+        }
+        _ => {}
+    }
+
+    info!("Kaik Chess Engine");
 
     start_uci_loop();
 
@@ -72,7 +158,7 @@ fn start_uci_loop() {
 
     let output = io::stdout();
 
-    let mut uci = Uci::new(input, output, true);
+    let mut uci = Uci::new(input, output);
 
     uci.uci_loop();
 }

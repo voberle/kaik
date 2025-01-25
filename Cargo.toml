@@ -9,8 +9,11 @@ edition = "2021"
 pedantic = "deny"
 
 [dependencies]
+clap = { version = "4.5.27", features = ["derive"] }
 itertools = "0.14.0"
+log = "0.4.25"
 rand = "0.8.5"
+simplelog = "0.12.2"
 
 [features]
 perft = []

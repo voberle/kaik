@@ -21,7 +21,6 @@ where
 {
     reader: R,
     writer: W,
-    echo: bool,
     game: Game,
     debug: bool,
 }
@@ -33,7 +32,10 @@ where
 #[macro_export]
 macro_rules! outputln {
     ($writer:expr, $($arg:tt)*) => {
-        writeln!($writer, $($arg)*).unwrap();
+        let msg = format!($($arg)*);
+        info!("> {}", msg);
+        let _ = writeln!($writer, "{}", msg).unwrap();
+        // writeln!($writer, $($arg)*).unwrap();
     };
 }
 
@@ -42,11 +44,10 @@ where
     R: BufRead,
     W: Write,
 {
-    pub fn new(reader: R, writer: W, echo: bool) -> Self {
+    pub fn new(reader: R, writer: W) -> Self {
         Uci {
             reader,
             writer,
-            echo,
             game: Game::new(),
             debug: false,
         }
@@ -58,9 +59,11 @@ where
             self.reader
                 .read_line(&mut line)
                 .expect("Could not read line");
-            if self.echo {
-                outputln!(&mut self.writer, "{}", line.trim());
+            if line.is_empty() {
+                continue;
             }
+
+            info!("< {}", line.trim());
 
             // Split the input into tokens
             let mut tokens: VecDeque<_> = line.split_ascii_whitespace().collect();
@@ -210,7 +213,7 @@ mod tests {
         let input = "position startpos\nquit\n";
         let mut reader = Cursor::new(input);
         let mut writer = Vec::new();
-        let mut uci = Uci::new(&mut reader, &mut writer, false);
+        let mut uci = Uci::new(&mut reader, &mut writer);
 
         uci.uci_loop();
 
@@ -222,7 +225,7 @@ mod tests {
         let input = "position fen r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1\nquit\n";
         let mut reader = Cursor::new(input);
         let mut writer = Vec::new();
-        let mut uci = Uci::new(&mut reader, &mut writer, false);
+        let mut uci = Uci::new(&mut reader, &mut writer);
 
         uci.uci_loop();
 
@@ -237,7 +240,7 @@ mod tests {
         let input = "position startpos moves e2e4 e7e5\nquit\n";
         let mut reader = Cursor::new(input);
         let mut writer = Vec::new();
-        let mut uci = Uci::new(&mut reader, &mut writer, false);
+        let mut uci = Uci::new(&mut reader, &mut writer);
 
         uci.uci_loop();
 
