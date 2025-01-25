@@ -139,7 +139,7 @@ impl Board {
         let piece = self.find_piece_on(from);
         let to_bb: BitBoard = bitboard::from_square(to);
         let is_capture = self.occupied & to_bb != 0;
-        let promotion = if to.is_promotion_rank_for(piece.get_color()) {
+        let promotion = if piece.is_pawn() && to.is_promotion_rank_for(piece.get_color()) {
             let promotion_piece = match &s[4..5] {
                 "q" => Piece::get_queen_of(piece.get_color()),
                 "r" => Piece::get_rook_of(piece.get_color()),
