@@ -77,7 +77,7 @@ where
                     "setoptions" => self.handle_setoptions_cmd(&mut tokens),
                     "ucinewgame" => self.handle_ucinewgame_cmd(),
                     "position" => self.handle_position_cmd(&mut tokens),
-                    "go" => self.handle_go_cmd(),
+                    "go" => self.handle_go_cmd(&mut tokens),
                     "stop" => self.handle_stop_cmd(),
                     "quit" => return,
                     "register" | "ponderhit" => {} // Command not implemented
@@ -141,7 +141,10 @@ where
         }
     }
 
-    fn handle_go_cmd(&mut self) {}
+    fn handle_go_cmd(&mut self, _tokens: &mut VecDeque<&str>) {
+        let best_move = self.game.start_search();
+        self.send_best_move(best_move, None);
+    }
 
     fn handle_stop_cmd(&mut self) {}
 
@@ -150,16 +153,24 @@ where
         // self.writer.flush();
     }
 
-    pub fn send_best_move(&mut self, mv: Move, ponder: Option<Move>) {
-        if let Some(ponder_move) = ponder {
-            outputln!(
-                &mut self.writer,
-                "bestmove {} ponder {}",
-                mv.pure(),
-                ponder_move.pure()
-            );
+    // If best_move is None, it means we are in stale mate.
+    pub fn send_best_move(&mut self, mv: Option<Move>, ponder: Option<Move>) {
+        if let Some(best_move) = mv {
+            if let Some(ponder_move) = ponder {
+                outputln!(
+                    &mut self.writer,
+                    "bestmove {} ponder {}",
+                    best_move.pure(),
+                    ponder_move.pure()
+                );
+            } else {
+                outputln!(&mut self.writer, "bestmove {}", best_move.pure());
+            }
         } else {
-            outputln!(&mut self.writer, "bestmove {}", mv.pure());
+            // The protocol doesn't specify what do on stalemates.
+            // This is what Stockfish seems to do.
+            // <https://github.com/official-stockfish/Stockfish/discussions/5075>
+            outputln!(&mut self.writer, "bestmove (none)");
         }
     }
 

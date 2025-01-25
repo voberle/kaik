@@ -1,6 +1,8 @@
 use std::io::Write;
 
-use crate::board::Board;
+use rand::seq::IteratorRandom;
+
+use crate::{board::Board, moves::Move};
 
 pub struct Game {
     board: Board,
@@ -40,6 +42,21 @@ impl Game {
         for mv in moves {
             self.board.update_by_move(self.board.new_move_from_pure(mv));
         }
+    }
+
+    // Starts a search and returns the best move found.
+    pub fn start_search(&self) -> Option<Move> {
+        // Get pseudo-legal moves
+        self.board
+            .generate_moves()
+            .iter()
+            .filter(|&&mv| {
+                // Filter out moves that leave the king in check.
+                self.board.copy_with_move(mv).is_some()
+            })
+            // Pick a random one
+            .choose(&mut rand::thread_rng())
+            .copied()
     }
 
     pub fn set_debug(&mut self, val: bool) {
