@@ -1,10 +1,21 @@
 # Kaik Chess Engine.
 
-Kaik is a chess engine.
+![Kaik logo](kaik_small.jpeg)
+
+Kaik is a chess engine written in Rust.
+
+[Read more about the story of its development](https://docs.google.com/document/d/e/2PACX-1vQY7HSYDMW61Dagpkt2_ApORg0S4KayXvj3mwOpUI-OoNZVcaMjGGsVzT7NiYJ3Isv3cW5KeT_oVwDN/pub).
 
 ## Features
 
 - Bitboards based move generation.
+- UCI interface.
+
+## Testing
+
+The [command line interface c-chess-cli](https://github.com/lucasart/c-chess-cli) is a convenient way to have Kaik play against itself:
+
+    RUST_BACKTRACE=1 ./c-chess-cli -engine cmd="target/debug/kaik --log=debug1.log" -engine cmd="target/debug/kaik --log=debug2.log" -pgn out.pgn 1
 
 ## Perft
 
