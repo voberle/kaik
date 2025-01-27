@@ -8,7 +8,6 @@ mod board_type;
 mod castling;
 mod display;
 mod move_gen;
-mod perft;
 mod update;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]

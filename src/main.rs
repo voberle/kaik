@@ -23,6 +23,7 @@ mod common;
 mod fen;
 mod game;
 mod moves;
+mod perft;
 mod uci;
 
 #[derive(Parser)]
@@ -112,7 +113,7 @@ fn main() {
             position,
             moves,
         }) => {
-            let nodes_cnt = create_board(position, moves).perft(*depth);
+            let nodes_cnt = perft::perft(&create_board(position, moves), *depth);
             println!("{nodes_cnt}");
             return;
         }
@@ -165,7 +166,7 @@ fn start_uci_loop() {
 
 fn perft(board: &Board, depth: usize) {
     let now = Instant::now();
-    let nodes_count = board.perft(depth);
+    let nodes_count = perft::perft(board, depth);
     let elapsed = now.elapsed();
 
     println!("Perft results for depth {depth}: {nodes_count} nodes.");
@@ -176,7 +177,7 @@ fn perft(board: &Board, depth: usize) {
 
 fn divide(board: &Board, depth: usize) {
     // Output format is the same as Stockfish "go perft <depth>" command.
-    let nodes = board.divide(depth);
+    let nodes = perft::divide(board, depth);
 
     let total_nodes: usize = nodes.iter().map(|(_, count)| *count).sum();
 

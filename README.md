@@ -17,6 +17,10 @@ The [command line interface c-chess-cli](https://github.com/lucasart/c-chess-cli
 
     RUST_BACKTRACE=1 ./c-chess-cli -engine cmd="target/debug/kaik --log=debug1.log" -engine cmd="target/debug/kaik --log=debug2.log" -pgn out.pgn 1
 
+For best performance, remember to add:
+
+    RUSTFLAGS="-C target-cpu=native"
+
 ## Perft
 
 The move generation is verified using [Perft tests](https://www.chessprogramming.org/Perft).
