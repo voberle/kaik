@@ -2,7 +2,7 @@ use std::io::Write;
 
 use rand::seq::IteratorRandom;
 
-use crate::{board::Board, moves::Move};
+use crate::{board::Board, moves::Move, search};
 
 pub struct Game {
     board: Board,
@@ -46,6 +46,22 @@ impl Game {
 
     // Starts a search and returns the best move found.
     pub fn start_search(&self) -> Option<Move> {
+        // self.random_move()
+        let mv = self.negamax();
+        if let Some(m) = mv {
+            info!("Move {}", m);
+        }
+        mv
+    }
+
+    fn negamax(&self) -> Option<Move> {
+        search::negamax(&self.board, 4)
+            // Pick a random one
+            .into_iter()
+            .choose(&mut rand::thread_rng())
+    }
+
+    fn random_move(&self) -> Option<Move> {
         // Get pseudo-legal moves
         self.board
             .generate_moves()

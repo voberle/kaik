@@ -6,7 +6,8 @@ extern crate simplelog;
 
 use clap::{Parser, Subcommand};
 use simplelog::{
-    ColorChoice, CombinedLogger, Config, LevelFilter, TermLogger, TerminalMode, WriteLogger,
+    ColorChoice, CombinedLogger, Config, LevelFilter, SharedLogger, TermLogger, TerminalMode,
+    WriteLogger,
 };
 use std::fs::File;
 use std::path::PathBuf;
@@ -24,6 +25,7 @@ mod fen;
 mod game;
 mod moves;
 mod perft;
+mod search;
 mod uci;
 
 #[derive(Parser)]
@@ -57,6 +59,12 @@ enum Commands {
         position: String,
         moves: Option<String>,
     },
+    /// Runs a search.
+    Search {
+        depth: usize,
+        position: String,
+        moves: Option<String>,
+    },
 }
 
 fn create_board(position: &String, moves: &Option<String>) -> Board {
@@ -74,30 +82,20 @@ fn create_board(position: &String, moves: &Option<String>) -> Board {
 fn main() {
     let args = Arguments::parse();
 
+    let mut logger: Vec<Box<dyn SharedLogger>> = vec![TermLogger::new(
+        LevelFilter::Info,
+        Config::default(),
+        TerminalMode::Mixed,
+        ColorChoice::Auto,
+    )];
     if let Some(log_file) = args.log.as_deref() {
-        CombinedLogger::init(vec![
-            TermLogger::new(
-                LevelFilter::Info,
-                Config::default(),
-                TerminalMode::Mixed,
-                ColorChoice::Auto,
-            ),
-            WriteLogger::new(
-                LevelFilter::Info,
-                Config::default(),
-                File::create(log_file).unwrap(),
-            ),
-        ])
-        .unwrap();
-    } else {
-        CombinedLogger::init(vec![TermLogger::new(
+        logger.push(WriteLogger::new(
             LevelFilter::Info,
             Config::default(),
-            TerminalMode::Mixed,
-            ColorChoice::Auto,
-        )])
-        .unwrap();
+            File::create(log_file).unwrap(),
+        ));
     }
+    CombinedLogger::init(logger).unwrap();
 
     match &args.command {
         Some(Commands::Divide {
@@ -123,6 +121,14 @@ fn main() {
             moves,
         }) => {
             perft(&create_board(position, moves), *depth);
+            return;
+        }
+        Some(Commands::Search {
+            depth,
+            position,
+            moves,
+        }) => {
+            search(&create_board(position, moves), *depth);
             return;
         }
         _ => {}
@@ -186,6 +192,19 @@ fn divide(board: &Board, depth: usize) {
     }
     println!();
     println!("Nodes searched: {total_nodes}",);
+}
+
+fn search(board: &Board, depth: usize) {
+    let now = Instant::now();
+    let moves = search::negamax(board, depth);
+    let elapsed = now.elapsed();
+
+    println!(
+        "Search({depth}): {} moves in {elapsed:.2?} secs.",
+        moves.len()
+    );
+    Move::print_list(&moves);
+    print_moves_with_board(board, &moves);
 }
 
 fn print_moves_with_board(board: &Board, moves: &[Move]) {

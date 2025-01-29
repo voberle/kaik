@@ -11,5 +11,8 @@ pub use pieces::Piece;
 pub use pieces::PieceListBoard;
 pub use squares::Square;
 
+// Centipawns
+pub type Score = i32;
+
 pub const ENGINE_NAME: &str = "Kaik";
 pub const ENGINE_AUTHOR: &str = "Vincent Oberle";
