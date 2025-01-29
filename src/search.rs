@@ -1,16 +1,31 @@
 //! Search
 
-use itertools::Itertools;
+use std::fmt::Display;
 
 use crate::{board::Board, common::Score, moves::Move};
 
+pub enum Result {
+    BestMove(Move),
+    CheckMate,
+    StaleMate,
+}
+
+impl Display for Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Result::BestMove(mv) => write!(f, "{mv}"),
+            Result::CheckMate => write!(f, "Checkmate"),
+            Result::StaleMate => write!(f, "Stalemate"),
+        }
+    }
+}
+
 fn nega_max_rec(board: &Board, depth: usize) -> Score {
     if depth == 0 {
-        // We take the negative of the eval, because we do a copy-make approach for move generation
-        // so once the move is made, it's the other side that moves.
-        return -board.eval();
+        return board.eval();
     }
 
+    let mut legal_moves = false;
     let mut max = Score::MIN / 2;
 
     let move_list = board.generate_moves();
@@ -20,28 +35,49 @@ fn nega_max_rec(board: &Board, depth: usize) -> Score {
             if s > max {
                 max = s;
             }
+            legal_moves = true;
         }
+    }
+
+    if !legal_moves {
+        // println!("No legal moves for this board");
+        // board.print();
+        // Either checkmage or stalemate
+        return if board.attacks_king(board.get_side_to_move()) != 0 {
+            Score::MIN / 2
+        } else {
+            0
+        };
     }
     max
 }
 
 // Returns the best moves found via NegaMax.
-pub fn negamax(board: &Board, depth: usize) -> Vec<Move> {
+pub fn negamax(board: &Board, depth: usize) -> Result {
     assert!(depth > 0);
 
+    let mut best_score = Score::MIN / 2;
+    let mut best_move = None;
+
     let move_list = board.generate_moves();
-    move_list
-        .iter()
-        .max_set_by_key(|mv| {
-            if let Some(board_copy) = board.copy_with_move(**mv) {
-                nega_max_rec(&board_copy, depth - 1)
-            } else {
-                // If the move cannot be made (king is check), return min score.
-                // We divide it by 2 as otherwise negating fails with overflow.
-                Score::MIN / 2
+    for mv in move_list {
+        if let Some(board_copy) = board.copy_with_move(mv) {
+            let score = -nega_max_rec(&board_copy, depth - 1);
+            if score > best_score {
+                best_score = score;
+                best_move = Some(mv);
             }
-        })
-        .into_iter()
-        .copied()
-        .collect()
+        }
+    }
+
+    if let Some(mv) = best_move {
+        Result::BestMove(mv)
+    } else {
+        // Either checkmage or stalemate
+        if board.attacks_king(board.get_side_to_move()) != 0 {
+            Result::CheckMate
+        } else {
+            Result::StaleMate
+        }
+    }
 }

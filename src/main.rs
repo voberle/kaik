@@ -196,15 +196,13 @@ fn divide(board: &Board, depth: usize) {
 
 fn search(board: &Board, depth: usize) {
     let now = Instant::now();
-    let moves = search::negamax(board, depth);
+    let result = search::negamax(board, depth);
     let elapsed = now.elapsed();
 
-    println!(
-        "Search({depth}): {} moves in {elapsed:.2?} secs.",
-        moves.len()
-    );
-    Move::print_list(&moves);
-    print_moves_with_board(board, &moves);
+    println!("Search({depth}) {elapsed:.2?} secs: {result}");
+    if let search::Result::BestMove(mv) = result {
+        board.print_with_move(Some(mv));
+    }
 }
 
 fn print_moves_with_board(board: &Board, moves: &[Move]) {

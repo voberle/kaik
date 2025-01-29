@@ -116,6 +116,8 @@ where
 
     fn handle_isready_cmd(&mut self) {
         // Ready to start
+        // Here we should check that the game is not over.
+        // TODO
         outputln!(&mut self.writer, "readyok");
     }
 

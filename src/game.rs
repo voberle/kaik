@@ -2,11 +2,16 @@ use std::io::Write;
 
 use rand::seq::IteratorRandom;
 
-use crate::{board::Board, moves::Move, search};
+use crate::{
+    board::Board,
+    moves::Move,
+    search::{self, Result},
+};
 
 pub struct Game {
     board: Board,
     debug: bool,
+    // Should we store the state of the game? Running/Over? Checkmate/Stalemate/etc?
 }
 
 impl Game {
@@ -55,10 +60,18 @@ impl Game {
     }
 
     fn negamax(&self) -> Option<Move> {
-        search::negamax(&self.board, 4)
-            // Pick a random one
-            .into_iter()
-            .choose(&mut rand::thread_rng())
+        let result = search::negamax(&self.board, 4);
+        match result {
+            Result::BestMove(mv) => Some(mv),
+            Result::CheckMate => {
+                info!("Checkmate");
+                None
+            }
+            Result::StaleMate => {
+                info!("Stalemate");
+                None
+            }
+        }
     }
 
     fn random_move(&self) -> Option<Move> {
