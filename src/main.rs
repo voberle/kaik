@@ -2,15 +2,9 @@
 
 #[macro_use]
 extern crate log;
-extern crate simplelog;
 
 use clap::{Parser, Subcommand};
-use simplelog::{
-    ColorChoice, CombinedLogger, Config, LevelFilter, SharedLogger, TermLogger, TerminalMode,
-    WriteLogger,
-};
-use std::fs::File;
-use std::path::PathBuf;
+use flexi_logger::{FileSpec, Logger};
 use std::{io, time::Instant};
 
 use board::Board;
@@ -31,9 +25,13 @@ mod uci;
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct Arguments {
-    /// Sets a log file
-    #[arg(short, long, value_name = "FILE")]
-    log: Option<PathBuf>,
+    /// Disable logging (default is on)
+    #[arg(short, long)]
+    nolog: bool,
+
+    /// Log file discrimant. Useful if multiple instances are running simultaneously.
+    #[arg(short, long)]
+    log_discriminant: Option<String>,
 
     #[command(subcommand)]
     command: Option<Commands>,
@@ -82,20 +80,19 @@ fn create_board(position: &String, moves: &Option<String>) -> Board {
 fn main() {
     let args = Arguments::parse();
 
-    let mut logger: Vec<Box<dyn SharedLogger>> = vec![TermLogger::new(
-        LevelFilter::Info,
-        Config::default(),
-        TerminalMode::Mixed,
-        ColorChoice::Auto,
-    )];
-    if let Some(log_file) = args.log.as_deref() {
-        logger.push(WriteLogger::new(
-            LevelFilter::Info,
-            Config::default(),
-            File::create(log_file).unwrap(),
-        ));
+    if !args.nolog {
+        Logger::try_with_str("info")
+            .unwrap()
+            .log_to_file(
+                FileSpec::default() // write logs to file
+                    .o_discriminant(args.log_discriminant)
+                    .suppress_timestamp(),
+            )
+            // .duplicate_to_stderr(Duplicate::Warn)     // print warnings and errors also to the console
+            // .append() // do not truncate the log file when the program is restarted
+            .start()
+            .unwrap();
     }
-    CombinedLogger::init(logger).unwrap();
 
     match &args.command {
         Some(Commands::Divide {
