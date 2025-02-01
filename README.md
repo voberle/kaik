@@ -13,6 +13,8 @@ Kaik is a chess engine written in Rust.
 
 ## Testing
 
+### Running games
+
 The [command line interface c-chess-cli](https://github.com/lucasart/c-chess-cli) is a convenient way to have Kaik play against itself:
 
     RUST_BACKTRACE=1 ./c-chess-cli -engine cmd="target/debug/kaik --log=debug1.log" -engine cmd="target/debug/kaik --log=debug2.log" -pgn out.pgn 1
@@ -21,7 +23,7 @@ For best performance, remember to add:
 
     RUSTFLAGS="-C target-cpu=native"
 
-## Perft
+### Perft
 
 The move generation is verified using [Perft tests](https://www.chessprogramming.org/Perft).
 
@@ -38,6 +40,12 @@ The [Ethereal test cases](https://github.com/AndyGrant/Ethereal/blob/master/src/
 Comparing with Stockfish results:
 
     ./utils/perft_cmp.sh 2 "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" "a2a3"
+
+### UCI Compliance
+
+The [Fastchess tool](https://github.com/Disservin/fastchess?tab=readme-ov-file) has a UCI compliance checker
+
+    fastchess --compliance target/release/kaik
 
 ## Resources
 
