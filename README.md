@@ -11,6 +11,10 @@ Kaik is a chess engine written in Rust.
 - Bitboards based move generation.
 - UCI interface.
 
+## Architecture
+
+[Design overview](DESIGN.md).
+
 ## Testing
 
 ### Running games

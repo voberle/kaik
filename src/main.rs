@@ -5,12 +5,16 @@ extern crate log;
 
 use clap::{Parser, Subcommand};
 use flexi_logger::{FileSpec, Logger};
-use std::{io, time::Instant};
+use game::Game;
+use std::{
+    io::{self, BufReader},
+    sync::{atomic::AtomicBool, Arc, Mutex},
+    time::Instant,
+};
 
 use board::Board;
 use common::Square;
 use moves::Move;
-use uci::Uci;
 
 mod bitboard;
 mod board;
@@ -158,13 +162,18 @@ fn hacks() {
 
 fn start_uci_loop() {
     let stdio = io::stdin();
-    let input = stdio.lock();
+    let input = BufReader::new(stdio);
 
     let output = io::stdout();
+    // let output = BufWriter::new(output);
 
-    let mut uci = Uci::new(input, output);
+    let mut game = Game::new();
 
-    uci.uci_loop();
+    uci::run(
+        &mut game,
+        Arc::new(Mutex::new(input)),
+        Arc::new(Mutex::new(output)),
+    );
 }
 
 fn perft(board: &Board, depth: usize) {
@@ -192,8 +201,9 @@ fn divide(board: &Board, depth: usize) {
 }
 
 fn search(board: &Board, depth: usize) {
+    let stop_flag = Arc::new(AtomicBool::new(false));
     let now = Instant::now();
-    let result = search::negamax(board, depth);
+    let result = search::negamax(board, depth, &stop_flag);
     let elapsed = now.elapsed();
 
     println!("Search({depth}) {elapsed:.2?} secs: {result}");

@@ -1,6 +1,12 @@
 //! Search
 
-use std::fmt::Display;
+use std::{
+    fmt::Display,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
+};
 
 use crate::{board::Board, common::Score, moves::Move};
 
@@ -20,8 +26,8 @@ impl Display for Result {
     }
 }
 
-fn nega_max_rec(board: &Board, depth: usize) -> Score {
-    if depth == 0 {
+fn nega_max_rec(board: &Board, depth: usize, stop_flag: &Arc<AtomicBool>) -> Score {
+    if depth == 0 || stop_flag.load(Ordering::Relaxed) {
         return board.eval();
     }
 
@@ -31,7 +37,7 @@ fn nega_max_rec(board: &Board, depth: usize) -> Score {
     let move_list = board.generate_moves();
     for mv in move_list {
         if let Some(board_copy) = board.copy_with_move(mv) {
-            let s = -nega_max_rec(&board_copy, depth - 1);
+            let s = -nega_max_rec(&board_copy, depth - 1, stop_flag);
             if s > max {
                 max = s;
             }
@@ -53,7 +59,9 @@ fn nega_max_rec(board: &Board, depth: usize) -> Score {
 }
 
 // Returns the best moves found via NegaMax.
-pub fn negamax(board: &Board, depth: usize) -> Result {
+// The stop_flag should be checked regularly. When true, the search should be interrupted
+// and return the best move found so far.
+pub fn negamax(board: &Board, depth: usize, stop_flag: &Arc<AtomicBool>) -> Result {
     assert!(depth > 0);
 
     let mut best_score = Score::MIN / 2;
@@ -62,11 +70,15 @@ pub fn negamax(board: &Board, depth: usize) -> Result {
     let move_list = board.generate_moves();
     for mv in move_list {
         if let Some(board_copy) = board.copy_with_move(mv) {
-            let score = -nega_max_rec(&board_copy, depth - 1);
+            let score = -nega_max_rec(&board_copy, depth - 1, stop_flag);
             if score > best_score {
                 best_score = score;
                 best_move = Some(mv);
             }
+        }
+
+        if stop_flag.load(Ordering::Relaxed) {
+            break;
         }
     }
 
