@@ -1,5 +1,4 @@
 //! Handles communication with a UI over UCI.
-#![allow(clippy::unused_self)]
 
 use std::{
     collections::VecDeque,
@@ -15,21 +14,18 @@ use itertools::Itertools;
 
 use crate::{
     common::{ENGINE_AUTHOR, ENGINE_NAME},
-    game::{Game, GameEvent},
+    game::{Event, Game, InfoData},
     moves::Move,
 };
 
-// We use a writer for the UCI output instead of just println!, as this
-// allows among other thing to test it.
-// But if we fail to write, we can just panic, as we don't have anything better to do anyway.
-// This macro does that.
+// Writes the UCI output to the writer and logs it.
 #[macro_export]
 macro_rules! outputln {
     ($writer:expr, $($arg:tt)*) => {
         let msg = format!($($arg)*);
         info!("> {}", msg);
+        // If we fail to write, we can just panic, as we don't have anything better to do anyway.
         let _ = writeln!($writer, "{}", msg).unwrap();
-        // writeln!($writer, $($arg)*).unwrap();
     };
 }
 
@@ -39,7 +35,7 @@ enum UciCommand {
     Uci,
     Debug(bool),
     IsReady,
-    SetOption(String),
+    SetOption(String, String),
     Register,
     UciNewGame,
     Position(Option<String>, Vec<String>),
@@ -71,7 +67,7 @@ where
 {
     let (cmd_sender, cmd_receiver): (Sender<UciCommand>, Receiver<UciCommand>) = mpsc::channel();
     let (evt_sender, evt_receiver): (Sender<UciEvent>, Receiver<UciEvent>) = mpsc::channel();
-    let (game_event_sender, game_event_receiver): (Sender<GameEvent>, Receiver<GameEvent>) =
+    let (game_event_sender, game_event_receiver): (Sender<Event>, Receiver<Event>) =
         mpsc::channel();
 
     spawn_ui_input_handler(reader, cmd_sender);
@@ -80,11 +76,11 @@ where
     spawn_game_commands_handler(game, cmd_receiver, evt_sender, game_event_sender);
 }
 
+// Spawn a thread to handle UI input.
 fn spawn_ui_input_handler<R>(reader: Arc<Mutex<R>>, cmd_sender: Sender<UciCommand>)
 where
     R: BufRead + Send + 'static,
 {
-    // Spawn a thread to handle UI input.
     std::thread::spawn(move || {
         loop {
             let mut line = String::new();
@@ -120,7 +116,11 @@ where
                     }
                     "isready" => cmd_sender.send(UciCommand::IsReady).unwrap(),
                     "setoptions" => {
-                        // TODO
+                        assert_eq!(tokens.pop_front().unwrap(), "name");
+                        let name = tokens.pop_front().unwrap().to_string();
+                        assert_eq!(tokens.pop_front().unwrap(), "value");
+                        let value = tokens.pop_front().unwrap().to_string();
+                        cmd_sender.send(UciCommand::SetOption(name, value)).unwrap();
                     }
                     "ucinewgame" => cmd_sender.send(UciCommand::UciNewGame).unwrap(),
                     "position" => {
@@ -154,7 +154,7 @@ where
                         cmd_sender.send(UciCommand::Go).unwrap();
                     }
                     "stop" => cmd_sender.send(UciCommand::Stop).unwrap(),
-                    "quit" => return,
+                    "quit" => cmd_sender.send(UciCommand::Quit).unwrap(),
                     "register" | "ponderhit" => {} // Command not implemented
                     // Non-standard commands
                     "d" => cmd_sender.send(UciCommand::Print).unwrap(),
@@ -224,18 +224,15 @@ where
 }
 
 // Spawn a thread to handle game events.
-fn spawn_game_event_handler(
-    game_event_receiver: Receiver<GameEvent>,
-    evt_sender: Sender<UciEvent>,
-) {
+fn spawn_game_event_handler(game_event_receiver: Receiver<Event>, evt_sender: Sender<UciEvent>) {
     std::thread::spawn(move || {
         loop {
             // Receive messages from the Game thread (info messages, bestmove)
             while let Ok(evt) = game_event_receiver.try_recv() {
                 // Convert to UCI event.
                 let uci_event = match evt {
-                    GameEvent::BestMove(mv) => UciEvent::BestMove(mv, None),
-                    GameEvent::Info(info) => UciEvent::Info(InfoData { string: info }),
+                    Event::BestMove(mv, ponder) => UciEvent::BestMove(mv, ponder),
+                    Event::Info(info) => UciEvent::Info(info),
                 };
                 // Send to UciCommand handler.
                 evt_sender.send(uci_event).unwrap();
@@ -245,11 +242,12 @@ fn spawn_game_event_handler(
 }
 
 // Handle game commands (not in a thread).
+#[allow(clippy::needless_pass_by_value)]
 fn spawn_game_commands_handler(
     game: &mut Game,
     cmd_receiver: Receiver<UciCommand>,
     evt_sender: Sender<UciEvent>,
-    game_event_sender: Sender<GameEvent>,
+    game_event_sender: Sender<Event>,
 ) {
     loop {
         // Receive messages from the Game thread (info messages, bestmove)
@@ -259,9 +257,11 @@ fn spawn_game_commands_handler(
                 UciCommand::Uci => handle_uci_cmd(&evt_sender),
                 UciCommand::Debug(val) => handle_debug_cmd(game, val),
                 UciCommand::IsReady => handle_isready_cmd(&evt_sender),
-                UciCommand::SetOption(options) => handle_setoptions_cmd(),
+                UciCommand::SetOption(name, value) => handle_setoptions_cmd(&name, &value),
                 UciCommand::UciNewGame => handle_ucinewgame_cmd(game),
-                UciCommand::Position(position, moves) => handle_position_cmd(game, position, moves),
+                UciCommand::Position(position, moves) => {
+                    handle_position_cmd(game, position, &moves);
+                }
                 UciCommand::Go => handle_go_cmd(game, &game_event_sender),
                 UciCommand::Stop => handle_stop_cmd(game),
                 UciCommand::Quit => return,
@@ -302,14 +302,16 @@ fn handle_isready_cmd(evt_sender: &Sender<UciEvent>) {
     evt_sender.send(UciEvent::ReadyOk).unwrap();
 }
 
-fn handle_setoptions_cmd() {}
+fn handle_setoptions_cmd(name: &str, value: &str) {
+    info!("Setting option {name} to {value}");
+}
 
 fn handle_ucinewgame_cmd(game: &mut Game) {
     // Not mandatory to be sent by UIs, but most should support it.
     game.new_game();
 }
 
-fn handle_position_cmd(game: &mut Game, position: Option<String>, moves: Vec<String>) {
+fn handle_position_cmd(game: &mut Game, position: Option<String>, moves: &[String]) {
     if let Some(fen) = position {
         game.set_to_fen(&fen);
     } else {
@@ -317,11 +319,11 @@ fn handle_position_cmd(game: &mut Game, position: Option<String>, moves: Vec<Str
     }
 
     if !moves.is_empty() {
-        game.apply_moves(&moves);
+        game.apply_moves(moves);
     }
 }
 
-fn handle_go_cmd(game: &mut Game, game_event_sender: &Sender<GameEvent>) {
+fn handle_go_cmd(game: &mut Game, game_event_sender: &Sender<Event>) {
     game.start_search(game_event_sender);
 }
 
@@ -334,13 +336,6 @@ fn handle_d_cmd(game: &mut Game, evt_sender: &Sender<UciEvent>) {
     game.display_board(&mut out);
     let output = String::from_utf8(out).expect("Invalid UTF-8 sequence");
     evt_sender.send(UciEvent::DisplayBoard(output)).unwrap();
-}
-
-// Whatever the engine wants to send in the UCI info command.
-#[derive(Debug)]
-pub struct InfoData {
-    // For now, only string is supported.
-    string: String,
 }
 
 impl Display for InfoData {

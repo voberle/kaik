@@ -22,9 +22,16 @@ use crate::{
 
 // Events the game can send back to the user / UI.
 #[derive(Debug)]
-pub enum GameEvent {
-    BestMove(Option<Move>),
-    Info(String), // TODO Replace with a struct.
+pub enum Event {
+    BestMove(Option<Move>, Option<Move>),
+    Info(InfoData),
+}
+
+// Whatever the engine wants to send to the UI.
+#[derive(Debug)]
+pub struct InfoData {
+    // For now, only string is supported.
+    pub string: String,
 }
 
 pub struct Game {
@@ -72,7 +79,7 @@ impl Game {
 
     // Starts a search and returns the best move found.
     // The search is executed in a separate thread started by this function.
-    pub fn start_search(&mut self, event_sender: &Sender<GameEvent>) {
+    pub fn start_search(&mut self, event_sender: &Sender<Event>) {
         // The spec is not explicit about what to do if we receive a start search
         // when a search is already running.
         // Probably we should stop the current search and start a new one.
@@ -84,10 +91,10 @@ impl Game {
 
         let search_thread_stop_flag = self.stop_flag.clone();
         let event_sender_clone = event_sender.clone();
-        let board_clone = self.board.clone();
+        let board_clone = self.board;
 
         std::thread::spawn(move || {
-            run_search(board_clone, event_sender_clone, search_thread_stop_flag)
+            run_search(board_clone, event_sender_clone, search_thread_stop_flag);
         });
     }
 
@@ -100,7 +107,8 @@ impl Game {
     }
 }
 
-fn run_search(board: Board, event_sender: Sender<GameEvent>, stop_flag: Arc<AtomicBool>) {
+#[allow(clippy::needless_pass_by_value)]
+fn run_search(board: Board, event_sender: Sender<Event>, stop_flag: Arc<AtomicBool>) {
     if stop_flag.load(Ordering::Relaxed) {
         return; // Stop immediately
     }
@@ -111,7 +119,7 @@ fn run_search(board: Board, event_sender: Sender<GameEvent>, stop_flag: Arc<Atom
         info!("Move {}", m);
     }
 
-    event_sender.send(GameEvent::BestMove(mv)).unwrap();
+    event_sender.send(Event::BestMove(mv, None)).unwrap();
 
     // Search is over, clearing the stop flag.
     stop_flag.store(false, Ordering::Relaxed);
