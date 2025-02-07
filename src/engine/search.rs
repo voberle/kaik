@@ -10,6 +10,8 @@ use std::{
 
 use crate::{board::Board, common::Move, common::Score};
 
+use super::eval::eval;
+
 pub enum Result {
     BestMove(Move, Score),
     CheckMate,
@@ -28,7 +30,7 @@ impl Display for Result {
 
 fn nega_max_rec(board: &Board, depth: usize, stop_flag: &Arc<AtomicBool>) -> Score {
     if depth == 0 || stop_flag.load(Ordering::Relaxed) {
-        return board.eval();
+        return eval(board);
     }
 
     let mut legal_moves = false;

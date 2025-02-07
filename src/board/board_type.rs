@@ -152,6 +152,19 @@ impl Board {
         };
         Move::new(from, to, promotion, piece, is_capture)
     }
+
+    // Computes a material score with the given piece values.
+    pub fn material_scores(&self, piece_values: &[u32; 6]) -> (u32, u32) {
+        piece_values
+            .iter()
+            .enumerate()
+            .fold((0, 0), |acc, (i, piece_value)| {
+                (
+                    acc.0 + self.pieces[2 * i].count_ones() * piece_value,
+                    acc.1 + self.pieces[2 * i + 1].count_ones() * piece_value,
+                )
+            })
+    }
 }
 
 // Creates the board from a FEN string.

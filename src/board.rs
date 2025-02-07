@@ -10,7 +10,6 @@ mod bitboard;
 mod board_type;
 mod castling;
 mod display;
-mod eval;
 mod move_gen;
 mod update;
 
