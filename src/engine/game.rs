@@ -133,14 +133,13 @@ fn run_search(
         return; // Stop immediately
     }
 
-    // self.random_move(board)
-    negamax(board, &search_params, &event_sender, &stop_flag);
+    search(board, &search_params, &event_sender, &stop_flag);
 
     // Search is over, clearing the stop flag.
     stop_flag.store(false, Ordering::Relaxed);
 }
 
-fn negamax(
+fn search(
     board: Board,
     search_params: &SearchParams,
     event_sender: &Sender<Event>,
@@ -154,7 +153,7 @@ fn negamax(
     };
 
     let mut nodes_count = 0;
-    let result = search::negamax(&board, depth, stop_flag, &mut nodes_count);
+    let result = search::run(&board, depth, stop_flag, &mut nodes_count);
     match result {
         Result::BestMove(mv, score) => {
             info!("Move {}", mv);
@@ -176,22 +175,4 @@ fn negamax(
             event_sender.send(Event::BestMove(None, None)).unwrap();
         }
     }
-}
-
-// Looks at all legal moves in depth 1 and returns a random one.
-// As it's depth one only, it's very fast and we don't bother with a thread.
-fn random_move(board: Board) -> Option<Move> {
-    use rand::seq::IteratorRandom;
-
-    // Get pseudo-legal moves
-    board
-        .generate_moves()
-        .iter()
-        .filter(|&&mv| {
-            // Filter out moves that leave the king in check.
-            board.copy_with_move(mv).is_some()
-        })
-        // Pick a random one
-        .choose(&mut rand::thread_rng())
-        .copied()
 }

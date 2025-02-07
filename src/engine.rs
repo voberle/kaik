@@ -3,4 +3,5 @@
 
 pub mod eval;
 pub mod game;
+pub mod negamax;
 pub mod search;
