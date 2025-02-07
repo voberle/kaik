@@ -174,7 +174,7 @@ where
     std::thread::spawn(move || {
         let mut writer = writer.lock().unwrap();
         loop {
-            while let Ok(cmd) = evt_receiver.try_recv() {
+            while let Ok(cmd) = evt_receiver.recv() {
                 match cmd {
                     UciEvent::Id(param, value) => {
                         outputln!(&mut writer, "id {param} {value}");
@@ -228,7 +228,7 @@ fn spawn_game_event_handler(game_event_receiver: Receiver<Event>, evt_sender: Se
     std::thread::spawn(move || {
         loop {
             // Receive messages from the Game thread (info messages, bestmove)
-            while let Ok(evt) = game_event_receiver.try_recv() {
+            while let Ok(evt) = game_event_receiver.recv() {
                 // Convert to UCI event.
                 let uci_event = match evt {
                     Event::BestMove(mv, ponder) => UciEvent::BestMove(mv, ponder),
@@ -251,7 +251,7 @@ fn spawn_game_commands_handler(
 ) {
     loop {
         // Receive messages from the Game thread (info messages, bestmove)
-        while let Ok(cmd) = cmd_receiver.try_recv() {
+        while let Ok(cmd) = cmd_receiver.recv() {
             match cmd {
                 // UI to Engine: Standard commands
                 UciCommand::Uci => handle_uci_cmd(&evt_sender),
