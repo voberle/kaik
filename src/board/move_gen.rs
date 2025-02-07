@@ -3,7 +3,7 @@
 use super::Board;
 
 use crate::{
-    bitboard::{self, movements},
+    board::bitboard::{self, movements},
     common::{Piece, Square},
     moves::Move,
 };

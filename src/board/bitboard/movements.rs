@@ -1,5 +1,6 @@
-use crate::bitboard::BitBoard;
-use crate::{bitboard, common::Color};
+use crate::board::bitboard;
+use crate::board::bitboard::BitBoard;
+use crate::common::Color;
 
 use super::constants::{self, CASTLING_KING_SIDE_MASKS, CASTLING_QUEEN_SIDE_MASKS};
 use super::{
@@ -168,7 +169,7 @@ pub fn can_castle_queen_side(occupied: BitBoard, side_to_move: Color) -> bool {
 #[cfg(test)]
 mod tests {
     use crate::{
-        bitboard::{self, constants::EMPTY},
+        board::bitboard::{self, constants::EMPTY},
         common::Square::*,
     };
 

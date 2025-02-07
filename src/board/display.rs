@@ -3,7 +3,7 @@
 use std::{fmt::Display, io::Write};
 
 use crate::{
-    bitboard::{self, BitBoard},
+    board::bitboard::{self, BitBoard},
     common::{Color, Piece, Square},
     moves::Move,
 };

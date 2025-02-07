@@ -16,7 +16,6 @@ use board::Board;
 use common::Square;
 use moves::Move;
 
-mod bitboard;
 mod board;
 mod common;
 mod fen;

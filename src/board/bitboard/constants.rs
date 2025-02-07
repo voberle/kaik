@@ -1,6 +1,6 @@
 #![allow(clippy::unreadable_literal)]
 
-use crate::bitboard::BitBoard;
+use crate::board::bitboard::BitBoard;
 
 pub const EMPTY: BitBoard = u64::MIN;
 pub const UNIVERSAL: BitBoard = u64::MAX;
@@ -51,7 +51,7 @@ pub const CASTLING_QUEEN_SIDE_MASKS: [BitBoard; 2] = [
 
 #[cfg(test)]
 mod tests {
-    use crate::bitboard::{self, constants::*};
+    use crate::board::bitboard::{self, constants::*};
 
     #[test]
     fn test_clipping_bitboards() {

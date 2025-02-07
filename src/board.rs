@@ -1,9 +1,9 @@
-use crate::{
-    bitboard::BitBoard,
-    common::{Color, Square},
-};
+use bitboard::BitBoard;
+
+use crate::common::{Color, Square};
 
 mod attacks;
+mod bitboard;
 mod board_type;
 mod castling;
 mod display;

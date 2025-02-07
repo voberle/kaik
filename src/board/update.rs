@@ -1,7 +1,7 @@
 //! Board update by move.
 
 use crate::{
-    bitboard::{self, BitBoard},
+    board::bitboard::{self, BitBoard},
     common::Color,
     moves::Move,
 };

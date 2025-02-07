@@ -1,7 +1,7 @@
 use itertools::Itertools;
 
 use crate::{
-    bitboard::{self, from_array, BitBoard},
+    board::bitboard::{self, from_array, BitBoard},
     common::{Color, Piece, Square},
     fen,
     moves::Move,

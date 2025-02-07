@@ -91,7 +91,7 @@ pub use debug::print;
 #[cfg(test)]
 mod tests {
     use crate::{
-        bitboard::{self, constants},
+        board::bitboard::{self, constants},
         common::Square,
     };
 

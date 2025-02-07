@@ -3,7 +3,7 @@
 //! <https://www.chessprogramming.org/Square_Attacked_By#AnyAttackBySide>
 
 use crate::{
-    bitboard::{self, movements, BitBoard},
+    board::bitboard::{self, movements, BitBoard},
     common::{Color, Piece, Square},
 };
 

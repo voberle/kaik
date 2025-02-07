@@ -2,7 +2,7 @@
 
 use itertools::Itertools;
 
-use crate::bitboard;
+use crate::board::bitboard;
 
 use super::BitBoard;
 
@@ -45,7 +45,8 @@ pub fn from_str(value: &str) -> BitBoard {
 
 #[cfg(test)]
 mod tests {
-    use crate::{bitboard::constants, common::Square};
+    use crate::board::bitboard::constants;
+    use crate::common::Square;
 
     use super::*;
 

@@ -168,7 +168,7 @@ pub fn get_queen_attacks(occ: u64, sq: u8) -> u64 {
 
 #[cfg(test)]
 mod tests {
-    use crate::bitboard;
+    use crate::board::bitboard;
 
     use super::*;
 
