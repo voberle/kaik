@@ -13,9 +13,8 @@ use std::{
 use itertools::Itertools;
 
 use crate::{
-    common::Move,
-    common::{ENGINE_AUTHOR, ENGINE_NAME},
-    engine::game::{Event, Game, InfoData},
+    common::{Move, ENGINE_AUTHOR, ENGINE_NAME},
+    engine::game::{Event, Game, InfoData, SearchParams},
 };
 
 // Writes the UCI output to the writer and logs it.
@@ -39,7 +38,7 @@ enum UciCommand {
     Register,
     UciNewGame,
     Position(Option<String>, Vec<String>),
-    Go,
+    Go(Vec<GoCommand>),
     Stop,
     PonderHit,
     Quit,
@@ -60,6 +59,23 @@ enum UciEvent {
     DisplayBoard(String), // Non-standard (response to d)
 }
 
+#[derive(Debug)]
+enum GoCommand {
+    SearchMoves(Vec<Move>),
+    Ponder,
+    WTime(u32),
+    BTime(u32),
+    WInc(u32),
+    BInc(u32),
+    MovesToGo(u32),
+    Depth(usize),
+    Nodes(u32),
+    Mate(u32),
+    MoveTime(u32),
+    Infinite, // search until the stop command.
+}
+
+// Set up the various threads that run the engine.
 pub fn run<R, W>(game: &mut Game, reader: Arc<Mutex<R>>, writer: Arc<Mutex<W>>)
 where
     R: BufRead + Send + 'static,
@@ -150,11 +166,21 @@ where
                             .unwrap();
                     }
                     "go" => {
-                        // TODO handle go parpas
-                        cmd_sender.send(UciCommand::Go).unwrap();
+                        let mut go_cmds = Vec::new();
+                        while let Some(p) = tokens.pop_front() {
+                            match p {
+                                "infinite" => go_cmds.push(GoCommand::Infinite),
+                                "depth" => {
+                                    let d = tokens.pop_front().unwrap().parse().unwrap();
+                                    go_cmds.push(GoCommand::Depth(d));
+                                }
+                                _ => {}
+                            }
+                        }
+                        cmd_sender.send(UciCommand::Go(go_cmds)).unwrap();
                     }
                     "stop" => cmd_sender.send(UciCommand::Stop).unwrap(),
-                    "quit" => cmd_sender.send(UciCommand::Quit).unwrap(),
+                    "quit" | "q" => cmd_sender.send(UciCommand::Quit).unwrap(), // Only "quit" is standard.
                     "register" | "ponderhit" => {} // Command not implemented
                     // Non-standard commands
                     "d" => cmd_sender.send(UciCommand::Print).unwrap(),
@@ -262,7 +288,7 @@ fn spawn_game_commands_handler(
                 UciCommand::Position(position, moves) => {
                     handle_position_cmd(game, position, &moves);
                 }
-                UciCommand::Go => handle_go_cmd(game, &game_event_sender),
+                UciCommand::Go(go_cmds) => handle_go_cmd(game, &go_cmds, &game_event_sender),
                 UciCommand::Stop => handle_stop_cmd(game),
                 UciCommand::Quit => return,
                 UciCommand::Register | UciCommand::PonderHit => {} // Command not implemented
@@ -323,8 +349,27 @@ fn handle_position_cmd(game: &mut Game, position: Option<String>, moves: &[Strin
     }
 }
 
-fn handle_go_cmd(game: &mut Game, game_event_sender: &Sender<Event>) {
-    game.start_search(game_event_sender);
+fn handle_go_cmd(game: &mut Game, go_cmds: &[GoCommand], game_event_sender: &Sender<Event>) {
+    let mut sp = SearchParams {
+        depth: Some(4), // Default depth
+    };
+    for c in go_cmds {
+        match c {
+            GoCommand::Infinite => sp.depth = None,
+            GoCommand::Depth(d) => sp.depth = Some(*d),
+            GoCommand::SearchMoves(_) => todo!(),
+            GoCommand::Ponder => todo!(),
+            GoCommand::WTime(_) => todo!(),
+            GoCommand::BTime(_) => todo!(),
+            GoCommand::WInc(_) => todo!(),
+            GoCommand::BInc(_) => todo!(),
+            GoCommand::MovesToGo(_) => todo!(),
+            GoCommand::Nodes(_) => todo!(),
+            GoCommand::Mate(_) => todo!(),
+            GoCommand::MoveTime(_) => todo!(),
+        }
+    }
+    game.start_search(sp, game_event_sender);
 }
 
 fn handle_stop_cmd(game: &mut Game) {

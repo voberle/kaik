@@ -21,6 +21,12 @@ use crate::{
     search::{self, Result},
 };
 
+// Parameters passed to the search.
+#[derive(Debug, Clone, Copy)]
+pub struct SearchParams {
+    pub depth: Option<usize>,
+}
+
 // Events the game can send back to the user / UI.
 #[derive(Debug)]
 pub enum Event {
@@ -81,7 +87,7 @@ impl Game {
 
     // Starts a search and returns the best move found.
     // The search is executed in a separate thread started by this function.
-    pub fn start_search(&mut self, event_sender: &Sender<Event>) {
+    pub fn start_search(&mut self, search_params: SearchParams, event_sender: &Sender<Event>) {
         // The spec is not explicit about what to do if we receive a start search
         // when a search is already running.
         // Probably we should stop the current search and start a new one.
@@ -91,12 +97,18 @@ impl Game {
             return;
         }
 
-        let search_thread_stop_flag = self.stop_flag.clone();
-        let event_sender_clone = event_sender.clone();
         let board_clone = self.board;
+        let search_params_clone = search_params;
+        let event_sender_clone = event_sender.clone();
+        let search_thread_stop_flag = self.stop_flag.clone();
 
         std::thread::spawn(move || {
-            run_search(board_clone, event_sender_clone, search_thread_stop_flag);
+            run_search(
+                board_clone,
+                search_params_clone,
+                event_sender_clone,
+                search_thread_stop_flag,
+            );
         });
     }
 
@@ -110,13 +122,18 @@ impl Game {
 }
 
 #[allow(clippy::needless_pass_by_value)]
-fn run_search(board: Board, event_sender: Sender<Event>, stop_flag: Arc<AtomicBool>) {
+fn run_search(
+    board: Board,
+    search_params: SearchParams,
+    event_sender: Sender<Event>,
+    stop_flag: Arc<AtomicBool>,
+) {
     if stop_flag.load(Ordering::Relaxed) {
         return; // Stop immediately
     }
 
     // self.random_move(board)
-    let r = negamax(board, &stop_flag);
+    let r = negamax(board, &search_params, &stop_flag);
     if let Some((mv, score)) = r {
         info!("Move {}", mv);
         event_sender
@@ -136,8 +153,19 @@ fn run_search(board: Board, event_sender: Sender<Event>, stop_flag: Arc<AtomicBo
     stop_flag.store(false, Ordering::Relaxed);
 }
 
-fn negamax(board: Board, stop_flag: &Arc<AtomicBool>) -> Option<(Move, Score)> {
-    let result = search::negamax(&board, 4, stop_flag);
+fn negamax(
+    board: Board,
+    search_params: &SearchParams,
+    stop_flag: &Arc<AtomicBool>,
+) -> Option<(Move, Score)> {
+    // With the recursive implementation of Negamax, real infinite search isn't an option.
+    const MAX_NEGAMAX_DEPTH: usize = 4;
+    let depth = match search_params.depth {
+        Some(d) => MAX_NEGAMAX_DEPTH.min(d),
+        None => MAX_NEGAMAX_DEPTH,
+    };
+
+    let result = search::negamax(&board, depth, stop_flag);
     match result {
         Result::BestMove(mv, score) => Some((mv, score)),
         Result::CheckMate => {
