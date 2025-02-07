@@ -21,7 +21,7 @@ Kaik is a chess engine written in Rust.
 
 The [command line interface c-chess-cli](https://github.com/lucasart/c-chess-cli) is a convenient way to have Kaik play against itself:
 
-    RUST_BACKTRACE=1 ./c-chess-cli -engine cmd="target/debug/kaik --log=debug1.log" -engine cmd="target/debug/kaik --log=debug2.log" -pgn out.pgn 1
+    c-chess-cli -engine cmd="target/release/kaik --log-discriminant=k1" -engine cmd="target/release/kaik --log-discriminant=k2" -pgn out.pgn 1
 
 For best performance, remember to add:
 
@@ -47,7 +47,7 @@ Comparing with Stockfish results:
 
 ### UCI Compliance
 
-The [Fastchess tool](https://github.com/Disservin/fastchess?tab=readme-ov-file) has a UCI compliance checker
+The [Fastchess tool](https://github.com/Disservin/fastchess) has a UCI compliance checker
 
     fastchess --compliance target/release/kaik
 

@@ -340,7 +340,11 @@ fn handle_d_cmd(game: &mut Game, evt_sender: &Sender<UciEvent>) {
 
 impl Display for InfoData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "string {}", self.string)
+        match self {
+            InfoData::Score(x) => write!(f, "score cp {x}"),
+            InfoData::ScoreMate(y) => write!(f, "score mate {y}"),
+            InfoData::String(s) => write!(f, "string {s}"),
+        }
     }
 }
 

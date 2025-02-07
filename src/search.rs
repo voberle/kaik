@@ -11,7 +11,7 @@ use std::{
 use crate::{board::Board, common::Score, moves::Move};
 
 pub enum Result {
-    BestMove(Move),
+    BestMove(Move, Score),
     CheckMate,
     StaleMate,
 }
@@ -19,7 +19,7 @@ pub enum Result {
 impl Display for Result {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Result::BestMove(mv) => write!(f, "{mv}"),
+            Result::BestMove(mv, _score) => write!(f, "{mv}"),
             Result::CheckMate => write!(f, "Checkmate"),
             Result::StaleMate => write!(f, "Stalemate"),
         }
@@ -83,7 +83,7 @@ pub fn negamax(board: &Board, depth: usize, stop_flag: &Arc<AtomicBool>) -> Resu
     }
 
     if let Some(mv) = best_move {
-        Result::BestMove(mv)
+        Result::BestMove(mv, best_score)
     } else {
         // Either checkmage or stalemate
         if board.attacks_king(board.get_side_to_move()) != 0 {

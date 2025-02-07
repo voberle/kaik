@@ -207,7 +207,7 @@ fn search(board: &Board, depth: usize) {
     let elapsed = now.elapsed();
 
     println!("Search({depth}) {elapsed:.2?} secs: {result}");
-    if let search::Result::BestMove(mv) = result {
+    if let search::Result::BestMove(mv, _score) = result {
         board.print_with_move(Some(mv));
     }
 }

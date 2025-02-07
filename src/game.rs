@@ -16,6 +16,7 @@ use std::{
 
 use crate::{
     board::Board,
+    common::Score,
     moves::Move,
     search::{self, Result},
 };
@@ -29,9 +30,10 @@ pub enum Event {
 
 // Whatever the engine wants to send to the UI.
 #[derive(Debug)]
-pub struct InfoData {
-    // For now, only string is supported.
-    pub string: String,
+pub enum InfoData {
+    Score(Score),
+    ScoreMate(i32), // mate in y moves. If the engine is getting mated use negative values.
+    String(String),
 }
 
 pub struct Game {
@@ -114,21 +116,30 @@ fn run_search(board: Board, event_sender: Sender<Event>, stop_flag: Arc<AtomicBo
     }
 
     // self.random_move(board)
-    let mv = negamax(board, &stop_flag);
-    if let Some(m) = mv {
-        info!("Move {}", m);
-    }
+    let r = negamax(board, &stop_flag);
+    if let Some((mv, score)) = r {
+        info!("Move {}", mv);
+        event_sender
+            .send(Event::Info(InfoData::Score(score)))
+            .unwrap();
 
-    event_sender.send(Event::BestMove(mv, None)).unwrap();
+        event_sender.send(Event::BestMove(Some(mv), None)).unwrap();
+    } else {
+        // event_sender
+        //     .send(Event::Info(InfoData::ScoreMate(-1)))
+        //     .unwrap();
+
+        event_sender.send(Event::BestMove(None, None)).unwrap();
+    }
 
     // Search is over, clearing the stop flag.
     stop_flag.store(false, Ordering::Relaxed);
 }
 
-fn negamax(board: Board, stop_flag: &Arc<AtomicBool>) -> Option<Move> {
-    let result = search::negamax(&board, 5, stop_flag);
+fn negamax(board: Board, stop_flag: &Arc<AtomicBool>) -> Option<(Move, Score)> {
+    let result = search::negamax(&board, 4, stop_flag);
     match result {
-        Result::BestMove(mv) => Some(mv),
+        Result::BestMove(mv, score) => Some((mv, score)),
         Result::CheckMate => {
             info!("Checkmate");
             None
