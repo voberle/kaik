@@ -34,7 +34,7 @@ enum UciCommand {
     Uci,
     Debug(bool),
     IsReady,
-    SetOption(String, String),
+    SetOption(String, Option<String>),
     Register,
     UciNewGame,
     Position(Option<String>, Vec<String>),
@@ -134,8 +134,12 @@ where
                     "setoptions" => {
                         assert_eq!(tokens.pop_front().unwrap(), "name");
                         let name = tokens.pop_front().unwrap().to_string();
-                        assert_eq!(tokens.pop_front().unwrap(), "value");
-                        let value = tokens.pop_front().unwrap().to_string();
+                        let value = if let Some(v) = tokens.pop_front() {
+                            assert_eq!(v, "value");
+                            Some(tokens.pop_front().unwrap().to_string())
+                        } else {
+                            None
+                        };
                         cmd_sender.send(UciCommand::SetOption(name, value)).unwrap();
                     }
                     "ucinewgame" => cmd_sender.send(UciCommand::UciNewGame).unwrap(),
@@ -328,8 +332,8 @@ fn handle_isready_cmd(evt_sender: &Sender<UciEvent>) {
     evt_sender.send(UciEvent::ReadyOk).unwrap();
 }
 
-fn handle_setoptions_cmd(name: &str, value: &str) {
-    info!("Setting option {name} to {value}");
+fn handle_setoptions_cmd(name: &str, value: &Option<String>) {
+    info!("Setting option {name} to {:?}", value);
 }
 
 fn handle_ucinewgame_cmd(game: &mut Game) {
