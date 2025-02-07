@@ -31,14 +31,15 @@ pub struct SearchParams {
 #[derive(Debug)]
 pub enum Event {
     BestMove(Option<Move>, Option<Move>),
-    Info(InfoData),
+    Info(Vec<InfoData>),
 }
 
 // Whatever the engine wants to send to the UI.
 #[derive(Debug)]
 pub enum InfoData {
-    Score(Score),
+    Score(Score),   // score from the engine's point of view in centipawns
     ScoreMate(i32), // mate in y moves. If the engine is getting mated use negative values.
+    Nodes(usize),   // number of nodes searched
     String(String),
 }
 
@@ -133,21 +134,7 @@ fn run_search(
     }
 
     // self.random_move(board)
-    let r = negamax(board, &search_params, &stop_flag);
-    if let Some((mv, score)) = r {
-        info!("Move {}", mv);
-        event_sender
-            .send(Event::Info(InfoData::Score(score)))
-            .unwrap();
-
-        event_sender.send(Event::BestMove(Some(mv), None)).unwrap();
-    } else {
-        // event_sender
-        //     .send(Event::Info(InfoData::ScoreMate(-1)))
-        //     .unwrap();
-
-        event_sender.send(Event::BestMove(None, None)).unwrap();
-    }
+    negamax(board, &search_params, &event_sender, &stop_flag);
 
     // Search is over, clearing the stop flag.
     stop_flag.store(false, Ordering::Relaxed);
@@ -156,8 +143,9 @@ fn run_search(
 fn negamax(
     board: Board,
     search_params: &SearchParams,
+    event_sender: &Sender<Event>,
     stop_flag: &Arc<AtomicBool>,
-) -> Option<(Move, Score)> {
+) {
     // With the recursive implementation of Negamax, real infinite search isn't an option.
     const MAX_NEGAMAX_DEPTH: usize = 4;
     let depth = match search_params.depth {
@@ -165,16 +153,27 @@ fn negamax(
         None => MAX_NEGAMAX_DEPTH,
     };
 
-    let result = search::negamax(&board, depth, stop_flag);
+    let mut nodes_count = 0;
+    let result = search::negamax(&board, depth, stop_flag, &mut nodes_count);
     match result {
-        Result::BestMove(mv, score) => Some((mv, score)),
+        Result::BestMove(mv, score) => {
+            info!("Move {}", mv);
+            let info_data = vec![InfoData::Score(score), InfoData::Nodes(nodes_count)];
+            event_sender.send(Event::Info(info_data)).unwrap();
+
+            event_sender.send(Event::BestMove(Some(mv), None)).unwrap();
+        }
         Result::CheckMate => {
             info!("Checkmate");
-            None
+            event_sender
+                .send(Event::Info(vec![InfoData::ScoreMate(-1)]))
+                .unwrap();
+
+            event_sender.send(Event::BestMove(None, None)).unwrap();
         }
         Result::StaleMate => {
             info!("Stalemate");
-            None
+            event_sender.send(Event::BestMove(None, None)).unwrap();
         }
     }
 }

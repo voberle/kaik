@@ -54,7 +54,7 @@ enum UciEvent {
     BestMove(Option<Move>, Option<Move>), // move, ponder
     CopyProtection,
     Registration,
-    Info(InfoData),
+    Info(Vec<InfoData>),
     Option,
     DisplayBoard(String), // Non-standard (response to d)
 }
@@ -235,8 +235,8 @@ where
                             outputln!(&mut writer, "bestmove (none)");
                         }
                     }
-                    UciEvent::Info(info) => {
-                        outputln!(&mut writer, "info {info}");
+                    UciEvent::Info(infos) => {
+                        outputln!(&mut writer, "info {}", infos.iter().join(" "));
                     }
                     UciEvent::Option => {
                         // TODO
@@ -392,6 +392,7 @@ impl Display for InfoData {
         match self {
             InfoData::Score(x) => write!(f, "score cp {x}"),
             InfoData::ScoreMate(y) => write!(f, "score mate {y}"),
+            InfoData::Nodes(x) => write!(f, "nodes {x}"),
             InfoData::String(s) => write!(f, "string {s}"),
         }
     }

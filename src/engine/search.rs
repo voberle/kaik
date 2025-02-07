@@ -32,7 +32,12 @@ impl Display for Result {
     }
 }
 
-fn nega_max_rec(board: &Board, depth: usize, stop_flag: &Arc<AtomicBool>) -> Score {
+fn nega_max_rec(
+    board: &Board,
+    depth: usize,
+    stop_flag: &Arc<AtomicBool>,
+    nodes_count: &mut usize,
+) -> Score {
     if depth == 0 || stop_flag.load(Ordering::Relaxed) {
         return eval(board);
     }
@@ -43,7 +48,8 @@ fn nega_max_rec(board: &Board, depth: usize, stop_flag: &Arc<AtomicBool>) -> Sco
     let move_list = board.generate_moves();
     for mv in move_list {
         if let Some(board_copy) = board.copy_with_move(mv) {
-            let s = -nega_max_rec(&board_copy, depth - 1, stop_flag);
+            *nodes_count += 1;
+            let s = -nega_max_rec(&board_copy, depth - 1, stop_flag, nodes_count);
             legal_moves = true;
 
             if s > max {
@@ -66,7 +72,12 @@ fn nega_max_rec(board: &Board, depth: usize, stop_flag: &Arc<AtomicBool>) -> Sco
 // Returns the best moves found via NegaMax.
 // The stop_flag should be checked regularly. When true, the search should be interrupted
 // and return the best move found so far.
-pub fn negamax(board: &Board, depth: usize, stop_flag: &Arc<AtomicBool>) -> Result {
+pub fn negamax(
+    board: &Board,
+    depth: usize,
+    stop_flag: &Arc<AtomicBool>,
+    nodes_count: &mut usize,
+) -> Result {
     assert!(depth > 0);
 
     let mut best_score = MIN_SCORE;
@@ -76,7 +87,8 @@ pub fn negamax(board: &Board, depth: usize, stop_flag: &Arc<AtomicBool>) -> Resu
     let move_list = board.generate_moves();
     for mv in move_list {
         if let Some(board_copy) = board.copy_with_move(mv) {
-            let score = -nega_max_rec(&board_copy, depth - 1, stop_flag);
+            *nodes_count += 1;
+            let score = -nega_max_rec(&board_copy, depth - 1, stop_flag, nodes_count);
             legal_moves = true;
 
             if score > best_score || best_move.is_none() {
@@ -115,7 +127,8 @@ mod tests {
         let board: Board = "2kr1b2/Rp3pp1/8/8/2b1K2r/4P1pP/8/1NB1nBNR w - - 0 40".into();
         let stop_flag = Arc::new(AtomicBool::new(false));
 
-        let r = negamax(&board, 4, &stop_flag);
+        let mut nodes_count = 0;
+        let r = negamax(&board, 4, &stop_flag, &mut nodes_count);
         assert_eq!(
             r,
             Result::BestMove(Move::quiet(E4, E5, WhiteKing), MIN_SCORE)
