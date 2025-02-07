@@ -1,3 +1,5 @@
 /target
 *.log
 *.pgn
+# Fastchess file.
+config.json

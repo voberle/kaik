@@ -8,10 +8,14 @@ use std::{
     },
 };
 
-use crate::{board::Board, common::Move, common::Score};
+use crate::{
+    board::Board,
+    common::{Move, Score, MIN_SCORE},
+};
 
 use super::eval::eval;
 
+#[derive(Debug, PartialEq)]
 pub enum Result {
     BestMove(Move, Score),
     CheckMate,
@@ -34,25 +38,24 @@ fn nega_max_rec(board: &Board, depth: usize, stop_flag: &Arc<AtomicBool>) -> Sco
     }
 
     let mut legal_moves = false;
-    let mut max = Score::MIN / 2;
+    let mut max = MIN_SCORE;
 
     let move_list = board.generate_moves();
     for mv in move_list {
         if let Some(board_copy) = board.copy_with_move(mv) {
             let s = -nega_max_rec(&board_copy, depth - 1, stop_flag);
+            legal_moves = true;
+
             if s > max {
                 max = s;
             }
-            legal_moves = true;
         }
     }
 
     if !legal_moves {
-        // println!("No legal moves for this board");
-        // board.print();
         // Either checkmage or stalemate
         return if board.attacks_king(board.get_side_to_move()) != 0 {
-            Score::MIN / 2
+            MIN_SCORE
         } else {
             0
         };
@@ -66,14 +69,17 @@ fn nega_max_rec(board: &Board, depth: usize, stop_flag: &Arc<AtomicBool>) -> Sco
 pub fn negamax(board: &Board, depth: usize, stop_flag: &Arc<AtomicBool>) -> Result {
     assert!(depth > 0);
 
-    let mut best_score = Score::MIN / 2;
+    let mut best_score = MIN_SCORE;
     let mut best_move = None;
 
+    let mut legal_moves = false;
     let move_list = board.generate_moves();
     for mv in move_list {
         if let Some(board_copy) = board.copy_with_move(mv) {
             let score = -nega_max_rec(&board_copy, depth - 1, stop_flag);
-            if score > best_score {
+            legal_moves = true;
+
+            if score > best_score || best_move.is_none() {
                 best_score = score;
                 best_move = Some(mv);
             }
@@ -84,8 +90,8 @@ pub fn negamax(board: &Board, depth: usize, stop_flag: &Arc<AtomicBool>) -> Resu
         }
     }
 
-    if let Some(mv) = best_move {
-        Result::BestMove(mv, best_score)
+    if legal_moves {
+        Result::BestMove(best_move.unwrap(), best_score)
     } else {
         // Either checkmage or stalemate
         if board.attacks_king(board.get_side_to_move()) != 0 {
@@ -93,5 +99,26 @@ pub fn negamax(board: &Board, depth: usize, stop_flag: &Arc<AtomicBool>) -> Resu
         } else {
             Result::StaleMate
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use crate::common::Piece::*;
+    use crate::common::Square::*;
+
+    #[test]
+    fn test_negamax_mate_minus_1() {
+        // Not yet mate but mate on next move.
+        let board: Board = "2kr1b2/Rp3pp1/8/8/2b1K2r/4P1pP/8/1NB1nBNR w - - 0 40".into();
+        let stop_flag = Arc::new(AtomicBool::new(false));
+
+        let r = negamax(&board, 4, &stop_flag);
+        assert_eq!(
+            r,
+            Result::BestMove(Move::quiet(E4, E5, WhiteKing), MIN_SCORE)
+        );
     }
 }

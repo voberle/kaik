@@ -16,5 +16,7 @@ pub use squares::Square;
 // Centipawns
 pub type Score = i32;
 
+pub const MIN_SCORE: Score = i32::MIN / 2; // not just taking MIN, so that negating doesn't overflow
+
 pub const ENGINE_NAME: &str = "Kaik";
 pub const ENGINE_AUTHOR: &str = "Vincent Oberle";
