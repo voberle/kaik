@@ -357,7 +357,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_uci_loop_position_startpos() {
+    fn test_position_startpos() {
         let input = "position startpos\nquit\n";
         let mut game = Game::new();
         let input = Cursor::new(input);
@@ -372,7 +372,7 @@ mod tests {
     }
 
     #[test]
-    fn test_uci_loop_position_fen() {
+    fn test_position_fen() {
         let input = "position fen r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1\nquit\n";
         let mut game = Game::new();
         let input = Cursor::new(input);
@@ -390,7 +390,7 @@ mod tests {
     }
 
     #[test]
-    fn test_uci_loop_position_moves() {
+    fn test_position_moves() {
         let input = "position startpos moves e2e4 e7e5\nquit\n";
         let mut game = Game::new();
         let input = Cursor::new(input);
