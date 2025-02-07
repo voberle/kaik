@@ -1,4 +1,6 @@
 //! Evaluation of the position.
+//!
+//! TODO: This should be moved out of the board module.
 
 use crate::common::{Color, Score};
 

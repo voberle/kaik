@@ -5,7 +5,6 @@ extern crate log;
 
 use clap::{Parser, Subcommand};
 use flexi_logger::{FileSpec, Logger};
-use game::Game;
 use std::{
     io::{self, BufReader},
     sync::{atomic::AtomicBool, Arc, Mutex},
@@ -15,13 +14,13 @@ use std::{
 use board::Board;
 use common::Move;
 use common::Square;
+use engine::{game::Game, search};
 
 mod board;
 mod common;
+mod engine;
 mod fen;
-mod game;
 mod perft;
-mod search;
 mod uci;
 
 #[derive(Parser)]

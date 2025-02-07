@@ -15,7 +15,7 @@ use itertools::Itertools;
 use crate::{
     common::Move,
     common::{ENGINE_AUTHOR, ENGINE_NAME},
-    game::{Event, Game, InfoData},
+    engine::game::{Event, Game, InfoData},
 };
 
 // Writes the UCI output to the writer and logs it.

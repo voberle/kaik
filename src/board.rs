@@ -1,3 +1,6 @@
+//! The board module implements the board representation and the rules of the game.
+//! It should not contain "engine logic", i.e. decision making about which moves to play.
+
 use bitboard::BitBoard;
 
 use crate::common::{Color, Square};
