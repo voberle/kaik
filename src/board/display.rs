@@ -4,8 +4,8 @@ use std::{fmt::Display, io::Write};
 
 use crate::{
     board::bitboard::{self, BitBoard},
+    common::Move,
     common::{Color, Piece, Square},
-    moves::Move,
 };
 
 use super::Board;

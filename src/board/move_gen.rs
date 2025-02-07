@@ -4,8 +4,8 @@ use super::Board;
 
 use crate::{
     board::bitboard::{self, movements},
+    common::Move,
     common::{Piece, Square},
-    moves::Move,
 };
 
 impl Board {

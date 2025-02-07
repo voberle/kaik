@@ -1,6 +1,6 @@
 //! Perft <https://www.chessprogramming.org/Perft>
 
-use crate::{board::Board, moves::Move};
+use crate::{board::Board, common::Move};
 
 pub fn perft(board: &Board, depth: usize) -> usize {
     if depth == 0 {

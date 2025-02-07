@@ -8,7 +8,7 @@ use std::{
     },
 };
 
-use crate::{board::Board, common::Score, moves::Move};
+use crate::{board::Board, common::Move, common::Score};
 
 pub enum Result {
     BestMove(Move, Score),

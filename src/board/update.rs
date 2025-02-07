@@ -3,7 +3,7 @@
 use crate::{
     board::bitboard::{self, BitBoard},
     common::Color,
-    moves::Move,
+    common::Move,
 };
 
 use super::Board;

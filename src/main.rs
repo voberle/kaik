@@ -13,14 +13,13 @@ use std::{
 };
 
 use board::Board;
+use common::Move;
 use common::Square;
-use moves::Move;
 
 mod board;
 mod common;
 mod fen;
 mod game;
-mod moves;
 mod perft;
 mod search;
 mod uci;

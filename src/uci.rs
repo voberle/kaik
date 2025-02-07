@@ -13,9 +13,9 @@ use std::{
 use itertools::Itertools;
 
 use crate::{
+    common::Move,
     common::{ENGINE_AUTHOR, ENGINE_NAME},
     game::{Event, Game, InfoData},
-    moves::Move,
 };
 
 // Writes the UCI output to the writer and logs it.

@@ -16,8 +16,8 @@ use std::{
 
 use crate::{
     board::Board,
+    common::Move,
     common::Score,
-    moves::Move,
     search::{self, Result},
 };
 
