@@ -19,9 +19,9 @@ use engine::{game::Game, search};
 mod board;
 mod common;
 mod engine;
-mod fen;
 mod perft;
 mod uci;
+mod utils;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]

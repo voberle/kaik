@@ -2,9 +2,8 @@ use itertools::Itertools;
 
 use crate::{
     board::bitboard::{self, from_array, BitBoard},
-    common::Move,
-    common::{Color, Piece, Square},
-    fen,
+    common::{Color, Move, Piece, Square},
+    utils::fen,
 };
 
 use super::{Board, CastlingAbility};
