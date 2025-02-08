@@ -6,6 +6,8 @@ Kaik is a chess engine written in Rust.
 
 [Read more about the story of its development](https://docs.google.com/document/d/e/2PACX-1vQY7HSYDMW61Dagpkt2_ApORg0S4KayXvj3mwOpUI-OoNZVcaMjGGsVzT7NiYJ3Isv3cW5KeT_oVwDN/pub).
 
+You can [play it on Lichess](https://lichess.org/@/kaik_bot) (it might not always be online).
+
 ## Features
 
 - Bitboards based move generation.
