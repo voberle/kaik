@@ -2,13 +2,17 @@
 
 use std::sync::{
     atomic::{AtomicBool, Ordering},
+    mpsc::Sender,
     Arc,
 };
 
 use crate::{
     board::Board,
     common::{Score, MAX_SCORE, MIN_SCORE},
-    engine::{eval::eval, game::SearchParams},
+    engine::{
+        eval::eval,
+        game::{Event, InfoData, SearchParams},
+    },
     search,
 };
 
@@ -131,8 +135,8 @@ fn alphabeta(
 pub fn run(
     board: &Board,
     search_params: &SearchParams,
+    event_sender: &Sender<Event>,
     stop_flag: &Arc<AtomicBool>,
-    nodes_count: &mut usize,
 ) -> search::Result {
     // With the recursive implementation of Negamax, real infinite search isn't an option.
     const MAX_DEPTH: usize = 7;
@@ -141,5 +145,17 @@ pub fn run(
         None => MAX_DEPTH,
     };
 
-    alphabeta(board, depth, stop_flag, nodes_count)
+    let mut nodes_count = 0;
+    let result = alphabeta(board, depth, stop_flag, &mut nodes_count);
+
+    if let search::Result::BestMove(_mv, score) = result {
+        let info_data = vec![
+            InfoData::Depth(depth),
+            InfoData::Score(score),
+            InfoData::Nodes(nodes_count),
+        ];
+        event_sender.send(Event::Info(info_data)).unwrap();
+    }
+
+    result
 }

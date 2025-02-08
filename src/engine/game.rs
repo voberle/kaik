@@ -37,6 +37,7 @@ pub enum Event {
 // Whatever the engine wants to send to the UI.
 #[derive(Debug)]
 pub enum InfoData {
+    Depth(usize),   // search depth in plies
     Score(Score),   // score from the engine's point of view in centipawns
     ScoreMate(i32), // mate in y moves. If the engine is getting mated use negative values.
     Nodes(usize),   // number of nodes searched
@@ -145,14 +146,10 @@ fn search(
     event_sender: &Sender<Event>,
     stop_flag: &Arc<AtomicBool>,
 ) {
-    let mut nodes_count = 0;
-    let result = search::run(&board, search_params, stop_flag, &mut nodes_count);
+    let result = search::run(&board, search_params, event_sender, stop_flag);
     match result {
-        Result::BestMove(mv, score) => {
+        Result::BestMove(mv, _score) => {
             info!("Move {}", mv);
-            let info_data = vec![InfoData::Score(score), InfoData::Nodes(nodes_count)];
-            event_sender.send(Event::Info(info_data)).unwrap();
-
             event_sender.send(Event::BestMove(Some(mv), None)).unwrap();
         }
         Result::CheckMate => {

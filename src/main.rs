@@ -7,7 +7,11 @@ use clap::{Parser, Subcommand};
 use flexi_logger::{FileSpec, Logger};
 use std::{
     io::{self, BufReader},
-    sync::{atomic::AtomicBool, Arc, Mutex},
+    sync::{
+        atomic::AtomicBool,
+        mpsc::{self, Receiver, Sender},
+        Arc, Mutex,
+    },
     time::Instant,
 };
 
@@ -15,7 +19,7 @@ use board::Board;
 use common::Move;
 use common::Square;
 use engine::{
-    game::{Game, SearchParams},
+    game::{Event, Game, SearchParams},
     search,
 };
 
@@ -202,11 +206,11 @@ fn divide(board: &Board, depth: usize) {
 
 fn search(board: &Board, depth: usize) {
     let stop_flag = Arc::new(AtomicBool::new(false));
-    let mut nodes_count = 0;
     let sp = SearchParams { depth: Some(depth) };
+    let (event_sender, _event_receiver): (Sender<Event>, Receiver<Event>) = mpsc::channel();
 
     let now = Instant::now();
-    let result = search::run(board, &sp, &stop_flag, &mut nodes_count);
+    let result = search::run(board, &sp, &event_sender, &stop_flag);
     let elapsed = now.elapsed();
 
     println!("Search({depth}) {elapsed:.2?} secs: {result}");

@@ -388,6 +388,7 @@ fn handle_d_cmd(game: &mut Game, evt_sender: &Sender<UciEvent>) {
 impl Display for InfoData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            InfoData::Depth(x) => write!(f, "depth {x}"),
             InfoData::Score(x) => write!(f, "score cp {x}"),
             InfoData::ScoreMate(y) => write!(f, "score mate {y}"),
             InfoData::Nodes(x) => write!(f, "nodes {x}"),

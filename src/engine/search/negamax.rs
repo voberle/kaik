@@ -2,13 +2,17 @@
 
 use std::sync::{
     atomic::{AtomicBool, Ordering},
+    mpsc::Sender,
     Arc,
 };
 
 use crate::{
     board::Board,
     common::{Score, MIN_SCORE},
-    engine::{eval::eval, game::SearchParams},
+    engine::{
+        eval::eval,
+        game::{Event, SearchParams},
+    },
     search,
 };
 
@@ -97,8 +101,8 @@ fn negamax(
 pub fn run(
     board: &Board,
     search_params: &SearchParams,
+    _event_sender: &Sender<Event>,
     stop_flag: &Arc<AtomicBool>,
-    nodes_count: &mut usize,
 ) -> search::Result {
     // With the recursive implementation of Negamax, real infinite search isn't an option.
     const MAX_DEPTH: usize = 4;
@@ -107,7 +111,8 @@ pub fn run(
         None => MAX_DEPTH,
     };
 
-    negamax(board, depth, stop_flag, nodes_count)
+    let mut nodes_count = 0;
+    negamax(board, depth, stop_flag, &mut nodes_count)
 }
 
 #[cfg(test)]
