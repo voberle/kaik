@@ -202,9 +202,10 @@ fn divide(board: &Board, depth: usize) {
 
 fn search(board: &Board, depth: usize) {
     let stop_flag = Arc::new(AtomicBool::new(false));
-    let now = Instant::now();
     let mut nodes_count = 0;
     let sp = SearchParams { depth: Some(depth) };
+
+    let now = Instant::now();
     let result = search::run(board, &sp, &stop_flag, &mut nodes_count);
     let elapsed = now.elapsed();
 

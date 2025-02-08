@@ -8,10 +8,9 @@ use std::sync::{
 use crate::{
     board::Board,
     common::{Score, MIN_SCORE},
+    engine::{eval::eval, game::SearchParams},
+    search,
 };
-
-use super::eval::eval;
-use super::search::Result;
 
 fn nega_max_rec(
     board: &Board,
@@ -53,12 +52,12 @@ fn nega_max_rec(
 // Returns the best moves found via NegaMax.
 // The stop_flag should be checked regularly. When true, the search should be interrupted
 // and return the best move found so far.
-pub fn negamax(
+fn negamax(
     board: &Board,
     depth: usize,
     stop_flag: &Arc<AtomicBool>,
     nodes_count: &mut usize,
-) -> Result {
+) -> search::Result {
     assert!(depth > 0);
 
     let mut best_score = MIN_SCORE;
@@ -84,15 +83,31 @@ pub fn negamax(
     }
 
     if legal_moves {
-        Result::BestMove(best_move.unwrap(), best_score)
+        search::Result::BestMove(best_move.unwrap(), best_score)
     } else {
         // Either checkmage or stalemate
         if board.attacks_king(board.get_side_to_move()) != 0 {
-            Result::CheckMate
+            search::Result::CheckMate
         } else {
-            Result::StaleMate
+            search::Result::StaleMate
         }
     }
+}
+
+pub fn run(
+    board: &Board,
+    search_params: &SearchParams,
+    stop_flag: &Arc<AtomicBool>,
+    nodes_count: &mut usize,
+) -> search::Result {
+    // With the recursive implementation of Negamax, real infinite search isn't an option.
+    const MAX_DEPTH: usize = 4;
+    let depth = match search_params.depth {
+        Some(d) => MAX_DEPTH.min(d),
+        None => MAX_DEPTH,
+    };
+
+    negamax(board, depth, stop_flag, nodes_count)
 }
 
 #[cfg(test)]
@@ -113,7 +128,7 @@ mod tests {
         let r = negamax(&board, 4, &stop_flag, &mut nodes_count);
         assert_eq!(
             r,
-            Result::BestMove(Move::quiet(E4, E5, WhiteKing), MIN_SCORE)
+            search::Result::BestMove(Move::quiet(E4, E5, WhiteKing), MIN_SCORE)
         );
     }
 }

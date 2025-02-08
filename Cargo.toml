@@ -16,4 +16,7 @@ log = "0.4.25"
 rand = "0.8.5"
 
 [features]
+default = ["alphabeta"]
 perft = []
+alphabeta = []
+negamax = []

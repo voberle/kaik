@@ -1,16 +1,12 @@
 //! Search
+//!
+//! The default search implementation is specified in Cargo.toml.
+//! It can be changed at the command-line:
+//!     cargo r --no-default-features --features negamax
 
-use std::{
-    fmt::Display,
-    sync::{atomic::AtomicBool, Arc},
-};
+use std::fmt::Display;
 
-use crate::{
-    board::Board,
-    common::{Move, Score},
-};
-
-use super::{alpha_beta, game::SearchParams};
+use crate::common::{Move, Score};
 
 #[derive(Debug, PartialEq)]
 pub enum Result {
@@ -29,20 +25,11 @@ impl Display for Result {
     }
 }
 
-pub fn run(
-    board: &Board,
-    search_params: &SearchParams,
-    stop_flag: &Arc<AtomicBool>,
-    nodes_count: &mut usize,
-) -> Result {
-    // With the recursive implementation of Negamax, real infinite search isn't an option.
-    // const MAX_DEPTH: usize = 4;
-    const MAX_DEPTH: usize = 7;
-    let depth = match search_params.depth {
-        Some(d) => MAX_DEPTH.min(d),
-        None => MAX_DEPTH,
-    };
+mod alphabeta;
+mod negamax;
 
-    // negamax::negamax(board, depth, stop_flag, nodes_count)
-    alpha_beta::alpha_beta(board, depth, stop_flag, nodes_count)
-}
+#[cfg(feature = "negamax")]
+pub use negamax::run;
+
+#[cfg(feature = "alphabeta")]
+pub use alphabeta::run;

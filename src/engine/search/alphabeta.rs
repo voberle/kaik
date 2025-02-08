@@ -8,12 +8,11 @@ use std::sync::{
 use crate::{
     board::Board,
     common::{Score, MAX_SCORE, MIN_SCORE},
+    engine::{eval::eval, game::SearchParams},
+    search,
 };
 
-use super::eval::eval;
-use super::search::Result;
-
-fn alpha_beta_rec(
+fn alphabeta_rec(
     board: &Board,
     mut alpha: Score,
     beta: Score,
@@ -34,7 +33,7 @@ fn alpha_beta_rec(
     for mv in move_list {
         if let Some(board_copy) = board.copy_with_move(mv) {
             *nodes_count += 1;
-            let score = -alpha_beta_rec(
+            let score = -alphabeta_rec(
                 &board_copy,
                 -beta,
                 -alpha,
@@ -70,12 +69,12 @@ fn alpha_beta_rec(
 // Returns the best moves found via NegaMax.
 // The stop_flag should be checked regularly. When true, the search should be interrupted
 // and return the best move found so far.
-pub fn alpha_beta(
+fn alphabeta(
     board: &Board,
     depth: usize,
     stop_flag: &Arc<AtomicBool>,
     nodes_count: &mut usize,
-) -> Result {
+) -> search::Result {
     assert!(depth > 0);
 
     let mut best_score = MIN_SCORE;
@@ -89,7 +88,7 @@ pub fn alpha_beta(
     for mv in move_list {
         if let Some(board_copy) = board.copy_with_move(mv) {
             *nodes_count += 1;
-            let score = -alpha_beta_rec(
+            let score = -alphabeta_rec(
                 &board_copy,
                 -beta,
                 -alpha,
@@ -118,13 +117,29 @@ pub fn alpha_beta(
     }
 
     if legal_moves {
-        Result::BestMove(best_move.unwrap(), best_score)
+        search::Result::BestMove(best_move.unwrap(), best_score)
     } else {
         // Either checkmage or stalemate
         if board.attacks_king(board.get_side_to_move()) != 0 {
-            Result::CheckMate
+            search::Result::CheckMate
         } else {
-            Result::StaleMate
+            search::Result::StaleMate
         }
     }
+}
+
+pub fn run(
+    board: &Board,
+    search_params: &SearchParams,
+    stop_flag: &Arc<AtomicBool>,
+    nodes_count: &mut usize,
+) -> search::Result {
+    // With the recursive implementation of Negamax, real infinite search isn't an option.
+    const MAX_DEPTH: usize = 7;
+    let depth = match search_params.depth {
+        Some(d) => MAX_DEPTH.min(d),
+        None => MAX_DEPTH,
+    };
+
+    alphabeta(board, depth, stop_flag, nodes_count)
 }
