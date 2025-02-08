@@ -354,9 +354,7 @@ fn handle_position_cmd(game: &mut Game, position: Option<String>, moves: &[Strin
 }
 
 fn handle_go_cmd(game: &mut Game, go_cmds: &[GoCommand], game_event_sender: &Sender<Event>) {
-    let mut sp = SearchParams {
-        depth: Some(4), // Default depth
-    };
+    let mut sp = SearchParams::default();
     for c in go_cmds {
         match c {
             GoCommand::Infinite => sp.depth = None,

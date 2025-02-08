@@ -14,7 +14,10 @@ use std::{
 use board::Board;
 use common::Move;
 use common::Square;
-use engine::{game::Game, search};
+use engine::{
+    game::{Game, SearchParams},
+    search,
+};
 
 mod board;
 mod common;
@@ -201,7 +204,8 @@ fn search(board: &Board, depth: usize) {
     let stop_flag = Arc::new(AtomicBool::new(false));
     let now = Instant::now();
     let mut nodes_count = 0;
-    let result = search::run(board, depth, &stop_flag, &mut nodes_count);
+    let sp = SearchParams { depth: Some(depth) };
+    let result = search::run(board, &sp, &stop_flag, &mut nodes_count);
     let elapsed = now.elapsed();
 
     println!("Search({depth}) {elapsed:.2?} secs: {result}");

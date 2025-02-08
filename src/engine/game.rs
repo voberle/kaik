@@ -22,7 +22,7 @@ use crate::{
 };
 
 // Parameters passed to the search.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct SearchParams {
     pub depth: Option<usize>,
 }
@@ -145,15 +145,8 @@ fn search(
     event_sender: &Sender<Event>,
     stop_flag: &Arc<AtomicBool>,
 ) {
-    // With the recursive implementation of Negamax, real infinite search isn't an option.
-    const MAX_NEGAMAX_DEPTH: usize = 4;
-    let depth = match search_params.depth {
-        Some(d) => MAX_NEGAMAX_DEPTH.min(d),
-        None => MAX_NEGAMAX_DEPTH,
-    };
-
     let mut nodes_count = 0;
-    let result = search::run(&board, depth, stop_flag, &mut nodes_count);
+    let result = search::run(&board, search_params, stop_flag, &mut nodes_count);
     match result {
         Result::BestMove(mv, score) => {
             info!("Move {}", mv);

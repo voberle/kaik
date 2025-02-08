@@ -17,6 +17,7 @@ pub use squares::Square;
 pub type Score = i32;
 
 pub const MIN_SCORE: Score = i32::MIN / 2; // not just taking MIN, so that negating doesn't overflow
+pub const MAX_SCORE: Score = i32::MAX / 2;
 
 pub const ENGINE_NAME: &str = "Kaik";
 pub const ENGINE_AUTHOR: &str = "Vincent Oberle";

@@ -10,7 +10,7 @@ use crate::{
     common::{Move, Score},
 };
 
-use super::negamax::negamax;
+use super::{alpha_beta, game::SearchParams};
 
 #[derive(Debug, PartialEq)]
 pub enum Result {
@@ -31,9 +31,18 @@ impl Display for Result {
 
 pub fn run(
     board: &Board,
-    depth: usize,
+    search_params: &SearchParams,
     stop_flag: &Arc<AtomicBool>,
     nodes_count: &mut usize,
 ) -> Result {
-    negamax(board, depth, stop_flag, nodes_count)
+    // With the recursive implementation of Negamax, real infinite search isn't an option.
+    // const MAX_DEPTH: usize = 4;
+    const MAX_DEPTH: usize = 7;
+    let depth = match search_params.depth {
+        Some(d) => MAX_DEPTH.min(d),
+        None => MAX_DEPTH,
+    };
+
+    // negamax::negamax(board, depth, stop_flag, nodes_count)
+    alpha_beta::alpha_beta(board, depth, stop_flag, nodes_count)
 }
