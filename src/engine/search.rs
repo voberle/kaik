@@ -25,13 +25,6 @@ impl Display for Result {
     }
 }
 
-// Information collected as we build the search. Things like PV, nodes count, etc.
-#[derive(Debug, Default)]
-pub struct Info {
-    pub nodes: usize,  // Nodes count
-    pub pv: Vec<Move>, // Principal Variation
-}
-
 mod alphabeta;
 mod negamax;
 

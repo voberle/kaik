@@ -16,15 +16,13 @@ use crate::{
     search,
 };
 
-use super::Info;
-
 fn alphabeta_rec(
     board: &Board,
     mut alpha: Score,
     beta: Score,
     depth: usize,
     stop_flag: &Arc<AtomicBool>,
-    info: &mut Info,
+    nodes_count: &mut usize,
 ) -> Score {
     if depth == 0 || stop_flag.load(Ordering::Relaxed) {
         // TODO here we should do a quiescence search, which makes the alpha-beta search much more stable.
@@ -38,8 +36,15 @@ fn alphabeta_rec(
     let move_list = board.generate_moves();
     for mv in move_list {
         if let Some(board_copy) = board.copy_with_move(mv) {
-            info.nodes += 1;
-            let score = -alphabeta_rec(&board_copy, -beta, -alpha, depth - 1, stop_flag, info);
+            *nodes_count += 1;
+            let score = -alphabeta_rec(
+                &board_copy,
+                -beta,
+                -alpha,
+                depth - 1,
+                stop_flag,
+                nodes_count,
+            );
             legal_moves = true;
 
             if score > best_score {
@@ -72,7 +77,7 @@ fn alphabeta(
     board: &Board,
     depth: usize,
     stop_flag: &Arc<AtomicBool>,
-    info: &mut Info,
+    nodes_count: &mut usize,
 ) -> search::Result {
     assert!(depth > 0);
 
@@ -86,8 +91,15 @@ fn alphabeta(
     let move_list = board.generate_moves();
     for mv in move_list {
         if let Some(board_copy) = board.copy_with_move(mv) {
-            info.nodes += 1;
-            let score = -alphabeta_rec(&board_copy, -beta, -alpha, depth - 1, stop_flag, info);
+            *nodes_count += 1;
+            let score = -alphabeta_rec(
+                &board_copy,
+                -beta,
+                -alpha,
+                depth - 1,
+                stop_flag,
+                nodes_count,
+            );
             legal_moves = true;
 
             if score > best_score || best_move.is_none() {
@@ -133,14 +145,14 @@ pub fn run(
         None => MAX_DEPTH,
     };
 
-    let mut info = Info::default();
-    let result = alphabeta(board, depth, stop_flag, &mut info);
+    let mut nodes_count = 0;
+    let result = alphabeta(board, depth, stop_flag, &mut nodes_count);
 
     if let search::Result::BestMove(_mv, score) = result {
         let info_data = vec![
             InfoData::Depth(depth),
             InfoData::Score(score),
-            InfoData::Nodes(info.nodes),
+            InfoData::Nodes(nodes_count),
         ];
         event_sender.send(Event::Info(info_data)).unwrap();
     }
