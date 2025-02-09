@@ -72,8 +72,18 @@ impl Board {
 
         self.en_passant_target_square = mv.get_en_passant_target_square();
 
-        if let Some(castling_rook_move) = mv.get_castling() {
+        if let Some(castling_rook_move) = mv.get_castling_rook_move() {
             self.update_bitboards_by_move(castling_rook_move);
+        }
+
+        // Update move counters
+        if self.side_to_move == Color::Black {
+            self.full_move_counter += 1;
+        }
+        if mv.is_capture() || mv.get_piece().is_pawn() {
+            self.half_move_clock = 0;
+        } else {
+            self.half_move_clock += 1;
         }
 
         self.toggle_side();
@@ -91,7 +101,7 @@ impl Board {
             return None;
         }
 
-        if let Some(rook_mv) = mv.get_castling() {
+        if let Some(rook_mv) = mv.get_castling_rook_move() {
             // We are not allowed to be in check before the castling.
             if self.attacks_king(king_color) != 0 {
                 return None;
@@ -126,17 +136,35 @@ mod tests {
             board.to_string(),
             "rnbqkbnr/pppppppp/8/8/8/1P6/P1PPPPPP/RNBQKBNR b KQkq - 0 1"
         );
+        board.update_by_move(Move::quiet(G8, F6, BlackKnight));
+        board.update_by_move(Move::quiet(G1, F3, WhiteKnight));
+        assert_eq!(
+            board.to_string(),
+            "rnbqkb1r/pppppppp/5n2/8/8/1P3N2/P1PPPPPP/RNBQKB1R b KQkq - 2 2"
+        );
+        board.update_by_move(Move::quiet(B8, C6, BlackKnight));
+        board.update_by_move(Move::quiet(C1, B2, WhiteBishop));
+        board.update_by_move(Move::quiet(C6, B4, BlackKnight));
+        assert_eq!(
+            board.to_string(),
+            "r1bqkb1r/pppppppp/5n2/8/1n6/1P3N2/PBPPPPPP/RN1QKB1R w KQkq - 5 4"
+        );
+        board.update_by_move(Move::capture(B2, F6, WhiteBishop));
+        assert_eq!(
+            board.to_string(),
+            "r1bqkb1r/pppppppp/5B2/8/1n6/1P3N2/P1PPPPPP/RN1QKB1R b KQkq - 0 4"
+        );
     }
 
     #[test]
     fn test_update_by_move_capture() {
-        let mut board: Board = "2k5/8/8/8/8/8/2Pp4/2K5 w - - 0 1".into();
+        let mut board: Board = "2k5/8/8/8/8/8/2Pp4/2K5 w - - 3 1".into();
         let mv = Move::capture(C1, D2, WhiteKing);
         board.update_by_move(mv);
         assert_eq!(board.to_string(), "2k5/8/8/8/8/8/2PK4/8 b - - 0 1");
 
         let mut board: Board =
-            "rnbqkbnr/ppp1pppp/8/3p4/8/2N5/PPPPPPPP/R1BQKBNR w KQkq - 0 1".into();
+            "rnbqkbnr/ppp1pppp/8/3p4/8/2N5/PPPPPPPP/R1BQKBNR w KQkq - 4 1".into();
         let mv = Move::capture(C3, D5, WhiteKnight);
         board.update_by_move(mv);
         assert_eq!(
@@ -147,10 +175,10 @@ mod tests {
 
     #[test]
     fn test_update_by_move_capture_2() {
-        let mut board: Board = "8/8/8/3k4/2pP4/1B6/6K1/8 b - - 0 1".into();
+        let mut board: Board = "8/8/8/3k4/2pP4/1B6/6K1/8 b - - 4 1".into();
         let mv = Move::capture(C4, B3, BlackPawn);
         board.update_by_move(mv);
-        assert_eq!(board.to_string(), "8/8/8/3k4/3P4/1p6/6K1/8 w - - 0 1");
+        assert_eq!(board.to_string(), "8/8/8/3k4/3P4/1p6/6K1/8 w - - 0 2");
         assert_eq!(board.pieces[Piece::WhiteBishop as usize], 0);
     }
 
@@ -170,7 +198,7 @@ mod tests {
         let mut board: Board = "4k3/8/8/8/8/8/PPPPPPPP/R3K1NR w Q - 0 1".into();
         let mv = Move::quiet(E1, C1, WhiteKing); // White queen side castle
         board.update_by_move(mv);
-        assert_eq!(board, "4k3/8/8/8/8/8/PPPPPPPP/2KR2NR b - - 0 1".into());
+        assert_eq!(board, "4k3/8/8/8/8/8/PPPPPPPP/2KR2NR b - - 1 1".into());
     }
 
     #[test]
@@ -181,13 +209,13 @@ mod tests {
         board.update_by_move(mv);
         assert_eq!(
             board,
-            "rnbqkbnr/ppp1pppp/3p4/8/8/5P2/PPPPPKPP/RNBQ1BNR b kq - 0 1".into()
+            "rnbqkbnr/ppp1pppp/3p4/8/8/5P2/PPPPPKPP/RNBQ1BNR b kq - 1 1".into()
         );
     }
 
     #[test]
     fn test_update_by_move_promotion() {
-        let mut board: Board = "4k3/1P6/8/8/8/8/8/4K3 w - - 0 1".into();
+        let mut board: Board = "4k3/1P6/8/8/8/8/8/4K3 w - - 2 1".into();
         let mv = Move::new(B7, B8, Some(WhiteQueen), WhitePawn, false);
         board.update_by_move(mv);
         assert_eq!(board, "1Q2k3/8/8/8/8/8/8/4K3 b - - 0 1".into());

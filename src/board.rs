@@ -25,4 +25,6 @@ pub struct Board {
     side_to_move: Color,
     en_passant_target_square: Option<Square>,
     castling_ability: CastlingAbility,
+    half_move_clock: usize,
+    full_move_counter: usize,
 }

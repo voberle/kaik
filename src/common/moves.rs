@@ -93,7 +93,7 @@ impl Move {
 
     // If this is a castling move, the move itself indicates the king move.
     // This function returns the extra rook move that needs to be done.
-    pub fn get_castling(self) -> Option<Move> {
+    pub fn get_castling_rook_move(self) -> Option<Move> {
         const WHITE_KING_SIDE: Option<Move> =
             Some(Move::quiet(Square::H1, Square::F1, Piece::WhiteRook));
         const WHITE_QUEEN_SIDE: Option<Move> =

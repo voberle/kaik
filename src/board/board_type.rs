@@ -28,6 +28,8 @@ impl Board {
             side_to_move: Color::White,
             en_passant_target_square: None,
             castling_ability: CastlingAbility::NONE,
+            half_move_clock: 0,
+            full_move_counter: 1,
         }
     }
 
@@ -42,6 +44,8 @@ impl Board {
             side_to_move: Color::White,
             en_passant_target_square: None,
             castling_ability: CastlingAbility::ALL,
+            half_move_clock: 0,
+            full_move_counter: 1,
         }
     }
 
@@ -51,8 +55,8 @@ impl Board {
             side_to_move,
             castling_ability,
             en_passant_target_square,
-            _half_move_clock,
-            _full_move_counter,
+            half_move_clock,
+            full_move_counter,
         ) = fen::parse(fen);
 
         let pieces = Piece::ALL_PIECES
@@ -82,6 +86,8 @@ impl Board {
             side_to_move,
             en_passant_target_square,
             castling_ability,
+            half_move_clock,
+            full_move_counter,
         }
     }
 
@@ -107,8 +113,8 @@ impl Board {
             self.side_to_move,
             &self.castling_ability.as_pieces_iter().collect_vec(),
             self.en_passant_target_square,
-            0,
-            1,
+            self.half_move_clock,
+            self.full_move_counter,
         )
     }
 
