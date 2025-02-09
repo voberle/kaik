@@ -128,7 +128,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_update_by_move_quiet() {
+    fn test_update_by_move() {
         let mut board = Board::initial_board();
         let mv = Move::quiet(B2, B3, WhitePawn);
         board.update_by_move(mv);

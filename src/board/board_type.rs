@@ -137,7 +137,7 @@ impl Board {
     // Creates a valid move based on this board.
     // If there are no pieces on the from position, the code will crash.
     pub fn new_move_from_pure(&self, s: &str) -> Move {
-        assert!(s.len() >= 4 && s.len() <= 5);
+        debug_assert!(s.len() >= 4 && s.len() <= 5);
         let from: Square = s[0..2].try_into().unwrap();
         let to: Square = s[2..4].try_into().unwrap();
 

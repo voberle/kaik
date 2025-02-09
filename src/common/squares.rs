@@ -27,7 +27,7 @@ impl From<Square> for u8 {
 
 impl From<u8> for Square {
     fn from(val: u8) -> Self {
-        assert!(val < 64);
+        debug_assert!(val < 64);
         // The safe alternative would be to use a match, but seems a big match like this would be slower.
         unsafe { std::mem::transmute(val) }
     }
@@ -36,7 +36,7 @@ impl From<u8> for Square {
 impl From<u32> for Square {
     #[allow(clippy::cast_possible_truncation)]
     fn from(val: u32) -> Self {
-        assert!(val < 64);
+        debug_assert!(val < 64);
         unsafe { std::mem::transmute(val as u8) }
     }
 }

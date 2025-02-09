@@ -26,7 +26,7 @@ impl Move {
         piece: Piece,
         is_capture: bool,
     ) -> Self {
-        assert!(match promotion {
+        debug_assert!(match promotion {
             None => true,
             Some(p) => !p.is_pawn() && !p.is_king(),
         });
@@ -73,7 +73,7 @@ impl Move {
 
     pub fn get_en_passant_target_square(self) -> Option<Square> {
         if self.is_pawn_double_push() {
-            assert_eq!(self.from.get_file(), self.to.get_file());
+            debug_assert_eq!(self.from.get_file(), self.to.get_file());
             let rank = (self.from.get_rank() + self.to.get_rank()) / 2;
             Some(Square::new(rank, self.from.get_file()))
         } else {

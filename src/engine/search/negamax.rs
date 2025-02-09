@@ -62,7 +62,7 @@ fn negamax(
     stop_flag: &Arc<AtomicBool>,
     nodes_count: &mut usize,
 ) -> search::Result {
-    assert!(depth > 0);
+    debug_assert!(depth > 0);
 
     let mut best_score = MIN_SCORE;
     let mut best_move = None;
