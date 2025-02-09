@@ -12,6 +12,7 @@ mod castling;
 mod display;
 mod move_gen;
 mod update;
+mod zobrist;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 struct CastlingAbility(u8);
@@ -27,4 +28,5 @@ pub struct Board {
     castling_ability: CastlingAbility,
     half_move_clock: usize,
     full_move_counter: usize,
+    zobrist_key: u64,
 }

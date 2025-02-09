@@ -21,7 +21,7 @@ fn get_occupied_bitboard(all: &[BitBoard]) -> BitBoard {
 
 impl Board {
     pub fn empty() -> Self {
-        Self {
+        let mut b = Self {
             pieces: [0; 12],
             all: [0; 2],
             occupied: 0,
@@ -30,14 +30,17 @@ impl Board {
             castling_ability: CastlingAbility::NONE,
             half_move_clock: 0,
             full_move_counter: 1,
-        }
+            zobrist_key: 0,
+        };
+        b.zobrist_key = Self::gen_zobrist_key(&b);
+        b
     }
 
     pub fn initial_board() -> Self {
         let pieces = bitboard::INITIAL_BOARD;
         let all = get_all_bitboards(&pieces);
         let occupied = get_occupied_bitboard(&all);
-        Self {
+        let mut b = Self {
             pieces,
             all,
             occupied,
@@ -46,7 +49,10 @@ impl Board {
             castling_ability: CastlingAbility::ALL,
             half_move_clock: 0,
             full_move_counter: 1,
-        }
+            zobrist_key: 0,
+        };
+        b.zobrist_key = Self::gen_zobrist_key(&b);
+        b
     }
 
     pub fn from_fen(fen: &str) -> Self {
@@ -79,7 +85,7 @@ impl Board {
         let all = get_all_bitboards(&pieces);
         let occupied = get_occupied_bitboard(&all);
         let castling_ability = CastlingAbility::new(&castling_ability);
-        Self {
+        let mut b = Self {
             pieces,
             all,
             occupied,
@@ -88,7 +94,10 @@ impl Board {
             castling_ability,
             half_move_clock,
             full_move_counter,
-        }
+            zobrist_key: 0,
+        };
+        b.zobrist_key = Self::gen_zobrist_key(&b);
+        b
     }
 
     pub fn as_fen(&self) -> String {
@@ -124,6 +133,10 @@ impl Board {
 
     pub fn opposite_side(&self) -> Color {
         self.side_to_move.opposite()
+    }
+
+    pub fn get_zobrist_key(&self) -> u64 {
+        self.zobrist_key
     }
 
     pub fn find_piece_on(&self, sq: Square) -> Piece {

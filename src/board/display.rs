@@ -91,6 +91,8 @@ impl Board {
         )?;
         writeln!(writer)?;
         writeln!(writer, "FEN: {}", self.as_fen())?;
+        // writeln!(writer, "Zobrist: {}", self.zobrist_key)?;
+        // writeln!(writer, "Zobrist gen: {}", Self::gen_zobrist_key(self))?;
         Ok(())
     }
 

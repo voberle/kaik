@@ -2,17 +2,12 @@
 
 use crate::{
     board::bitboard::{self, BitBoard},
-    common::Color,
-    common::Move,
+    common::{Color, Move, Piece},
 };
 
-use super::Board;
+use super::{zobrist::ZOBRIST_KEYS, Board};
 
 impl Board {
-    fn toggle_side(&mut self) {
-        self.side_to_move = self.side_to_move.opposite();
-    }
-
     // Updates the bitboards and castling rights only.
     // Update by Move explained at <https://www.chessprogramming.org/General_Setwise_Operations#UpdateByMove>
     fn update_bitboards_by_move(&mut self, mv: Move) {
@@ -24,6 +19,9 @@ impl Board {
         self.pieces[mv.get_piece() as usize] ^= from_to_bb;
         self.all[color as usize] ^= from_to_bb;
         self.occupied ^= from_to_bb;
+
+        self.zobrist_key ^= ZOBRIST_KEYS.piece_key(mv.get_from(), mv.get_piece());
+        self.zobrist_key ^= ZOBRIST_KEYS.piece_key(mv.get_to(), mv.get_piece());
 
         if mv.is_capture() {
             // If we are trying to move into the en-passant square, we need to correct the square we will clear.
@@ -40,23 +38,32 @@ impl Board {
             };
 
             // Loop over bitboards opposite color.
-            for bb in self
+            for (piece_idx, bb) in self
                 .pieces
                 .iter_mut()
+                .enumerate()
                 .skip(color.opposite() as usize)
                 .step_by(2)
             {
                 if *bb & to_bb_capture != 0 {
+                    // Remove the captured piece.
                     *bb ^= to_bb_capture;
                     self.all[color.opposite() as usize] ^= to_bb_capture;
                     self.occupied ^= to_bb_capture;
+
+                    let captured_square = bitboard::get_index(to_bb_capture).into();
+                    let piece_captured = Piece::ALL_PIECES[piece_idx];
+                    self.zobrist_key ^= ZOBRIST_KEYS.piece_key(captured_square, piece_captured);
+
                     break;
                 }
             }
         }
 
+        self.zobrist_key ^= ZOBRIST_KEYS.castling_key(self.castling_ability);
         self.castling_ability.clear(mv.get_from());
         self.castling_ability.clear(mv.get_to()); // in case rook gets taken
+        self.zobrist_key ^= ZOBRIST_KEYS.castling_key(self.castling_ability);
     }
 
     // Updates the board with the specified move.
@@ -68,9 +75,14 @@ impl Board {
             let to_bb: BitBoard = bitboard::from_square(mv.get_to());
             self.pieces[mv.get_piece() as usize] &= !to_bb;
             self.pieces[promote_to as usize] |= to_bb;
+
+            self.zobrist_key ^= ZOBRIST_KEYS.piece_key(mv.get_to(), mv.get_piece());
+            self.zobrist_key ^= ZOBRIST_KEYS.piece_key(mv.get_to(), promote_to);
         }
 
+        self.zobrist_key ^= ZOBRIST_KEYS.en_passant_key(self.en_passant_target_square);
         self.en_passant_target_square = mv.get_en_passant_target_square();
+        self.zobrist_key ^= ZOBRIST_KEYS.en_passant_key(self.en_passant_target_square);
 
         if let Some(castling_rook_move) = mv.get_castling_rook_move() {
             self.update_bitboards_by_move(castling_rook_move);
@@ -86,7 +98,13 @@ impl Board {
             self.half_move_clock += 1;
         }
 
-        self.toggle_side();
+        // Toggle side to move.
+        self.zobrist_key ^= ZOBRIST_KEYS.color_key(self.get_side_to_move());
+        self.side_to_move = self.side_to_move.opposite();
+        self.zobrist_key ^= ZOBRIST_KEYS.color_key(self.get_side_to_move());
+
+        // Checking that the Zobrist key was correctly updated (debug builds only).
+        debug_assert_eq!(self.zobrist_key, Self::gen_zobrist_key(self));
     }
 
     // Applies the move to self and returns a new board.
