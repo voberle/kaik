@@ -10,8 +10,17 @@ You can [play it on Lichess](https://lichess.org/@/kaik_bot) (it might not alway
 
 ## Features
 
-- Bitboards based move generation.
+Current features:
+
+- Move generation:
+  - Bitboard based.
+  - Hyperbola Quintessence approach for sliding pieces.
   - Perft tests to validate move generation.
+- Board identification with Zobrist key.
+- Search:
+  - Alpha-beta.
+- Evaluation:
+  - Material based.
 - UCI interface.
 
 ## Architecture

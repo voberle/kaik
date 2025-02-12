@@ -1,4 +1,5 @@
 //! Alpha Beta search
+//! Good explanation <http://web.archive.org/web/20070704121716/http://www.brucemo.com/compchess/programming/alphabeta.htm>
 
 use std::sync::{
     atomic::{AtomicBool, Ordering},
@@ -138,7 +139,7 @@ pub fn run(
     event_sender: &Sender<Event>,
     stop_flag: &Arc<AtomicBool>,
 ) -> search::Result {
-    // With the recursive implementation of Negamax, real infinite search isn't an option.
+    // With the recursive implementation, real infinite search isn't an option.
     const MAX_DEPTH: usize = 7;
     let depth = match search_params.depth {
         Some(d) => MAX_DEPTH.min(d),
@@ -158,4 +159,27 @@ pub fn run(
     }
 
     result
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use crate::common::Move;
+    use crate::common::Piece::*;
+    use crate::common::Square::*;
+
+    #[test]
+    fn test_mate_minus_1() {
+        // Not yet mate but mate on next move.
+        let board: Board = "2kr1b2/Rp3pp1/8/8/2b1K2r/4P1pP/8/1NB1nBNR w - - 0 40".into();
+        let stop_flag = Arc::new(AtomicBool::new(false));
+
+        let mut nodes_count = 0;
+        let r = alphabeta(&board, 4, &stop_flag, &mut nodes_count);
+        assert_eq!(
+            r,
+            search::Result::BestMove(Move::quiet(E4, E5, WhiteKing), MIN_SCORE)
+        );
+    }
 }

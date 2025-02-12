@@ -1,8 +1,4 @@
 //! Search
-//!
-//! The default search implementation is specified in Cargo.toml.
-//! It can be changed at the command-line:
-//!     cargo r --no-default-features --features negamax
 
 use std::fmt::Display;
 
@@ -26,10 +22,10 @@ impl Display for Result {
 }
 
 mod alphabeta;
-mod negamax;
 
-#[cfg(feature = "negamax")]
-pub use negamax::run;
-
-#[cfg(feature = "alphabeta")]
+// If we have multiple search implementation they can be chosen via features.
+// The default search implementation is specified in Cargo.toml.
+// It can be changed at the command-line:
+//     cargo r --no-default-features --features negamax
+// #[cfg(feature = "alphabeta")]
 pub use alphabeta::run;
