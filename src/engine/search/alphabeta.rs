@@ -170,15 +170,16 @@ pub fn run(
     // TODO we could simply take the best move from the MV and not return it as part of the result.
     // So have alphabeta just return a score.
 
+    let mut info_data = vec![
+        InfoData::Depth(depth),
+        InfoData::Nodes(nodes_count),
+        InfoData::Pv(pv_line),
+    ];
+
     if let search::Result::BestMove(_mv, score) = result {
-        let info_data = vec![
-            InfoData::Depth(depth),
-            InfoData::Score(score),
-            InfoData::Nodes(nodes_count),
-            InfoData::Pv(pv_line),
-        ];
-        event_sender.send(Event::Info(info_data)).unwrap();
+        info_data.push(InfoData::Score(score));
     }
+    event_sender.send(Event::Info(info_data)).unwrap();
 
     result
 }
