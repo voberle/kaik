@@ -9,7 +9,7 @@ use std::sync::{
 
 use crate::{
     board::Board,
-    common::{Score, MAX_SCORE, MIN_SCORE},
+    common::{Move, Score, MAX_SCORE, MIN_SCORE},
     engine::{
         eval::eval,
         game::{Event, InfoData, SearchParams},
@@ -24,6 +24,7 @@ fn alphabeta_rec(
     depth: usize,
     stop_flag: &Arc<AtomicBool>,
     nodes_count: &mut usize,
+    pv_line: &mut Vec<Move>,
 ) -> Score {
     if depth == 0 || stop_flag.load(Ordering::Relaxed) {
         // TODO here we should do a quiescence search, which makes the alpha-beta search much more stable.
@@ -38,6 +39,7 @@ fn alphabeta_rec(
     for mv in move_list {
         if let Some(board_copy) = board.copy_with_move(mv) {
             *nodes_count += 1;
+            let mut child_line = Vec::new();
             let score = -alphabeta_rec(
                 &board_copy,
                 -beta,
@@ -45,6 +47,7 @@ fn alphabeta_rec(
                 depth - 1,
                 stop_flag,
                 nodes_count,
+                &mut child_line,
             );
             legal_moves = true;
 
@@ -52,6 +55,9 @@ fn alphabeta_rec(
                 best_score = score;
                 if score > alpha {
                     alpha = score;
+                    pv_line.clear();
+                    pv_line.push(mv);
+                    pv_line.extend_from_slice(&child_line);
                 }
             }
             if score >= beta {
@@ -79,6 +85,7 @@ fn alphabeta(
     depth: usize,
     stop_flag: &Arc<AtomicBool>,
     nodes_count: &mut usize,
+    pv_line: &mut Vec<Move>,
 ) -> search::Result {
     debug_assert!(depth > 0);
 
@@ -93,6 +100,7 @@ fn alphabeta(
     for mv in move_list {
         if let Some(board_copy) = board.copy_with_move(mv) {
             *nodes_count += 1;
+            let mut child_line = Vec::new();
             let score = -alphabeta_rec(
                 &board_copy,
                 -beta,
@@ -100,6 +108,7 @@ fn alphabeta(
                 depth - 1,
                 stop_flag,
                 nodes_count,
+                &mut child_line,
             );
             legal_moves = true;
 
@@ -109,6 +118,9 @@ fn alphabeta(
 
                 if score > alpha {
                     alpha = score;
+                    pv_line.clear();
+                    pv_line.push(mv);
+                    pv_line.extend_from_slice(&child_line);
                 }
             }
             if score >= beta {
@@ -147,13 +159,23 @@ pub fn run(
     };
 
     let mut nodes_count = 0;
-    let result = alphabeta(board, depth, stop_flag, &mut nodes_count);
+    let mut pv_line = Vec::new();
+    let result = alphabeta(board, depth, stop_flag, &mut nodes_count, &mut pv_line);
+
+    info!(
+        "PV: {}",
+        crate::common::format_moves_as_pure_string(&pv_line)
+    );
+
+    // TODO we could simply take the best move from the MV and not return it as part of the result.
+    // So have alphabeta just return a score.
 
     if let search::Result::BestMove(_mv, score) = result {
         let info_data = vec![
             InfoData::Depth(depth),
             InfoData::Score(score),
             InfoData::Nodes(nodes_count),
+            InfoData::Pv(pv_line),
         ];
         event_sender.send(Event::Info(info_data)).unwrap();
     }
@@ -176,7 +198,7 @@ mod tests {
         let stop_flag = Arc::new(AtomicBool::new(false));
 
         let mut nodes_count = 0;
-        let r = alphabeta(&board, 4, &stop_flag, &mut nodes_count);
+        let r = alphabeta(&board, 4, &stop_flag, &mut nodes_count, &mut Vec::new());
         assert_eq!(
             r,
             search::Result::BestMove(Move::quiet(E4, E5, WhiteKing), MIN_SCORE)

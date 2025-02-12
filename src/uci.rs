@@ -13,7 +13,7 @@ use std::{
 use itertools::Itertools;
 
 use crate::{
-    common::{Move, ENGINE_AUTHOR, ENGINE_NAME},
+    common::{format_moves_as_pure_string, Move, ENGINE_AUTHOR, ENGINE_NAME},
     engine::game::{Event, Game, InfoData, SearchParams},
 };
 
@@ -392,6 +392,7 @@ impl Display for InfoData {
             InfoData::Score(x) => write!(f, "score cp {x}"),
             InfoData::ScoreMate(y) => write!(f, "score mate {y}"),
             InfoData::Nodes(x) => write!(f, "nodes {x}"),
+            InfoData::Pv(moves) => write!(f, "pv {}", format_moves_as_pure_string(moves)),
             InfoData::String(s) => write!(f, "string {s}"),
         }
     }

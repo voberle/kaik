@@ -41,6 +41,7 @@ pub enum InfoData {
     Score(Score),   // score from the engine's point of view in centipawns
     ScoreMate(i32), // mate in y moves. If the engine is getting mated use negative values.
     Nodes(usize),   // number of nodes searched
+    Pv(Vec<Move>),  // the best line found
     String(String),
 }
 
