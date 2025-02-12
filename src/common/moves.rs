@@ -3,6 +3,8 @@
 
 use std::fmt::Display;
 
+use itertools::Itertools;
+
 use crate::{common::Piece, common::Square};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -122,12 +124,6 @@ impl Move {
         None
     }
 
-    pub fn print_list(moves: &[Move]) {
-        for mv in moves {
-            println!("{mv}");
-        }
-    }
-
     fn fmt_as_pure(self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // Pure coordinate notation
         // <https://www.chessprogramming.org/Algebraic_Chess_Notation#Pure_coordinate_notation>
@@ -177,5 +173,124 @@ impl Move {
 impl Display for Move {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.fmt_as_lan(f)
+    }
+}
+
+pub fn format_moves_as_pure_string(moves: &[Move]) -> String {
+    moves.iter().map(Move::pure).join(" ")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::common::{Piece, Square};
+
+    #[test]
+    fn test_move_new() {
+        let mv = Move::new(Square::E2, Square::E4, None, Piece::WhitePawn, false);
+        assert_eq!(mv.get_from(), Square::E2);
+        assert_eq!(mv.get_to(), Square::E4);
+        assert_eq!(mv.get_promotion(), None);
+        assert_eq!(mv.get_piece(), Piece::WhitePawn);
+        assert_eq!(mv.is_capture(), false);
+    }
+
+    #[test]
+    fn test_move_quiet() {
+        let mv = Move::quiet(Square::E2, Square::E4, Piece::WhitePawn);
+        assert_eq!(mv.get_from(), Square::E2);
+        assert_eq!(mv.get_to(), Square::E4);
+        assert_eq!(mv.get_promotion(), None);
+        assert_eq!(mv.get_piece(), Piece::WhitePawn);
+        assert_eq!(mv.is_capture(), false);
+    }
+
+    #[test]
+    fn test_move_capture() {
+        let mv = Move::capture(Square::E2, Square::E4, Piece::WhitePawn);
+        assert_eq!(mv.get_from(), Square::E2);
+        assert_eq!(mv.get_to(), Square::E4);
+        assert_eq!(mv.get_promotion(), None);
+        assert_eq!(mv.get_piece(), Piece::WhitePawn);
+        assert_eq!(mv.is_capture(), true);
+    }
+
+    #[test]
+    fn test_is_pawn_double_push() {
+        let mv = Move::quiet(Square::E2, Square::E4, Piece::WhitePawn);
+        assert!(mv.is_pawn_double_push());
+        let mv = Move::quiet(Square::E2, Square::E3, Piece::WhitePawn);
+        assert!(!mv.is_pawn_double_push());
+    }
+
+    #[test]
+    fn test_get_en_passant_target_square() {
+        let mv = Move::quiet(Square::E2, Square::E4, Piece::WhitePawn);
+        assert_eq!(mv.get_en_passant_target_square(), Some(Square::E3));
+        let mv = Move::quiet(Square::E2, Square::E3, Piece::WhitePawn);
+        assert_eq!(mv.get_en_passant_target_square(), None);
+    }
+
+    #[test]
+    fn test_get_castling_rook_move() {
+        let mv = Move::quiet(Square::E1, Square::G1, Piece::WhiteKing);
+        assert_eq!(
+            mv.get_castling_rook_move(),
+            Some(Move::quiet(Square::H1, Square::F1, Piece::WhiteRook))
+        );
+        let mv = Move::quiet(Square::E1, Square::C1, Piece::WhiteKing);
+        assert_eq!(
+            mv.get_castling_rook_move(),
+            Some(Move::quiet(Square::A1, Square::D1, Piece::WhiteRook))
+        );
+        let mv = Move::quiet(Square::E8, Square::G8, Piece::BlackKing);
+        assert_eq!(
+            mv.get_castling_rook_move(),
+            Some(Move::quiet(Square::H8, Square::F8, Piece::BlackRook))
+        );
+        let mv = Move::quiet(Square::E8, Square::C8, Piece::BlackKing);
+        assert_eq!(
+            mv.get_castling_rook_move(),
+            Some(Move::quiet(Square::A8, Square::D8, Piece::BlackRook))
+        );
+    }
+
+    #[test]
+    fn test_fmt_as_pure() {
+        let mv = Move::quiet(Square::E2, Square::E4, Piece::WhitePawn);
+        assert_eq!(format!("{}", mv.pure()), "e2e4");
+        let mv = Move::new(
+            Square::E7,
+            Square::E8,
+            Some(Piece::WhiteQueen),
+            Piece::WhitePawn,
+            false,
+        );
+        assert_eq!(format!("{}", mv.pure()), "e7e8q");
+    }
+
+    #[test]
+    fn test_fmt_as_lan() {
+        let mv = Move::quiet(Square::E2, Square::E4, Piece::WhitePawn);
+        assert_eq!(format!("{}", mv), "E2-E4");
+        let mv = Move::capture(Square::E2, Square::E4, Piece::WhitePawn);
+        assert_eq!(format!("{}", mv), "E2xE4");
+        let mv = Move::new(
+            Square::E7,
+            Square::E8,
+            Some(Piece::WhiteQueen),
+            Piece::WhitePawn,
+            false,
+        );
+        assert_eq!(format!("{}", mv), "E7-E8Q");
+    }
+
+    #[test]
+    fn test_format_moves_as_string() {
+        let moves = [
+            Move::quiet(Square::E2, Square::E4, Piece::WhitePawn),
+            Move::capture(Square::D7, Square::D8, Piece::BlackPawn),
+        ];
+        assert_eq!(format_moves_as_pure_string(&moves), "e2e4 d7d8");
     }
 }

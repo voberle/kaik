@@ -8,6 +8,7 @@ mod pieces;
 mod squares;
 
 pub use colors::Color;
+pub use moves::format_moves_as_pure_string;
 pub use moves::Move;
 pub use pieces::Piece;
 pub use pieces::PieceListBoard;

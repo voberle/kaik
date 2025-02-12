@@ -29,7 +29,21 @@ Current features:
 
 ## Testing
 
-### Running games
+### Using from the command-line
+
+Since UCI is a simple text protocol using stdout/stdin, one can just run the engine and enter UCI commands directly.
+
+Tip: Use the cool [rlwrap](https://github.com/hanslub42/rlwrap) tool to get history and command line completion.
+
+    rlwrap -r cargo r --release
+
+### With a UI
+
+Any Chess UI that supports adding UCI based engines should work.
+
+On Mac, I found that [BanksiaGUI](https://banksiagui.com) was working the best.
+
+### Running games against other engines
 
 The [command line interface c-chess-cli](https://github.com/lucasart/c-chess-cli) is a convenient way to have Kaik play against itself:
 
