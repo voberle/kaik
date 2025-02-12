@@ -9,12 +9,15 @@ use std::sync::{
 
 use crate::{
     board::Board,
-    common::{Move, Score, MAX_SCORE, MIN_SCORE},
+    common::{format_moves_as_pure_string, Move, Score, MAX_SCORE, MIN_SCORE},
     engine::{
         eval::eval,
         game::{Event, InfoData, SearchParams},
     },
-    search,
+    search::{
+        self,
+        Result::{self, BestMove, CheckMate, StaleMate},
+    },
 };
 
 fn alphabeta_rec(
@@ -134,13 +137,13 @@ fn alphabeta(
     }
 
     if legal_moves {
-        search::Result::BestMove(best_move.unwrap(), best_score)
+        BestMove(best_move.unwrap(), best_score)
     } else {
         // Either checkmage or stalemate
         if board.attacks_king(board.get_side_to_move()) != 0 {
-            search::Result::CheckMate
+            CheckMate
         } else {
-            search::Result::StaleMate
+            StaleMate
         }
     }
 }
@@ -150,7 +153,7 @@ pub fn run(
     search_params: &SearchParams,
     event_sender: &Sender<Event>,
     stop_flag: &Arc<AtomicBool>,
-) -> search::Result {
+) -> Result {
     // With the recursive implementation, real infinite search isn't an option.
     const MAX_DEPTH: usize = 7;
     let depth = match search_params.depth {
@@ -162,13 +165,11 @@ pub fn run(
     let mut pv_line = Vec::new();
     let result = alphabeta(board, depth, stop_flag, &mut nodes_count, &mut pv_line);
 
-    info!(
-        "PV: {}",
-        crate::common::format_moves_as_pure_string(&pv_line)
-    );
+    info!("PV: {}", format_moves_as_pure_string(&pv_line));
 
     // TODO we could simply take the best move from the MV and not return it as part of the result.
     // So have alphabeta just return a score.
+    // Checkmate/stalemate can be detected if PV is empty.
 
     let mut info_data = vec![
         InfoData::Depth(depth),
@@ -176,7 +177,7 @@ pub fn run(
         InfoData::Pv(pv_line),
     ];
 
-    if let search::Result::BestMove(_mv, score) = result {
+    if let BestMove(_mv, score) = result {
         info_data.push(InfoData::Score(score));
     }
     event_sender.send(Event::Info(info_data)).unwrap();
@@ -193,6 +194,27 @@ mod tests {
     use crate::common::Square::*;
 
     #[test]
+    fn test_startpos_depth_4() {
+        let board = Board::initial_board();
+        let stop_flag = Arc::new(AtomicBool::new(false));
+
+        let mut nodes_count = 0;
+        let mut pv_line = Vec::new();
+        let r = alphabeta(&board, 4, &stop_flag, &mut nodes_count, &mut pv_line);
+        assert_eq!(r, BestMove(Move::quiet(A2, A3, WhitePawn), 0));
+        assert_eq!(nodes_count, 2024);
+        assert_eq!(
+            pv_line,
+            [
+                Move::quiet(A2, A3, WhitePawn),
+                Move::quiet(A7, A5, BlackPawn),
+                Move::quiet(B2, B3, WhitePawn),
+                Move::quiet(A5, A4, BlackPawn),
+            ]
+        );
+    }
+
+    #[test]
     fn test_mate_minus_1() {
         // Not yet mate but mate on next move.
         let board: Board = "2kr1b2/Rp3pp1/8/8/2b1K2r/4P1pP/8/1NB1nBNR w - - 0 40".into();
@@ -200,9 +222,6 @@ mod tests {
 
         let mut nodes_count = 0;
         let r = alphabeta(&board, 4, &stop_flag, &mut nodes_count, &mut Vec::new());
-        assert_eq!(
-            r,
-            search::Result::BestMove(Move::quiet(E4, E5, WhiteKing), MIN_SCORE)
-        );
+        assert_eq!(r, BestMove(Move::quiet(E4, E5, WhiteKing), MIN_SCORE));
     }
 }
