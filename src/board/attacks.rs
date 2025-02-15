@@ -10,6 +10,11 @@ use crate::{
 use super::Board;
 
 impl Board {
+    // Is the side to play in check?
+    pub fn in_check(&self) -> bool {
+        self.attacks_king(self.get_side_to_move()) != 0
+    }
+
     // Returns a bitboard indicating which squares attack the king of the specified color.
     pub fn attacks_king(&self, king_color: Color) -> BitBoard {
         // From <https://www.chessprogramming.org/Checks_and_Pinned_Pieces_(Bitboards)>

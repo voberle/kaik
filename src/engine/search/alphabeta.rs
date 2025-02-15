@@ -22,9 +22,9 @@ use crate::{
 
 fn alphabeta_rec(
     board: &Board,
+    depth: usize,
     mut alpha: Score,
     beta: Score,
-    depth: usize,
     stop_flag: &Arc<AtomicBool>,
     nodes_count: &mut usize,
     pv_line: &mut Vec<Move>,
@@ -45,9 +45,9 @@ fn alphabeta_rec(
             let mut child_line = Vec::new();
             let score = -alphabeta_rec(
                 &board_copy,
+                depth - 1,
                 -beta,
                 -alpha,
-                depth - 1,
                 stop_flag,
                 nodes_count,
                 &mut child_line,
@@ -69,15 +69,13 @@ fn alphabeta_rec(
         }
     }
 
-    if !legal_moves {
-        // Either checkmage or stalemate
-        return if board.attacks_king(board.get_side_to_move()) != 0 {
-            MIN_SCORE
-        } else {
-            0
-        };
+    if legal_moves {
+        best_score
+    } else if board.in_check() {
+        MIN_SCORE // Checkmate
+    } else {
+        0 // Stalemate
     }
-    best_score
 }
 
 // Returns the best moves found via NegaMax.
@@ -106,9 +104,9 @@ fn alphabeta(
             let mut child_line = Vec::new();
             let score = -alphabeta_rec(
                 &board_copy,
+                depth - 1,
                 -beta,
                 -alpha,
-                depth - 1,
                 stop_flag,
                 nodes_count,
                 &mut child_line,
@@ -138,13 +136,10 @@ fn alphabeta(
 
     if legal_moves {
         BestMove(best_move.unwrap(), best_score)
+    } else if board.in_check() {
+        CheckMate
     } else {
-        // Either checkmage or stalemate
-        if board.attacks_king(board.get_side_to_move()) != 0 {
-            CheckMate
-        } else {
-            StaleMate
-        }
+        StaleMate
     }
 }
 
@@ -223,5 +218,17 @@ mod tests {
         let mut nodes_count = 0;
         let r = alphabeta(&board, 4, &stop_flag, &mut nodes_count, &mut Vec::new());
         assert_eq!(r, BestMove(Move::quiet(E4, E5, WhiteKing), MIN_SCORE));
+    }
+
+    #[test]
+    fn test_smothered_mate() {
+        // Has both a smothered mate via a queen sacrifice and simpler
+        // one via a knight sacrifice, in 2 moves.
+        let board: Board = "2r4k/6pp/8/4N3/8/1Q6/B5PP/7K w - - 0 1".into();
+        let stop_flag = Arc::new(AtomicBool::new(false));
+
+        let mut nodes_count = 0;
+        let r = alphabeta(&board, 4, &stop_flag, &mut nodes_count, &mut Vec::new());
+        assert_eq!(r, BestMove(Move::quiet(E5, G6, WhiteKnight), MAX_SCORE));
     }
 }

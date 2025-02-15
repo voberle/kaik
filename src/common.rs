@@ -18,7 +18,18 @@ pub use squares::Square;
 pub type Score = i32;
 
 pub const MIN_SCORE: Score = i32::MIN / 2; // not just taking MIN, so that negating doesn't overflow
-pub const MAX_SCORE: Score = i32::MAX / 2;
+pub const MAX_SCORE: Score = -MIN_SCORE;
 
 pub const ENGINE_NAME: &str = "Kaik";
 pub const ENGINE_AUTHOR: &str = "Vincent Oberle";
+
+#[cfg(test)]
+mod tests {
+    use crate::common::{MAX_SCORE, MIN_SCORE};
+
+    #[test]
+    fn test_min_max_score() {
+        assert_eq!(-MIN_SCORE, MAX_SCORE);
+        assert_eq!(-MAX_SCORE, MIN_SCORE);
+    }
+}

@@ -110,6 +110,8 @@ impl Board {
     // Applies the move to self and returns a new board.
     // Returns None if the move is not legal (king would be left in check).
     pub fn copy_with_move(&self, mv: Move) -> Option<Self> {
+        debug_assert_eq!(self.get_side_to_move(), mv.get_piece().get_color());
+
         let mut board_copy = *self;
         board_copy.update_by_move(mv);
 
