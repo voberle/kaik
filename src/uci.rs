@@ -236,7 +236,15 @@ where
                         }
                     }
                     UciEvent::Info(infos) => {
-                        outputln!(&mut writer, "info {}", infos.iter().join(" "));
+                        // Sorting the keys for readability.
+                        outputln!(
+                            &mut writer,
+                            "info {}",
+                            infos
+                                .iter()
+                                .sorted_unstable_by_key(|i| info_data_sort_order(i))
+                                .join(" ")
+                        );
                     }
                     UciEvent::Option => {
                         // TODO
@@ -395,6 +403,17 @@ impl Display for InfoData {
             InfoData::Pv(moves) => write!(f, "pv {}", format_moves_as_pure_string(moves)),
             InfoData::String(s) => write!(f, "string {s}"),
         }
+    }
+}
+
+fn info_data_sort_order(info: &InfoData) -> u8 {
+    match info {
+        InfoData::Score(_) => 1,
+        InfoData::ScoreMate(_) => 2,
+        InfoData::Depth(_) => 3,
+        InfoData::Nodes(_) => 4,
+        InfoData::Pv(_) => 5,
+        InfoData::String(_) => 6,
     }
 }
 
