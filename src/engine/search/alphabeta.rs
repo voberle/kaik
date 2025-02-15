@@ -14,7 +14,7 @@ use crate::{
         eval::eval,
         game::{Event, InfoData, SearchParams},
     },
-    search::Result::{self, BestMove, CheckMate},
+    search::Result::{self, BestMove, CheckMate, StaleMate},
 };
 
 const MATE_SCORE: Score = 40_000;
@@ -71,6 +71,7 @@ fn alphabeta(
                 best_score = score;
                 if score > alpha {
                     alpha = score;
+                    // PV update.
                     pv_line.clear();
                     pv_line.push(mv);
                     pv_line.extend_from_slice(&child_line);
@@ -139,6 +140,7 @@ pub fn run(
         let mated_in = (MATE_SCORE + score) / 2;
         // println!("Mated in {mated_in}");
         if mated_in == 0 {
+            debug_assert!(pv_line.is_empty());
             return CheckMate;
         }
         info_data.push(InfoData::ScoreMate(-mated_in));
@@ -148,9 +150,11 @@ pub fn run(
 
     event_sender.send(Event::Info(info_data)).unwrap();
 
-    // TODO handle stalemate
-
-    BestMove(pv_line[0], score)
+    if pv_line.is_empty() {
+        StaleMate
+    } else {
+        BestMove(pv_line[0], score)
+    }
 }
 
 #[cfg(test)]
@@ -240,5 +244,28 @@ mod tests {
         assert_eq!(pv_line[0], Move::quiet(E5, G6, WhiteKnight));
         assert_eq!(mate_in(score), 2);
         assert_eq!(score, MATE_SCORE - 3);
+    }
+
+    #[test]
+    fn test_stalemate() {
+        // Black to move, but it cannot, stalemate.
+        let board: Board = "4k3/4P3/4Q3/8/8/8/8/5K2 b - - 0 1".into();
+        let stop_flag = Arc::new(AtomicBool::new(false));
+
+        let mut nodes_count = 0;
+        let mut pv_line = Vec::new();
+        let score = alphabeta(
+            &board,
+            4,
+            MIN_SCORE,
+            MAX_SCORE,
+            MATE_SCORE,
+            &stop_flag,
+            &mut nodes_count,
+            &mut pv_line,
+        );
+
+        assert!(pv_line.is_empty());
+        assert_eq!(score, 0);
     }
 }
