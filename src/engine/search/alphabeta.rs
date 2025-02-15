@@ -106,60 +106,73 @@ fn alphabeta(
     }
 }
 
+// Executes an alpha-beta search with iterative deepening.
 pub fn run(
     board: &Board,
     search_params: &SearchParams,
     event_sender: &Sender<Event>,
     stop_flag: &Arc<AtomicBool>,
 ) -> Result {
-    // With the recursive implementation, real infinite search isn't an option.
-    const MAX_DEPTH: usize = 7;
-    let depth = match search_params.depth {
-        Some(d) => MAX_DEPTH.min(d),
-        None => MAX_DEPTH,
-    };
+    // usize::MAX is for infinite search
+    let max_depth = search_params.depth.unwrap_or(usize::MAX);
 
     let mut nodes_count = 0;
     let mut pv_line = Vec::new();
-    let score = alphabeta(
-        board,
-        depth,
-        MIN_SCORE,
-        MAX_SCORE,
-        MATE_SCORE,
-        stop_flag,
-        &mut nodes_count,
-        &mut pv_line,
-    );
 
-    info!("PV: {}", format_moves_as_pure_string(&pv_line));
-
-    let mut info_data = vec![
-        InfoData::Depth(depth),
-        InfoData::Nodes(nodes_count),
-        InfoData::Pv(pv_line.clone()),
-    ];
-
-    if let Some(mate_in) = mate_in(score) {
-        info_data.push(InfoData::ScoreMate(mate_in));
-    } else if let Some(mated_in) = mated_in(score) {
-        if mated_in == 0 {
-            debug_assert!(pv_line.is_empty());
-            return CheckMate;
+    let mut result = StaleMate; // Dummy init val.
+    let mut depth = 1;
+    loop {
+        let score = alphabeta(
+            board,
+            depth,
+            MIN_SCORE,
+            MAX_SCORE,
+            MATE_SCORE,
+            stop_flag,
+            &mut nodes_count,
+            &mut pv_line,
+        );
+        if depth > 1 && stop_flag.load(Ordering::Relaxed) {
+            // If we got interrupted during a search at any depth beyond the first,
+            // we ignore the incomplete results from that depth and use the previous one.
+            break;
         }
-        // Use negative values if we are getting mated.
-        info_data.push(InfoData::ScoreMate(-mated_in));
-    } else {
-        info_data.push(InfoData::Score(score));
-    }
 
-    event_sender.send(Event::Info(info_data)).unwrap();
+        info!("PV: {}", format_moves_as_pure_string(&pv_line));
 
-    if pv_line.is_empty() {
-        StaleMate
-    } else {
-        BestMove(pv_line[0], score)
+        let mut info_data = vec![
+            InfoData::Depth(depth),
+            InfoData::Nodes(nodes_count),
+            InfoData::Pv(pv_line.clone()),
+        ];
+
+        if let Some(mate_in) = mate_in(score) {
+            info_data.push(InfoData::ScoreMate(mate_in));
+        } else if let Some(mated_in) = mated_in(score) {
+            if mated_in == 0 {
+                debug_assert!(pv_line.is_empty());
+                return CheckMate;
+            }
+            // Use negative values if we are getting mated.
+            info_data.push(InfoData::ScoreMate(-mated_in));
+        } else {
+            info_data.push(InfoData::Score(score));
+        }
+
+        event_sender.send(Event::Info(info_data)).unwrap();
+
+        if pv_line.is_empty() {
+            return StaleMate;
+        }
+
+        result = BestMove(pv_line[0], score);
+
+        depth += 1;
+        if depth >= max_depth || stop_flag.load(Ordering::Relaxed) {
+            break;
+        }
     }
+    result
 }
 
 #[cfg(test)]
