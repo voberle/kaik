@@ -155,10 +155,6 @@ fn search(
         }
         Result::CheckMate => {
             info!("Checkmate");
-            event_sender
-                .send(Event::Info(vec![InfoData::ScoreMate(-1)]))
-                .unwrap();
-
             event_sender.send(Event::BestMove(None, None)).unwrap();
         }
         Result::StaleMate => {
