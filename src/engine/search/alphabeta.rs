@@ -19,12 +19,25 @@ use crate::{
 
 const MATE_SCORE: Score = 40_000;
 
-fn mate_in(score: Score) -> i32 {
-    (MATE_SCORE - score + 1) / 2
+fn mate_in(score: Score) -> Option<i32> {
+    // Handle up to mate in 500 or so.
+    if score >= MATE_SCORE - 1000 {
+        let dist = (MATE_SCORE - score + 1) / 2;
+        info!("Mate in {dist}");
+        Some(dist)
+    } else {
+        None
+    }
 }
 
-fn mated_in(score: Score) -> i32 {
-    (MATE_SCORE + score) / 2
+fn mated_in(score: Score) -> Option<i32> {
+    if score <= -MATE_SCORE + 1000 {
+        let dist = (MATE_SCORE + score) / 2;
+        info!("Mated in {dist}");
+        Some(dist)
+    } else {
+        None
+    }
 }
 
 // The stop_flag should be checked regularly. When true, the search should be interrupted
@@ -121,28 +134,20 @@ pub fn run(
 
     info!("PV: {}", format_moves_as_pure_string(&pv_line));
 
-    // TODO we could simply take the best move from the MV and not return it as part of the result.
-    // So have alphabeta just return a score.
-    // Checkmate/stalemate can be detected if PV is empty.
-
     let mut info_data = vec![
         InfoData::Depth(depth),
         InfoData::Nodes(nodes_count),
         InfoData::Pv(pv_line.clone()),
     ];
 
-    if score >= MATE_SCORE - 1000 {
-        // Handle up to mate in 500 or so.
-        let mate_in = (MATE_SCORE - score + 1) / 2;
-        // println!("Mate in {mate_in}");
+    if let Some(mate_in) = mate_in(score) {
         info_data.push(InfoData::ScoreMate(mate_in));
-    } else if score <= -MATE_SCORE + 1000 {
-        let mated_in = (MATE_SCORE + score) / 2;
-        // println!("Mated in {mated_in}");
+    } else if let Some(mated_in) = mated_in(score) {
         if mated_in == 0 {
             debug_assert!(pv_line.is_empty());
             return CheckMate;
         }
+        // Use negative values if we are getting mated.
         info_data.push(InfoData::ScoreMate(-mated_in));
     } else {
         info_data.push(InfoData::Score(score));
@@ -168,8 +173,6 @@ mod tests {
     #[test]
     fn test_startpos_depth_4() {
         let board = Board::initial_board();
-        let stop_flag = Arc::new(AtomicBool::new(false));
-
         let mut nodes_count = 0;
         let mut pv_line = Vec::new();
         let score = alphabeta(
@@ -178,7 +181,7 @@ mod tests {
             MIN_SCORE,
             MAX_SCORE,
             MATE_SCORE,
-            &stop_flag,
+            &Arc::new(AtomicBool::new(false)),
             &mut nodes_count,
             &mut pv_line,
         );
@@ -195,14 +198,14 @@ mod tests {
                 Move::quiet(A5, A4, BlackPawn),
             ]
         );
+        assert_eq!(mate_in(score), None);
+        assert_eq!(mated_in(score), None);
     }
 
     #[test]
-    fn test_mate_minus_1() {
-        // Not yet mate but mate on next move.
+    fn test_mated_minus_1() {
+        // Mated on next move.
         let board: Board = "2kr1b2/Rp3pp1/8/8/2b1K2r/4P1pP/8/1NB1nBNR w - - 0 40".into();
-        let stop_flag = Arc::new(AtomicBool::new(false));
-
         let mut nodes_count = 0;
         let mut pv_line = Vec::new();
         let score = alphabeta(
@@ -211,13 +214,14 @@ mod tests {
             MIN_SCORE,
             MAX_SCORE,
             MATE_SCORE,
-            &stop_flag,
+            &Arc::new(AtomicBool::new(false)),
             &mut nodes_count,
             &mut pv_line,
         );
 
         assert_eq!(pv_line[0], Move::quiet(E4, E5, WhiteKing));
-        assert_eq!(mated_in(score), 1);
+        assert_eq!(mated_in(score), Some(1));
+        assert_eq!(mate_in(score), None);
         assert_eq!(score, -MATE_SCORE + 2);
     }
 
@@ -226,8 +230,6 @@ mod tests {
         // Has both a smothered mate via a queen sacrifice and simpler
         // one via a knight sacrifice, in 2 moves.
         let board: Board = "2r4k/6pp/8/4N3/8/1Q6/B5PP/7K w - - 0 1".into();
-        let stop_flag = Arc::new(AtomicBool::new(false));
-
         let mut nodes_count = 0;
         let mut pv_line = Vec::new();
         let score = alphabeta(
@@ -236,13 +238,14 @@ mod tests {
             MIN_SCORE,
             MAX_SCORE,
             MATE_SCORE,
-            &stop_flag,
+            &Arc::new(AtomicBool::new(false)),
             &mut nodes_count,
             &mut pv_line,
         );
 
         assert_eq!(pv_line[0], Move::quiet(E5, G6, WhiteKnight));
-        assert_eq!(mate_in(score), 2);
+        assert_eq!(mate_in(score), Some(2));
+        assert_eq!(mated_in(score), None);
         assert_eq!(score, MATE_SCORE - 3);
     }
 
@@ -250,8 +253,6 @@ mod tests {
     fn test_stalemate() {
         // Black to move, but it cannot, stalemate.
         let board: Board = "4k3/4P3/4Q3/8/8/8/8/5K2 b - - 0 1".into();
-        let stop_flag = Arc::new(AtomicBool::new(false));
-
         let mut nodes_count = 0;
         let mut pv_line = Vec::new();
         let score = alphabeta(
@@ -260,12 +261,14 @@ mod tests {
             MIN_SCORE,
             MAX_SCORE,
             MATE_SCORE,
-            &stop_flag,
+            &Arc::new(AtomicBool::new(false)),
             &mut nodes_count,
             &mut pv_line,
         );
 
         assert!(pv_line.is_empty());
         assert_eq!(score, 0);
+        assert_eq!(mate_in(score), None);
+        assert_eq!(mated_in(score), None);
     }
 }
